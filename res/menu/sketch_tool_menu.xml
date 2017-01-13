@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <group android:checkableBehavior="single">
+    
+	    <item
+	        android:id="@+id/action_sketch_tool_pen"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_tool_pen"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_tool_brush"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_tool_brush"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_tool_spray"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_tool_spray"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_tool_bucket"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_tool_bucket"/>
+
+	</group>        
+</menu>

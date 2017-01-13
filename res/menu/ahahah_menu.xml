@@ -1,0 +1,33 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_camera"
+        android:showAsAction="always"
+        android:title="@string/action_camera"/>
+    
+    <item
+        android:id="@+id/action_sketch"
+        android:showAsAction="always"
+        android:title="@string/action_sketch"/>
+    
+    <item
+        android:id="@+id/action_gallery"
+        android:showAsAction="always"
+        android:title="@string/action_gallery"/>
+<!--      
+    <item
+        android:id="@+id/action_share"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_share"/>
+ -->   
+    <item
+        android:id="@+id/action_projects"
+         android:showAsAction="ifRoom"
+        android:title="@string/action_projects"/>
+    
+    <item
+        android:id="@+id/action_settings"
+        android:showAsAction="never"
+        android:title="@string/action_settings"/>
+
+</menu>

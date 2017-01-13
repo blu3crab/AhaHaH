@@ -1,0 +1,16 @@
+<resources>
+
+    <!-- values-sw600dp -->
+    <style name="PhotoGridLayout">
+        <item name="android:drawSelectorOnTop">true</item>
+        <item name="android:listSelector">@drawable/photogrid_list_selector</item>
+    </style>
+
+    <style name="SplashLayout">
+        <item name="android:layout_marginTop">32dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textSize">32sp</item>
+    </style>
+    
+    
+</resources>

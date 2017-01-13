@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+       
+	<group android:checkableBehavior="all">
+	    <item
+	        android:id="@+id/action_sketch_style_small"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_small"/>
+	    <item
+	        android:id="@+id/action_sketch_style_medium"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_medium"/>
+	    <item
+	        android:id="@+id/action_sketch_style_large"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_large"/>
+	   	    
+	    <item
+	        android:id="@+id/action_sketch_style_fill"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_fill"/>
+	    <item
+	        android:id="@+id/action_sketch_style_stroke"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_stroke"/>	    
+	    <item
+	        android:id="@+id/action_sketch_style_strokefill"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_strokefill"/>	    
+	    <item
+	        android:id="@+id/action_sketch_style_focus"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_style_focus"/>
+    </group>
+			
+</menu>

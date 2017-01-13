@@ -1,0 +1,43 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <group android:checkableBehavior="all">
+    
+	    <item
+	        android:id="@+id/action_sketch_color_black"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_black"/>
+	    <item
+	        android:id="@+id/action_sketch_color_blue"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_blue"/>
+	    <item
+	        android:id="@+id/action_sketch_color_green"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_green"/>
+	    <item
+	        android:id="@+id/action_sketch_color_yellow"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_yellow"/>
+	    <item
+	        android:id="@+id/action_sketch_color_orange"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_orange"/>
+	    <item
+	        android:id="@+id/action_sketch_color_red"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_red"/>
+	    <item
+	        android:id="@+id/action_sketch_color_violet"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_violet"/>
+        <item
+	        android:id="@+id/action_sketch_color_white"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_white"/> 
+        <item
+	        android:id="@+id/action_sketch_color_custom"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_color_custom"/> 
+        	    	    
+	</group>        
+</menu>

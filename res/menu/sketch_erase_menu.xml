@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+   
+	    <item
+	        android:id="@+id/action_sketch_erase_backdrop"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_erase_backdrop"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_erase_overlay"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_erase_overlay"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_erase_select"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_erase_select"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_erase_last"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_erase_last"/>
+
+	   	<item
+	        android:id="@+id/action_sketch_erase_all"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_erase_all"/>
+     
+</menu>

@@ -1,0 +1,24 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    
+	    <item
+	        android:id="@+id/action_sketch_file_new"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_file_new"/>
+	    
+        <item
+	        android:id="@+id/action_sketch_file_loadbackdrop"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_file_loadbackdrop"/>
+	    
+        <item
+	        android:id="@+id/action_sketch_file_loadoverlay"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_file_loadoverlay"/>
+	    
+	    <item
+	        android:id="@+id/action_sketch_file_savesketch"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/action_sketch_file_savesketch"/>
+	    	    
+</menu>
