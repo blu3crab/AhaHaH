@@ -1,0 +1,417 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Manifest Merging:
+-----------------
+Your project uses libraries that provide manifests, and your Eclipse
+project did not explicitly turn on manifest merging. In Android Gradle
+projects, manifests are always merged (meaning that contents from your
+libraries' manifests will be merged into the app manifest. If you had
+manually copied contents from library manifests into your app manifest
+you may need to remove these for the app to build correctly.
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+From AhaHaH:
+* .idea\
+* .idea\.name
+* .idea\compiler.xml
+* .idea\copyright\
+* .idea\copyright\profiles_settings.xml
+* .idea\encodings.xml
+* .idea\misc.xml
+* .idea\modules.xml
+* .idea\scopes\
+* .idea\scopes\scope_settings.xml
+* .idea\vcs.xml
+* .idea\workspace.xml
+* AndroidManifest-default.xml
+* ahaHaH\
+* ahaHaH\build.gradle
+* ahaHaH\src\
+* ahaHaH\src\main\
+* ahaHaH\src\main\AndroidManifest.xml
+* ahaHaH\src\main\java\
+* ahaHaH\src\main\java\com\
+* ahaHaH\src\main\java\com\adaptivehandyapps\
+* ahaHaH\src\main\java\com\adaptivehandyapps\activity\
+* ahaHaH\src\main\java\com\adaptivehandyapps\activity\AhaHahActivity.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\activity\CameraActivity.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\activity\GalleryActivity.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\activity\ShareActivity.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\activity\SketchActivity.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\AsyncTask.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\DiskLruCache.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\ImageCache.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\ImageResizer.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\ImageWorker.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\bitmapfun\Utils.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\GalleryDetailActivity.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\GalleryDetailFragment.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\GalleryGridFragment.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\ImageFetcher.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\RecyclingBitmapDrawable.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\gallery\RecyclingImageView.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\sketch\
+* ahaHaH\src\main\java\com\adaptivehandyapps\sketch\ShapeManager.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\sketch\ShapeObject.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\sketch\SketchSetting.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\sketch\TouchView.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\util\
+* ahaHaH\src\main\java\com\adaptivehandyapps\util\AhaSettings.java
+* ahaHaH\src\main\java\com\adaptivehandyapps\util\ImageAlbumStorage.java
+* ahaHaH\src\main\res\
+* ahaHaH\src\main\res\drawable-hdpi\
+* ahaHaH\src\main\res\drawable-hdpi\ic_aha.png
+* ahaHaH\src\main\res\drawable-hdpi\ic_launcher.png
+* ahaHaH\src\main\res\drawable-mdpi\
+* ahaHaH\src\main\res\drawable-mdpi\ic_aha.png
+* ahaHaH\src\main\res\drawable-mdpi\ic_launcher.png
+* ahaHaH\src\main\res\drawable-xhdpi\
+* ahaHaH\src\main\res\drawable-xhdpi\ic_aha.png
+* ahaHaH\src\main\res\drawable-xhdpi\ic_launcher.png
+* ahaHaH\src\main\res\drawable-xxhdpi\
+* ahaHaH\src\main\res\drawable-xxhdpi\ic_aha.png
+* ahaHaH\src\main\res\drawable-xxhdpi\ic_launcher.png
+* ahaHaH\src\main\res\drawable\
+* ahaHaH\src\main\res\drawable\empty_photo.png
+* ahaHaH\src\main\res\drawable\photogrid_list_selector.xml
+* ahaHaH\src\main\res\drawable\sharkstooth1280x720.png
+* ahaHaH\src\main\res\drawable\sharkstooth128x72.png
+* ahaHaH\src\main\res\layout\
+* ahaHaH\src\main\res\layout\activity_ahahah.xml
+* ahaHaH\src\main\res\layout\activity_camera.xml
+* ahaHaH\src\main\res\layout\activity_sketch.xml
+* ahaHaH\src\main\res\layout\gallery_detail_fragment.xml
+* ahaHaH\src\main\res\layout\gallery_detail_pager.xml
+* ahaHaH\src\main\res\layout\gallery_grid_fragment.xml
+* ahaHaH\src\main\res\menu\
+* ahaHaH\src\main\res\menu\ahahah_menu.xml
+* ahaHaH\src\main\res\menu\gallery_menu.xml
+* ahaHaH\src\main\res\menu\projects_menu.xml
+* ahaHaH\src\main\res\menu\sketch_color_menu.xml
+* ahaHaH\src\main\res\menu\sketch_erase_menu.xml
+* ahaHaH\src\main\res\menu\sketch_file_menu.xml
+* ahaHaH\src\main\res\menu\sketch_menu.xml
+* ahaHaH\src\main\res\menu\sketch_shape_menu.xml
+* ahaHaH\src\main\res\menu\sketch_style_menu.xml
+* ahaHaH\src\main\res\menu\sketch_tool_menu.xml
+* ahaHaH\src\main\res\values-sw600dp\
+* ahaHaH\src\main\res\values-sw600dp\styles.xml
+* ahaHaH\src\main\res\values-v11\
+* ahaHaH\src\main\res\values-v11\styles.xml
+* ahaHaH\src\main\res\values-v14\
+* ahaHaH\src\main\res\values-v14\styles.xml
+* ahaHaH\src\main\res\values\
+* ahaHaH\src\main\res\values\colors.xml
+* ahaHaH\src\main\res\values\dimens.xml
+* ahaHaH\src\main\res\values\strings.xml
+* ahaHaH\src\main\res\values\styles.xml
+* build.gradle
+* colorPickerView\
+* colorPickerView\build.gradle
+* colorPickerView\src\
+* colorPickerView\src\main\
+* colorPickerView\src\main\AndroidManifest.xml
+* colorPickerView\src\main\java\
+* colorPickerView\src\main\java\afzkl\
+* colorPickerView\src\main\java\afzkl\development\
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\dialog\
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\dialog\ColorPickerDialog.java
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\drawable\
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\drawable\AlphaPatternDrawable.java
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\preference\
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\preference\ColorPickerPreference.java
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\view\
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\view\ColorPanelView.java
+* colorPickerView\src\main\java\afzkl\development\colorpickerview\view\ColorPickerView.java
+* colorPickerView\src\main\res\
+* colorPickerView\src\main\res\drawable-hdpi\
+* colorPickerView\src\main\res\drawable-hdpi\icon.png
+* colorPickerView\src\main\res\drawable-mdpi\
+* colorPickerView\src\main\res\drawable-mdpi\icon.png
+* colorPickerView\src\main\res\layout-land\
+* colorPickerView\src\main\res\layout-land\dialog_color_picker.xml
+* colorPickerView\src\main\res\layout-large-land\
+* colorPickerView\src\main\res\layout-large-land\dialog_color_picker.xml
+* colorPickerView\src\main\res\layout\
+* colorPickerView\src\main\res\layout\dialog_color_picker.xml
+* colorPickerView\src\main\res\layout\preference_preview_layout.xml
+* colorPickerView\src\main\res\values-large-v11\
+* colorPickerView\src\main\res\values-large-v11\styles.xml
+* colorPickerView\src\main\res\values-v11\
+* colorPickerView\src\main\res\values-v11\styles.xml
+* colorPickerView\src\main\res\values\
+* colorPickerView\src\main\res\values\attrs.xml
+* colorPickerView\src\main\res\values\ids.xml
+* colorPickerView\src\main\res\values\strings.xml
+* colorPickerView\src\main\res\values\styles.xml
+* gradle\
+* gradle\wrapper\
+* gradle\wrapper\gradle-wrapper.jar
+* gradle\wrapper\gradle-wrapper.properties
+* gradlew
+* gradlew.bat
+* proguard-project.txt
+* settings.gradle
+From ColorPickerView:
+* .gradle\
+* .gradle\2.2.1\
+* .gradle\2.2.1\taskArtifacts\
+* .gradle\2.2.1\taskArtifacts\cache.properties
+* .gradle\2.2.1\taskArtifacts\cache.properties.lock
+* .gradle\2.2.1\taskArtifacts\fileHashes.bin
+* .gradle\2.2.1\taskArtifacts\fileSnapshots.bin
+* .gradle\2.2.1\taskArtifacts\outputFileStates.bin
+* .gradle\2.2.1\taskArtifacts\taskArtifacts.bin
+* .idea\
+* .idea\.name
+* .idea\compiler.xml
+* .idea\copyright\
+* .idea\copyright\profiles_settings.xml
+* .idea\encodings.xml
+* .idea\gradle.xml
+* .idea\misc.xml
+* .idea\modules.xml
+* .idea\scopes\
+* .idea\scopes\scope_settings.xml
+* .idea\vcs.xml
+* .idea\workspace.xml
+* ColorPickerView.iml
+* README
+* app\
+* app\app.iml
+* app\build.gradle
+* app\build\
+* app\build\generated\
+* app\build\generated\source\
+* app\build\generated\source\buildConfig\
+* app\build\generated\source\buildConfig\debug\
+* app\build\generated\source\buildConfig\debug\afzkl\
+* app\build\generated\source\buildConfig\debug\afzkl\development\
+* app\build\generated\source\buildConfig\debug\afzkl\development\colorpickerview\
+* app\build\generated\source\buildConfig\debug\afzkl\development\colorpickerview\BuildConfig.java
+* app\build\generated\source\buildConfig\test\
+* app\build\generated\source\buildConfig\test\debug\
+* app\build\generated\source\buildConfig\test\debug\afzkl\
+* app\build\generated\source\buildConfig\test\debug\afzkl\development\
+* app\build\generated\source\buildConfig\test\debug\afzkl\development\colorpickerview\
+* app\build\generated\source\buildConfig\test\debug\afzkl\development\colorpickerview\test\
+* app\build\generated\source\buildConfig\test\debug\afzkl\development\colorpickerview\test\BuildConfig.java
+* app\build\generated\source\r\
+* app\build\generated\source\r\debug\
+* app\build\generated\source\r\debug\afzkl\
+* app\build\generated\source\r\debug\afzkl\development\
+* app\build\generated\source\r\debug\afzkl\development\colorpickerview\
+* app\build\generated\source\r\debug\afzkl\development\colorpickerview\R.java
+* app\build\generated\source\r\test\
+* app\build\generated\source\r\test\debug\
+* app\build\generated\source\r\test\debug\afzkl\
+* app\build\generated\source\r\test\debug\afzkl\development\
+* app\build\generated\source\r\test\debug\afzkl\development\colorpickerview\
+* app\build\generated\source\r\test\debug\afzkl\development\colorpickerview\R.java
+* app\build\generated\source\r\test\debug\afzkl\development\colorpickerview\test\
+* app\build\generated\source\r\test\debug\afzkl\development\colorpickerview\test\R.java
+* app\build\intermediates\
+* app\build\intermediates\bundles\
+* app\build\intermediates\bundles\debug\
+* app\build\intermediates\bundles\debug\AndroidManifest.xml
+* app\build\intermediates\bundles\debug\R.txt
+* app\build\intermediates\bundles\debug\classes.jar
+* app\build\intermediates\bundles\debug\res\
+* app\build\intermediates\bundles\debug\res\drawable-hdpi-v4\
+* app\build\intermediates\bundles\debug\res\drawable-hdpi-v4\icon.png
+* app\build\intermediates\bundles\debug\res\drawable-mdpi-v4\
+* app\build\intermediates\bundles\debug\res\drawable-mdpi-v4\icon.png
+* app\build\intermediates\bundles\debug\res\layout-land\
+* app\build\intermediates\bundles\debug\res\layout-land\dialog_color_picker.xml
+* app\build\intermediates\bundles\debug\res\layout-large-land-v4\
+* app\build\intermediates\bundles\debug\res\layout-large-land-v4\dialog_color_picker.xml
+* app\build\intermediates\bundles\debug\res\layout\
+* app\build\intermediates\bundles\debug\res\layout\dialog_color_picker.xml
+* app\build\intermediates\bundles\debug\res\layout\preference_preview_layout.xml
+* app\build\intermediates\bundles\debug\res\values-large-v11\
+* app\build\intermediates\bundles\debug\res\values-large-v11\values.xml
+* app\build\intermediates\bundles\debug\res\values-v11\
+* app\build\intermediates\bundles\debug\res\values-v11\values.xml
+* app\build\intermediates\bundles\debug\res\values\
+* app\build\intermediates\bundles\debug\res\values\values.xml
+* app\build\intermediates\classes\
+* app\build\intermediates\classes\debug\
+* app\build\intermediates\classes\debug\afzkl\
+* app\build\intermediates\classes\debug\afzkl\development\
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\BuildConfig.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$attr.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$drawable.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$id.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$layout.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$string.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$style.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R$styleable.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\R.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\dialog\
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\dialog\ColorPickerDialog.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\drawable\
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\drawable\AlphaPatternDrawable.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\preference\
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\preference\ColorPickerPreference$SavedState$1.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\preference\ColorPickerPreference$SavedState.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\preference\ColorPickerPreference.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\view\
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\view\ColorPanelView.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\view\ColorPickerView$1.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\view\ColorPickerView$BitmapCache.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\view\ColorPickerView$OnColorChangedListener.class
+* app\build\intermediates\classes\debug\afzkl\development\colorpickerview\view\ColorPickerView.class
+* app\build\intermediates\incremental\
+* app\build\intermediates\incremental\aidl\
+* app\build\intermediates\incremental\aidl\debug\
+* app\build\intermediates\incremental\aidl\debug\dependency.store
+* app\build\intermediates\incremental\aidl\test\
+* app\build\intermediates\incremental\aidl\test\debug\
+* app\build\intermediates\incremental\aidl\test\debug\dependency.store
+* app\build\intermediates\incremental\mergeAssets\
+* app\build\intermediates\incremental\mergeAssets\debug\
+* app\build\intermediates\incremental\mergeAssets\debug\merger.xml
+* app\build\intermediates\incremental\mergeAssets\test\
+* app\build\intermediates\incremental\mergeAssets\test\debug\
+* app\build\intermediates\incremental\mergeAssets\test\debug\merger.xml
+* app\build\intermediates\incremental\mergeResources\
+* app\build\intermediates\incremental\mergeResources\test\
+* app\build\intermediates\incremental\mergeResources\test\debug\
+* app\build\intermediates\incremental\mergeResources\test\debug\merger.xml
+* app\build\intermediates\incremental\packageResources\
+* app\build\intermediates\incremental\packageResources\debug\
+* app\build\intermediates\incremental\packageResources\debug\merger.xml
+* app\build\intermediates\manifests\
+* app\build\intermediates\manifests\test\
+* app\build\intermediates\manifests\test\debug\
+* app\build\intermediates\manifests\test\debug\AndroidManifest.xml
+* app\build\intermediates\manifests\tmp\
+* app\build\intermediates\manifests\tmp\manifestMerger7252742263809068291.xml
+* app\build\intermediates\res\
+* app\build\intermediates\res\resources-debug-test.ap_
+* app\build\intermediates\res\test\
+* app\build\intermediates\res\test\debug\
+* app\build\intermediates\res\test\debug\drawable-hdpi-v4\
+* app\build\intermediates\res\test\debug\drawable-hdpi-v4\icon.png
+* app\build\intermediates\res\test\debug\drawable-mdpi-v4\
+* app\build\intermediates\res\test\debug\drawable-mdpi-v4\icon.png
+* app\build\intermediates\res\test\debug\layout-land\
+* app\build\intermediates\res\test\debug\layout-land\dialog_color_picker.xml
+* app\build\intermediates\res\test\debug\layout-large-land-v4\
+* app\build\intermediates\res\test\debug\layout-large-land-v4\dialog_color_picker.xml
+* app\build\intermediates\res\test\debug\layout\
+* app\build\intermediates\res\test\debug\layout\dialog_color_picker.xml
+* app\build\intermediates\res\test\debug\layout\preference_preview_layout.xml
+* app\build\intermediates\res\test\debug\values-large-v11\
+* app\build\intermediates\res\test\debug\values-large-v11\values.xml
+* app\build\intermediates\res\test\debug\values-v11\
+* app\build\intermediates\res\test\debug\values-v11\values.xml
+* app\build\intermediates\res\test\debug\values\
+* app\build\intermediates\res\test\debug\values\values.xml
+* app\build\intermediates\symbols\
+* app\build\intermediates\symbols\test\
+* app\build\intermediates\symbols\test\debug\
+* app\build\intermediates\symbols\test\debug\R.txt
+* app\build\outputs\
+* app\build\outputs\aar\
+* app\build\outputs\aar\app-debug.aar
+* app\build\tmp\
+* app\build\tmp\packageDebugJar\
+* app\build\tmp\packageDebugJar\MANIFEST.MF
+* app\src\
+* app\src\main\
+* app\src\main\AndroidManifest.xml
+* app\src\main\java\
+* app\src\main\java\afzkl\
+* app\src\main\java\afzkl\development\
+* app\src\main\java\afzkl\development\colorpickerview\
+* app\src\main\java\afzkl\development\colorpickerview\dialog\
+* app\src\main\java\afzkl\development\colorpickerview\dialog\ColorPickerDialog.java
+* app\src\main\java\afzkl\development\colorpickerview\drawable\
+* app\src\main\java\afzkl\development\colorpickerview\drawable\AlphaPatternDrawable.java
+* app\src\main\java\afzkl\development\colorpickerview\preference\
+* app\src\main\java\afzkl\development\colorpickerview\preference\ColorPickerPreference.java
+* app\src\main\java\afzkl\development\colorpickerview\view\
+* app\src\main\java\afzkl\development\colorpickerview\view\ColorPanelView.java
+* app\src\main\java\afzkl\development\colorpickerview\view\ColorPickerView.java
+* app\src\main\res\
+* app\src\main\res\drawable-hdpi\
+* app\src\main\res\drawable-hdpi\icon.png
+* app\src\main\res\drawable-mdpi\
+* app\src\main\res\drawable-mdpi\icon.png
+* app\src\main\res\layout-land\
+* app\src\main\res\layout-land\dialog_color_picker.xml
+* app\src\main\res\layout-large-land\
+* app\src\main\res\layout-large-land\dialog_color_picker.xml
+* app\src\main\res\layout\
+* app\src\main\res\layout\dialog_color_picker.xml
+* app\src\main\res\layout\preference_preview_layout.xml
+* app\src\main\res\values-large-v11\
+* app\src\main\res\values-large-v11\styles.xml
+* app\src\main\res\values-v11\
+* app\src\main\res\values-v11\styles.xml
+* app\src\main\res\values\
+* app\src\main\res\values\attrs.xml
+* app\src\main\res\values\ids.xml
+* app\src\main\res\values\strings.xml
+* app\src\main\res\values\styles.xml
+* build.gradle
+* gradle\
+* gradle\wrapper\
+* gradle\wrapper\gradle-wrapper.jar
+* gradle\wrapper\gradle-wrapper.properties
+* gradlew
+* gradlew.bat
+* import-summary.txt
+* settings.gradle
+
+Replaced Jars with Dependencies:
+--------------------------------
+The importer recognized the following .jar files as third party
+libraries and replaced them with Gradle dependencies instead. This has
+the advantage that more explicit version information is known, and the
+libraries can be updated automatically. However, it is possible that
+the .jar file in your project was of an older version than the
+dependency we picked, which could render the project not compileable.
+You can disable the jar replacement in the import wizard and try again:
+
+android-support-v4.jar => com.android.support:support-v4:20.0.0
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+In ColorPickerView:
+* AndroidManifest.xml => colorPickerView\src\main\AndroidManifest.xml
+* res\ => colorPickerView\src\main\res\
+* src\ => colorPickerView\src\main\java\
+In AhaHaH:
+* AndroidManifest.xml => ahaHaH\src\main\AndroidManifest.xml
+* res\ => ahaHaH\src\main\res\
+* src\ => ahaHaH\src\main\java\
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

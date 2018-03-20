@@ -1,22 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.adaptivehandyapps.ahahah"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="3"
+    android:versionName="3.0">
     
     <uses-feature android:name="android.hardware.camera" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <!--  
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     -->
     
     <uses-sdk
-        android:minSdkVersion="15"
+        android:minSdkVersion="16"
         android:targetSdkVersion="21" />
+
+    <supports-screens
+        android:smallScreens="false"
+        android:normalScreens="false"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        />
+    <compatible-screens>
+        <!-- list the screens you support here -->
+        <screen android:screenSize="large" android:screenDensity="480" />
+        <screen android:screenSize="xlarge" android:screenDensity="480" />
+        <screen android:screenSize="large" android:screenDensity="ldpi" />
+        <screen android:screenSize="large" android:screenDensity="mdpi" />
+        <screen android:screenSize="large" android:screenDensity="hdpi" />
+        <screen android:screenSize="large" android:screenDensity="xhdpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="ldpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="mdpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="hdpi" />
+        <screen android:screenSize="xlarge" android:screenDensity="xhdpi" />
+        <!-- Special case for Nexus 7 -->
+        <screen android:screenSize="large" android:screenDensity="213" />
+    </compatible-screens>
+
+    <!--
+    <supports-screens
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
+    -->
 	<!-- android:configChanges="orientation|screenSize" -->
-    <application
+    <application tools:replace="android:icon,android:label"
         android:allowBackup="true"
         android:icon="@drawable/ic_aha"
         android:label="@string/app_name_text"
@@ -71,16 +100,6 @@
                 android:value="com.adaptivehandyapps.activity.AhaHahActivity" />
         </activity>
 
-        <activity
-            android:name="com.adaptivehandyapps.activity.ShareActivity"
-            android:screenOrientation="landscape"
-            android:label="@string/title_activity_share" 
-            android:parentActivityName="com.adaptivehandyapps.activity.TucAX2Activity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adaptivehandyapps.activity.AhaHahActivity" />
-        </activity>
-        
     </application>
 
 </manifest>

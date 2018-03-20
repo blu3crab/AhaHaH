@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://repository-achartengine.forge.cloudbees.com/snapshot/"
+    }
+}
+
+android {
+
+    signingConfigs {
+        release
+    }
+
+    compileSdkVersion 24
+    buildToolsVersion "26.0.2"
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
+    flavorDimensions "free"
+
+    productFlavors {
+        free {
+            dimension "free"
+            minSdkVersion 21
+            applicationId 'com.adaptivehandyapps.ahahah'
+            proguardFile 'C:/Tuc/AhaDev/AhaHAH/app/proguard-project.txt'
+            signingConfig signingConfigs.release
+            targetSdkVersion 24
+            versionCode 3
+            versionName '3.0'
+        }
+    }
+
+    if (project.hasProperty("AndroidProject.signing")
+            && new File(project.property("AndroidProject.signing").toString()).exists()) {
+        def Properties props = new Properties()
+        def propFile = new File(project.property("AndroidProject.signing").toString())
+        if(propFile.canRead()) {
+            props.load(new FileInputStream(propFile))
+            if (props!=null && props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD') &&
+                    props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
+                println 'androidproject.properties file found...extracting properties'
+                android.signingConfigs.release.storeFile = file(props['STORE_FILE'])
+                android.signingConfigs.release.storePassword = props['STORE_PASSWORD']
+                android.signingConfigs.release.keyAlias = props['KEY_ALIAS']
+                android.signingConfigs.release.keyPassword = props['KEY_PASSWORD']
+            } else {
+                println 'androidproject.properties found but some entries are missing'
+                android.buildTypes.release.signingConfig = null
+            }
+        } else {
+            println 'androidproject.properties file not found'
+            android.buildTypes.release.signingConfig = null
+        }
+    }
+}
+
+dependencies {
+    compile project(':colorPickerView')
+    compile 'com.android.support:appcompat-v7:24.2.1'
+}
