@@ -6,8 +6,10 @@ package com.adaptivehandyapps.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -385,43 +387,108 @@ public class SketchActivity extends Activity {
 	//////////////////////////////////////////////////////////////////////////
     private void startGalleryActivity (int reqCode) {
     	// create intent & start activity 
-    	Intent intent = new Intent(this, GalleryActivity.class);
-    	intent.putExtra(GalleryActivity.EXTRA_REQUEST_CODE, reqCode);
-    	startActivityForResult(intent, reqCode);
-    }
-    protected void onActivityResult(int reqCode, int resultCode, Intent intent) {
-    	if (resultCode == RESULT_OK) {
-    		Log.v(TAG, "result OK: " + " for reqCode: " + reqCode);
-    		int position = intent.getIntExtra(GalleryActivity.EXTRA_SELECT_ID, -1);
-    		Log.v(TAG, "position: " + position);
-    		// image selected
-    		if (position != -1) {
-    			// get image path
-    			String imagePath = mImageAlbumStorage.getImageFitPath(position);
-        		Log.v(TAG, "image path: " + imagePath);
-        		if (reqCode == GalleryActivity.REQUEST_CODE_SELECT_BACKDROP) {
-        			// set image as backdrop (0th indicates insert BACKDROP)
-        			mShapeManager.setImageShape(imagePath, 0);
-        		}
-        		else if (reqCode == GalleryActivity.REQUEST_CODE_SELECT_OVERLAY) {
-        			// if rect selected, set image to selected rect shape
-        			int focus = mShapeManager.getShapeListFocus();
-               		Log.v(TAG, "focus shape inx: " + focus);
-        			if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
-            			// set image as OVERLAY (focus)
-            			mShapeManager.setImageShape(imagePath, focus);       				
-        			}
-        			else {
-        	       		Log.e(TAG, "OVERLAY failure - focus (" + focus + ") is not RECT. ");       				
-        			}
-        		}
-        		mTouchView.invalidate();
-    		}
-    	}
-    	else {
-    		Log.v(TAG, "FAILURE w/ result code: " + resultCode);
-    	}    		
-    }
+		Intent galleryIntent = new Intent(
+				Intent.ACTION_PICK,
+				android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		startActivityForResult(galleryIntent , reqCode );
+	}
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (resultCode == RESULT_OK) {
+			Log.v(TAG, "onActivityResult result OK: " + " for reqCode: " + requestCode);
+			if (null != data) {
+				Uri imageUri = data.getData();
+				// get image path
+				String imagePath = getRealPathFromURI(this, imageUri);
+				Log.v(TAG, "onActivityResult image path: " + imagePath);
+				switch (requestCode) {
+					case GalleryActivity.REQUEST_CODE_SELECT_BACKDROP:
+						// set image as backdrop (0th indicates insert BACKDROP)
+                        Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
+						mShapeManager.setImageShape(imagePath, 0);
+						mTouchView.invalidate();
+						break;
+					case GalleryActivity.REQUEST_CODE_SELECT_OVERLAY:
+						// if rect selected, set image to selected rect shape
+						int focus = mShapeManager.getShapeListFocus();
+						Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY focus shape inx: " + focus);
+						if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
+							// set image as OVERLAY (focus)
+							mShapeManager.setImageShape(imagePath, focus);
+						}
+						else {
+							Log.e(TAG, "onActivityResult OVERLAY failure - focus (" + focus + ") is not RECT. ");
+						}
+						mTouchView.invalidate();
+						break;
+					default:
+						Log.e(TAG, "GalleryActivity unknown request code: " + requestCode);
+						break;
+				}
+			}
+			else {
+				Log.e(TAG, "GalleryActivity NULL data...");
+			}
+		}
+		else {
+			Log.e(TAG, "GalleryActivity FAILURE w/ result code: " + resultCode);
+		}
+	}
+	public String getRealPathFromURI(Context context, Uri contentUri) {
+		Cursor cursor = null;
+		try {
+			String[] proj = { MediaStore.Images.Media.DATA };
+			cursor = context.getContentResolver().query(contentUri,  proj, null, null, null);
+			int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+			cursor.moveToFirst();
+			return cursor.getString(column_index);
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
+		}
+	}
+//	private void startGalleryActivity (int reqCode) {
+//		// create intent & start activity
+//    	Intent intent = new Intent(this, GalleryActivity.class);
+//    	intent.putExtra(GalleryActivity.EXTRA_REQUEST_CODE, reqCode);
+//    	startActivityForResult(intent, reqCode);
+//	}
+//	protected void onActivityResult(int reqCode, int resultCode, Intent intent) {
+//    	if (resultCode == RESULT_OK) {
+//    		Log.v(TAG, "result OK: " + " for reqCode: " + reqCode);
+//    		int position = intent.getIntExtra(GalleryActivity.EXTRA_SELECT_ID, -1);
+//    		Log.v(TAG, "position: " + position);
+//    		// image selected
+//    		if (position != -1) {
+//    			// get image path
+//    			String imagePath = mImageAlbumStorage.getImageFitPath(position);
+//        		Log.v(TAG, "image path: " + imagePath);
+//        		if (reqCode == GalleryActivity.REQUEST_CODE_SELECT_BACKDROP) {
+//        			// set image as backdrop (0th indicates insert BACKDROP)
+//        			mShapeManager.setImageShape(imagePath, 0);
+//        		}
+//        		else if (reqCode == GalleryActivity.REQUEST_CODE_SELECT_OVERLAY) {
+//        			// if rect selected, set image to selected rect shape
+//        			int focus = mShapeManager.getShapeListFocus();
+//               		Log.v(TAG, "focus shape inx: " + focus);
+//        			if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
+//            			// set image as OVERLAY (focus)
+//            			mShapeManager.setImageShape(imagePath, focus);
+//        			}
+//        			else {
+//        	       		Log.e(TAG, "OVERLAY failure - focus (" + focus + ") is not RECT. ");
+//        			}
+//        		}
+//        		mTouchView.invalidate();
+//    		}
+//    	}
+//    	else {
+//    		Log.v(TAG, "FAILURE w/ result code: " + resultCode);
+//    	}
+//    }
 ///////////////////////////////////////////////////////////////////////////
    private String saveSketch (Bitmap bitmap) {
 
@@ -438,26 +505,26 @@ public class SketchActivity extends Activity {
 			mImagePath = imagePath;
 			mImageBitmap = bitmap;
 			
-			//////////////////////////THUMB///////////////
-			// set bitmap options to scale the image decode target
-			BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-			bmOptions.inJustDecodeBounds = true;
-			BitmapFactory.decodeFile(imagePath, bmOptions);
-			int photoW = bmOptions.outWidth;
-			int photoH = bmOptions.outHeight;
-			Log.v(TAG, "saveSketch: photo W/H: " + photoW + "/" + photoH);
-			int scaleFactor = Math.min(photoW/(photoW/5), photoH/(photoH/5));
-			Log.v(TAG, "saveSketch: THUMB scale factor: " + scaleFactor);
-			
-			bmOptions.inJustDecodeBounds = false;
-			bmOptions.inSampleSize = scaleFactor;
-			bmOptions.inPurgeable = true;
-
-			// decode the JPEG into the bitmap
-			bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
-
-			// write scaled THUMB bitmap to THUMB directory 
-			imagePath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, imageName);
+//			//////////////////////////THUMB///////////////
+//			// set bitmap options to scale the image decode target
+//			BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+//			bmOptions.inJustDecodeBounds = true;
+//			BitmapFactory.decodeFile(imagePath, bmOptions);
+//			int photoW = bmOptions.outWidth;
+//			int photoH = bmOptions.outHeight;
+//			Log.v(TAG, "saveSketch: photo W/H: " + photoW + "/" + photoH);
+//			int scaleFactor = Math.min(photoW/(photoW/5), photoH/(photoH/5));
+//			Log.v(TAG, "saveSketch: THUMB scale factor: " + scaleFactor);
+//
+//			bmOptions.inJustDecodeBounds = false;
+//			bmOptions.inSampleSize = scaleFactor;
+//			bmOptions.inPurgeable = true;
+//
+//			// decode the JPEG into the bitmap
+//			bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+//
+//			// write scaled THUMB bitmap to THUMB directory
+//			imagePath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, imageName);
 
 			// indicate album has been updated 
 			mImageAlbumStorage.refreshImageLists(true);

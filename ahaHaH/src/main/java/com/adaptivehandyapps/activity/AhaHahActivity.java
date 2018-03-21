@@ -7,19 +7,24 @@ package com.adaptivehandyapps.activity;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -33,6 +38,10 @@ import com.adaptivehandyapps.util.ImageAlbumStorage;
 public class AhaHahActivity extends Activity {
 
 	private final String TAG = "AhaHahActivity";
+
+	// permissions
+	public final static int PERMISSIONS_REQUEST = 125;
+
 	public static AhaHahActivity mParentActivity;
 	
 	private AhaSettings mAhaSettings = null;
@@ -90,9 +99,15 @@ public class AhaHahActivity extends Activity {
     
     public void startGalleryActivity (View view) {
     	// create intent & start activity 
-    	Intent intent = new Intent(this, GalleryActivity.class);
-    	startActivity(intent);
-		Toast.makeText(this, "Viewing gallery " + mImageAlbumStorage.getImageAlbumName(), Toast.LENGTH_LONG).show();
+//    	Intent intent = new Intent(this, GalleryActivity.class);
+//    	startActivity(intent);
+//		Toast.makeText(this, "Viewing gallery " + mImageAlbumStorage.getImageAlbumName(), Toast.LENGTH_LONG).show();
+        Intent intent = new Intent();
+        intent.setAction(android.content.Intent.ACTION_VIEW);
+        intent.setType("image/*");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+		Toast.makeText(this, "Viewing gallery - touch back when finished.", Toast.LENGTH_LONG).show();
     }
     public void startSketchActivity (View view) {
     	// create intent & start activity 
@@ -136,21 +151,54 @@ public class AhaHahActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate...");
 
+		if (requestForPermission(this)) {
+			Log.d(TAG, "onCreate permissions granted...");
+			init();
+		}
+
+//		// seed screen resolution
+//		getScreenResolution(this);
+//
+//		setContentView(R.layout.activity_ahahah);
+//
+//		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
+//		v.layout(0, 0, mWidth, mHeight);
+//
+//		mParentActivity = this;
+//
+//		// restore project folder setting or set default
+//		mAhaSettings = new AhaSettings();
+//		mAhaSettings.restoreSettings();
+//
+//		if (mAhaSettings.getAlbumName().equals(mAhaSettings.NADA)) {
+//			// instantiate image album storage class with default project folder
+//			setProjectFolder(getString(R.string.default_project_name));
+//			Log.v(TAG, "onCreate default project folder: " + getProjectFolder());
+//		}
+//		else {
+//			// instantiate image album storage class with default project folder
+//			setProjectFolder(mAhaSettings.getAlbumName());
+//			Log.v(TAG, "onCreate restore project folder: " + getProjectFolder());
+//		}
+	}
+
+	private Boolean init() {
 		// seed screen resolution
 		getScreenResolution(this);
 
 		setContentView(R.layout.activity_ahahah);
-		
+
 		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
 		v.layout(0, 0, mWidth, mHeight);
-		
+
 		mParentActivity = this;
-		
+
 		// restore project folder setting or set default
 		mAhaSettings = new AhaSettings();
 		mAhaSettings.restoreSettings();
-		
+
 		if (mAhaSettings.getAlbumName().equals(mAhaSettings.NADA)) {
 			// instantiate image album storage class with default project folder
 			setProjectFolder(getString(R.string.default_project_name));
@@ -159,8 +207,9 @@ public class AhaHahActivity extends Activity {
 		else {
 			// instantiate image album storage class with default project folder
 			setProjectFolder(mAhaSettings.getAlbumName());
-			Log.v(TAG, "onCreate restore project folder: " + getProjectFolder());		
+			Log.v(TAG, "onCreate restore project folder: " + getProjectFolder());
 		}
+    	return true;
 	}
 
 	@Override
@@ -185,23 +234,23 @@ public class AhaHahActivity extends Activity {
 		case R.id.action_projects:
 			// find view & kickoff popup menu 
 			View view = findViewById(R.id.action_projects);
-			viewClickListener.onClick(view);
+			if (view != null) viewClickListener.onClick(view);
 			Toast.makeText(this, R.string.projects_hint, Toast.LENGTH_SHORT).show();
 			return true;
-		case R.id.action_settings:
-			Toast.makeText(this, R.string.start_activity_toast, Toast.LENGTH_SHORT).show();
-			return true;
+//		case R.id.action_settings:
+//			Toast.makeText(this, R.string.start_activity_toast, Toast.LENGTH_SHORT).show();
+//			return true;
 
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
-	OnClickListener viewClickListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			showPopupMenu(v);
-		}
-	};
+    private View.OnClickListener viewClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            showPopupMenu(v);
+        }
+    };
 
 	private void showPopupMenu(View v) {
 		final String NEW_PROJECT = "<new>";
@@ -311,7 +360,7 @@ public class AhaHahActivity extends Activity {
     protected void onPause() {
     	// perform light weight cleanup, release resources, save draft data
 		// save project folder setting
-    	mAhaSettings.saveSettings();
+    	if (mAhaSettings != null) mAhaSettings.saveSettings();
         super.onPause();
 		// say hello
 		Log.v(TAG, "onPause");     	
@@ -327,4 +376,78 @@ public class AhaHahActivity extends Activity {
 		// say hello
 		Log.v(TAG, "onDestroy");     	
     }
+
+	///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
+	// request write permission (read permission implicit)
+	//		requestForPermission();
+	public static boolean requestForPermission(Context context) {
+
+		boolean isPermissionGranted = true;
+		final int version = Build.VERSION.SDK_INT;
+		if (version >= 23) {
+			List<String> permList = new ArrayList<>();
+			if (!hasWritePermission(context)) {
+				permList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//				permList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+			}
+			if (!hasCameraPermission(context)) {
+				permList.add(Manifest.permission.CAMERA);
+			}
+			if (!hasInternetPermission(context)) {
+				permList.add(Manifest.permission.INTERNET);
+			}
+			if (permList.size() > 0) {
+				isPermissionGranted = false;
+				Log.d("onRequestPermissions", permList.toString());
+				ActivityCompat.requestPermissions((Activity)context, permList.toArray(new String[permList.size()]), PERMISSIONS_REQUEST);
+			}
+		}
+		return isPermissionGranted;
+	}
+
+	public static boolean hasWritePermission(Context context) {
+		return (hasPermission(context, android.Manifest.permission.WRITE_EXTERNAL_STORAGE));
+	}
+
+	public static boolean hasCameraPermission(Context context) {
+		return (hasPermission(context, android.Manifest.permission.CAMERA));
+	}
+
+	public static boolean hasInternetPermission(Context context) {
+		return (hasPermission(context, android.Manifest.permission.INTERNET));
+	}
+	private static boolean hasPermission(Context context, String perm) {
+		return (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(context, perm));
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,  @NonNull int[] grantResults) {
+        Log.d(TAG, "onRequestPermissionsResult code = " + requestCode + " for " + permissions.length + " permissions.");
+//        for (int i = 0; i < permissions.length; i++) {
+//            Log.d(TAG, "onRequestPermissionsResult permissions " + permissions[i] + " grant result " + grantResults[i]);
+//        }
+
+		if (requestCode == PERMISSIONS_REQUEST) {
+            boolean permissionGranted = true;
+//            if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) permissionGranted = false;
+            for (int i = 0; i < grantResults.length; i++) {
+                Log.d(TAG, "onRequestPermissionsResult permissions " + permissions[i] + " grant result " + grantResults[i]);
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) permissionGranted = false;
+            }
+
+            if (permissionGranted) {
+//                if (requestForPermission(this)) {
+                    Log.d(TAG, "onRequestPermissionsResult granted - init view.");
+                    init();
+//                }
+			}
+			else {
+				// denied
+				Log.e(TAG, "onRequestPermissionsResult permissions not granted - finish.");
+				finishAndRemoveTask();
+			}
+		}
+	}
+	///////////////////////////////////////////////////////////////////////////////
 }

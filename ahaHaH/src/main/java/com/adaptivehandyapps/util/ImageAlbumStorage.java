@@ -39,7 +39,7 @@ public final class ImageAlbumStorage {
 	// standard storage location
 	private static final String CAMERA_DIR = "/dcim/";
 	// image prefix & suffix
-	private static final String JPEG_FILE_PREFIX = "IMG_";
+	private static final String JPEG_FILE_PREFIX = "AHA_";
 	private static final String JPEG_FILE_SUFFIX = ".jpg";
 		
     private String mAlbumName;

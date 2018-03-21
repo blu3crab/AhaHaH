@@ -27,13 +27,16 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.adaptivehandyapps.ahahah.BuildConfig;
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 
@@ -114,28 +117,51 @@ public class CameraActivity extends Activity {
 	private void dispatchTakePhotoIntent () {
 		mIntentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		
-		File f = null;
+		File photo = null;
 		
 		try {
 			// timestamp an image name & create the file
 			mImageName = ImageAlbumStorage.timestampImageName();
 			Log.v(TAG, "timestampImageName: "+ mImageName);
-			f = mImageAlbumStorage.createImageFile(ImageAlbumStorage.IMG_DIR_FULL, mImageName);
-            if (f == null) return;
-			mCurrentPhotoPath = f.getAbsolutePath();
+			photo = mImageAlbumStorage.createImageFile(ImageAlbumStorage.IMG_DIR_FULL, mImageName);
+            if (photo == null) return;
+			mCurrentPhotoPath = photo.getAbsolutePath();
 			Log.v(TAG, "createImageFile: "+ mCurrentPhotoPath);
 			// put file handle in take photo intent extras
-			mIntentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-			
+//			mIntentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
+			Uri imageUri = FileProvider.getUriForFile(this,
+					BuildConfig.APPLICATION_ID + ".provider", photo);
+			mIntentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+
+			// start camera for result of photo
+			startActivityForResult(mIntentTakePhoto, ACTION_TAKE_PHOTO);
 		} catch (IOException e) {
 			e.printStackTrace();
-			f = null;
+			photo = null;
 			mCurrentPhotoPath = null;
 		}
-		// start camera for result of photo
-		startActivityForResult(mIntentTakePhoto, ACTION_TAKE_PHOTO);
+//		// start camera for result of photo
+//		startActivityForResult(mIntentTakePhoto, ACTION_TAKE_PHOTO);
 	}
+//	private Boolean scanQRCodeWithCamera() {
+//		File root = Environment.getExternalStorageDirectory();
+//		String qrMdmQRScanPath = "/Download/QR-ST-scan.jpg";
+//		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//		File photo = new File(root, qrMdmQRScanPath);
+//		if (photo != null) {
+//			Uri imageUri = FileProvider.getUriForFile(this,
+//					BuildConfig.APPLICATION_ID + ".provider", photo);
+//			intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+//			setImageUri(imageUri);
+//			startActivityForResult(intent, REQUEST_PHOTO);
+//		}
+//		else {
+//			Log.e(TAG, "scanQRCodeWithCamera unable to access " + root + qrMdmQRScanPath);
+//		}
+//		return true;
+//	}
 	///////////////////////////////////////////////////////////////////////////////
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	// take photo result - capture resulting image
 	@Override
