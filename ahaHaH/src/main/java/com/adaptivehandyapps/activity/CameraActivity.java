@@ -143,23 +143,6 @@ public class CameraActivity extends Activity {
 //		// start camera for result of photo
 //		startActivityForResult(mIntentTakePhoto, ACTION_TAKE_PHOTO);
 	}
-//	private Boolean scanQRCodeWithCamera() {
-//		File root = Environment.getExternalStorageDirectory();
-//		String qrMdmQRScanPath = "/Download/QR-ST-scan.jpg";
-//		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//		File photo = new File(root, qrMdmQRScanPath);
-//		if (photo != null) {
-//			Uri imageUri = FileProvider.getUriForFile(this,
-//					BuildConfig.APPLICATION_ID + ".provider", photo);
-//			intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-//			setImageUri(imageUri);
-//			startActivityForResult(intent, REQUEST_PHOTO);
-//		}
-//		else {
-//			Log.e(TAG, "scanQRCodeWithCamera unable to access " + root + qrMdmQRScanPath);
-//		}
-//		return true;
-//	}
 	///////////////////////////////////////////////////////////////////////////////
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -169,8 +152,8 @@ public class CameraActivity extends Activity {
 		if (resultCode == RESULT_OK ) {
 			// unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
 			addPhotoToAlbum();
-			// indicate album has been updated 
-			mImageAlbumStorage.refreshImageLists(true);
+//			// indicate album has been updated
+//			mImageAlbumStorage.refreshImageLists(true);
 		} else {
 			Log.v(TAG, "onActivityResult: intent " + intent + ", result code " + resultCode);
 		}
@@ -220,27 +203,27 @@ public class CameraActivity extends Activity {
 		mPhotoView.setImageBitmap(bitmap);
 		mPhotoView.setVisibility(View.VISIBLE);
 		
-		// write scaled FIT bitmap to FIT directory 
-		mCurrentPhotoPath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_FIT, mImageName);
+//		// write scaled FIT bitmap to FIT directory
+//		mCurrentPhotoPath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_FIT, mImageName);
 
-		//////////////////////////THUMB///////////////
-		// set bitmap options to scale the image decode target
-		scaleFactor = Math.min(photoW/(photoW/10), photoH/(photoH/10));
-		Log.v(TAG, "setupView: THUMB scale factor: " + scaleFactor);
-		
-		bmOptions.inJustDecodeBounds = false;
-		bmOptions.inSampleSize = scaleFactor;
-		bmOptions.inPurgeable = true;
-
-		// decode the JPEG into the bitmap
-		bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-		
-		// associate bitmap with view
-		mThumbView.setImageBitmap(bitmap);
-		mThumbView.setVisibility(View.VISIBLE);
-		
-		// write scaled THUMB bitmap to THUMB directory 
-		mCurrentPhotoPath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, mImageName);
+//		//////////////////////////THUMB///////////////
+//		// set bitmap options to scale the image decode target
+//		scaleFactor = Math.min(photoW/(photoW/10), photoH/(photoH/10));
+//		Log.v(TAG, "setupView: THUMB scale factor: " + scaleFactor);
+//
+//		bmOptions.inJustDecodeBounds = false;
+//		bmOptions.inSampleSize = scaleFactor;
+//		bmOptions.inPurgeable = true;
+//
+//		// decode the JPEG into the bitmap
+//		bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+//
+//		// associate bitmap with view
+//		mThumbView.setImageBitmap(bitmap);
+//		mThumbView.setVisibility(View.VISIBLE);
+//
+//		// write scaled THUMB bitmap to THUMB directory
+//		mCurrentPhotoPath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, mImageName);
 	}
 	///////////////////////////////////////////////////////////////////////////////
 	public DisplayMetrics getDisplayMetrics() {
