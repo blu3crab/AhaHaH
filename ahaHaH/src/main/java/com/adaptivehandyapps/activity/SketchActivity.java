@@ -32,9 +32,12 @@ import com.adaptivehandyapps.util.ImageAlbumStorage;
 
 public class SketchActivity extends Activity {
 	// sketch activity
-	private static final String TAG = "SketchActivity"; 
-	
-	private Activity mParentActivity;
+	private static final String TAG = "SketchActivity";
+
+    public static final int REQUEST_CODE_SELECT_BACKDROP = 2;
+    public static final int REQUEST_CODE_SELECT_OVERLAY = 3;
+
+    private Activity mParentActivity;
 	private ImageAlbumStorage mImageAlbumStorage = null;
 
 	private static SketchActivity mSketchActivity;
@@ -297,7 +300,7 @@ public class SketchActivity extends Activity {
 						break;
 					case R.id.action_sketch_file_loadbackdrop:
 						Log.v(TAG, "onMenuItemClick load backdrop.");
-						startGalleryActivity(GalleryActivity.REQUEST_CODE_SELECT_BACKDROP);
+						startGalleryActivity(REQUEST_CODE_SELECT_BACKDROP);
 						break;
 					case R.id.action_sketch_file_loadoverlay:
 						Log.v(TAG, "onMenuItemClick load overlay image.");
@@ -305,7 +308,7 @@ public class SketchActivity extends Activity {
 	        			focus = mShapeManager.getShapeListFocus();
 	        			if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
 	            			// start gallery to select image OVERLAY (focus)
-							startGalleryActivity(GalleryActivity.REQUEST_CODE_SELECT_OVERLAY);
+							startGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
 	        			}
 	        			else {
 	      	        		Toast.makeText(mParentActivity, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
@@ -404,13 +407,13 @@ public class SketchActivity extends Activity {
 				String imagePath = getRealPathFromURI(this, imageUri);
 				Log.v(TAG, "onActivityResult image path: " + imagePath);
 				switch (requestCode) {
-					case GalleryActivity.REQUEST_CODE_SELECT_BACKDROP:
+					case REQUEST_CODE_SELECT_BACKDROP:
 						// set image as backdrop (0th indicates insert BACKDROP)
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
 						mShapeManager.setImageShape(imagePath, 0);
 						mTouchView.invalidate();
 						break;
-					case GalleryActivity.REQUEST_CODE_SELECT_OVERLAY:
+					case REQUEST_CODE_SELECT_OVERLAY:
 						// if rect selected, set image to selected rect shape
 						int focus = mShapeManager.getShapeListFocus();
 						Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY focus shape inx: " + focus);
@@ -526,8 +529,8 @@ public class SketchActivity extends Activity {
 //			// write scaled THUMB bitmap to THUMB directory
 //			imagePath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, imageName);
 
-			// indicate album has been updated 
-			mImageAlbumStorage.refreshImageLists(true);
+//			// indicate album has been updated
+//			mImageAlbumStorage.refreshImageLists(true);
 
             Log.v(TAG, "Sketch saved to " + mImageAlbumStorage.getImageAlbumName());
             Toast.makeText(mParentActivity, "Sketch saved to " + mImageAlbumStorage.getImageAlbumName(), Toast.LENGTH_LONG).show();

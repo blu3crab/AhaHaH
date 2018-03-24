@@ -73,25 +73,6 @@
         </activity>
   
         <activity
-            android:name="com.adaptivehandyapps.activity.GalleryActivity"
-            android:screenOrientation="landscape"
-            android:label="@string/title_activity_gallery" 
-			android:parentActivityName="com.adaptivehandyapps.activity.AhaHahActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adaptivehandyapps.activity.AhaHahActivity" />
-        </activity>
-        <activity
-            android:name="com.adaptivehandyapps.gallery.GalleryDetailActivity"
-            android:screenOrientation="landscape"
-            android:label="@string/title_activity_gallery_detail" 
-            android:parentActivityName="com.adaptivehandyapps.activity.GalleryActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.adaptivehandyapps.activity.GalleryActivity" />
-        </activity>
-        
-        <activity
             android:name="com.adaptivehandyapps.activity.SketchActivity"
             android:screenOrientation="landscape"
             android:label="@string/title_activity_sketch" 
