@@ -28,7 +28,9 @@ import com.adaptivehandyapps.sketch.ShapeManager;
 import com.adaptivehandyapps.sketch.SketchSetting;
 import com.adaptivehandyapps.sketch.TouchView;
 import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
+import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
+import com.adaptivehandyapps.util.PrefsUtils;
 
 public class SketchActivity extends Activity {
 	// sketch activity
@@ -38,7 +40,9 @@ public class SketchActivity extends Activity {
     public static final int REQUEST_CODE_SELECT_OVERLAY = 3;
 
     private Activity mParentActivity;
-	private ImageAlbumStorage mImageAlbumStorage = null;
+    private Context mContext;
+
+//	private ImageAlbumStorage mImageAlbumStorage = null;
 
 	private static SketchActivity mSketchActivity;
 
@@ -71,12 +75,15 @@ public class SketchActivity extends Activity {
 		Log.v(TAG,"onCreate...");
 		super.onCreate(savedInstanceState);
 		// set parent activity reference
-		mParentActivity = AhaHahActivity.mParentActivity;
+//        mParentActivity = AhaHahActivity.mParentActivity;
+        mParentActivity = AhaHahActivity.getAhaHahActivity();
+        mContext = this;
+
 		// set canvas dimensions to display dimensions until touch view canvas created
-		mCanvasWidth = AhaHahActivity.getDisplayWidth(this);
-		mCanvasHeight = AhaHahActivity.getDisplayHeight(this);
-		// use parent activity to access mImageAlbumStorage
-		mImageAlbumStorage = ((AhaHahActivity)mParentActivity).getImageAlbumStorage();
+		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
+		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
+//		// use parent activity to access mImageAlbumStorage
+//		mImageAlbumStorage = ((AhaHahActivity)mParentActivity).getImageAlbumStorage();
 
 		// set sketch activity reference
 		mSketchActivity = this;
@@ -89,14 +96,15 @@ public class SketchActivity extends Activity {
 		// instantiate shape manager
 		mShapeManager = new ShapeManager();
 		// if project folder has not changed
-		if ( mImageAlbumStorage.getImageAlbumName().equals(mSketchSettings.getAlbumName())) {
+        String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
+		if ( albumName.equals(mSketchSettings.getAlbumName())) {
 			// load ShapeManager shape list
 			mShapeManager.load(temp);
 			Log.v(TAG, "onCreate loading: " + mSketchSettings.getAlbumName());
 		}
 		else {
 			// reset ShapeManager shape list based on obsolete project folder
-			mSketchSettings.setAlbumName(mImageAlbumStorage.getImageAlbumName());
+			mSketchSettings.setAlbumName(albumName);
 			// delete ShapeManager shape list
 			mShapeManager.delete(temp);			
 			Log.v(TAG, "onCreate reset to: " + mSketchSettings.getAlbumName());
@@ -453,121 +461,57 @@ public class SketchActivity extends Activity {
 			}
 		}
 	}
-//	private void startGalleryActivity (int reqCode) {
-//		// create intent & start activity
-//    	Intent intent = new Intent(this, GalleryActivity.class);
-//    	intent.putExtra(GalleryActivity.EXTRA_REQUEST_CODE, reqCode);
-//    	startActivityForResult(intent, reqCode);
-//	}
-//	protected void onActivityResult(int reqCode, int resultCode, Intent intent) {
-//    	if (resultCode == RESULT_OK) {
-//    		Log.v(TAG, "result OK: " + " for reqCode: " + reqCode);
-//    		int position = intent.getIntExtra(GalleryActivity.EXTRA_SELECT_ID, -1);
-//    		Log.v(TAG, "position: " + position);
-//    		// image selected
-//    		if (position != -1) {
-//    			// get image path
-//    			String imagePath = mImageAlbumStorage.getImageFitPath(position);
-//        		Log.v(TAG, "image path: " + imagePath);
-//        		if (reqCode == GalleryActivity.REQUEST_CODE_SELECT_BACKDROP) {
-//        			// set image as backdrop (0th indicates insert BACKDROP)
-//        			mShapeManager.setImageShape(imagePath, 0);
-//        		}
-//        		else if (reqCode == GalleryActivity.REQUEST_CODE_SELECT_OVERLAY) {
-//        			// if rect selected, set image to selected rect shape
-//        			int focus = mShapeManager.getShapeListFocus();
-//               		Log.v(TAG, "focus shape inx: " + focus);
-//        			if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
-//            			// set image as OVERLAY (focus)
-//            			mShapeManager.setImageShape(imagePath, focus);
-//        			}
-//        			else {
-//        	       		Log.e(TAG, "OVERLAY failure - focus (" + focus + ") is not RECT. ");
-//        			}
-//        		}
-//        		mTouchView.invalidate();
-//    		}
-//    	}
-//    	else {
-//    		Log.v(TAG, "FAILURE w/ result code: " + resultCode);
-//    	}
-//    }
-///////////////////////////////////////////////////////////////////////////
-   private String saveSketch (Bitmap bitmap) {
+    ///////////////////////////////////////////////////////////////////////////
+    private String saveSketch (Bitmap bitmap) {
 
 		String imageName = "nada";
 		try {
+            String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
 			// timestamp an image name & create the file
 			imageName = ImageAlbumStorage.timestampImageName();
 			Log.v(TAG, "timestampImageName: "+ imageName);
 			
 			// write (pre-scaled) FIT bitmap to FIT directory 
-			String imagePath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_FIT, imageName);
+			String imagePath = ImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_FIT, imageName, albumName);
 			Log.v(TAG, "added imagePath: "+ imagePath);
 			// retain latest saved image
 			mImagePath = imagePath;
 			mImageBitmap = bitmap;
 			
-//			//////////////////////////THUMB///////////////
-//			// set bitmap options to scale the image decode target
-//			BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-//			bmOptions.inJustDecodeBounds = true;
-//			BitmapFactory.decodeFile(imagePath, bmOptions);
-//			int photoW = bmOptions.outWidth;
-//			int photoH = bmOptions.outHeight;
-//			Log.v(TAG, "saveSketch: photo W/H: " + photoW + "/" + photoH);
-//			int scaleFactor = Math.min(photoW/(photoW/5), photoH/(photoH/5));
-//			Log.v(TAG, "saveSketch: THUMB scale factor: " + scaleFactor);
-//
-//			bmOptions.inJustDecodeBounds = false;
-//			bmOptions.inSampleSize = scaleFactor;
-//			bmOptions.inPurgeable = true;
-//
-//			// decode the JPEG into the bitmap
-//			bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
-//
-//			// write scaled THUMB bitmap to THUMB directory
-//			imagePath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, imageName);
-
-//			// indicate album has been updated
-//			mImageAlbumStorage.refreshImageLists(true);
-
-            Log.v(TAG, "Sketch saved to " + mImageAlbumStorage.getImageAlbumName());
-            Toast.makeText(mParentActivity, "Sketch saved to " + mImageAlbumStorage.getImageAlbumName(), Toast.LENGTH_LONG).show();
-
+            Log.v(TAG, "Sketch saved to " + albumName);
+            Toast.makeText(mParentActivity, "Sketch saved to " + albumName, Toast.LENGTH_LONG).show();
         }
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	   return imageName;
-   }
-   ///////////////////////////////////////////////////////////////////////////
-   private void saveSketchAlert() {
-	   AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    private void saveSketchAlert() {
+	    AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-	   alert.setTitle("New Sketch Alert");
-//	   alert.setMessage("This will clear your current sketch - proceed? To save prior to clearing the canvas, select 'No' then 'Save Sketch'");
-       alert.setMessage("Clicking 'Yes' will clear your current sketch. To save prior to clearing the canvas, select 'No' and choose 'Save Sketch Image' under 'File'.");
+        alert.setTitle("New Sketch Alert");
+        alert.setMessage("Clicking 'Yes' will clear your current sketch. To save prior to clearing the canvas, select 'No' and choose 'Save Sketch Image' under 'File'.");
 
-	   alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
            public void onClick(DialogInterface dialog, int whichButton) {
                // Yes, proceed to clear current sketch
                Log.v(TAG, "saveSketchAlert proceed? YES");
                // clear sketch canvas
                mShapeManager.initShapeList();
                mTouchView.invalidate();
-           }
-       });
-	
-	   alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
-		   public void onClick(DialogInterface dialog, int whichButton) {
-			   // No.
-			   Log.v(TAG, "saveSketchAlert proceed? NO. ");
-		   }
-	   });
-	
-	   alert.show();   
-   }
+            }
+        });
+
+        alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+           public void onClick(DialogInterface dialog, int whichButton) {
+               // No.
+               Log.v(TAG, "saveSketchAlert proceed? NO. ");
+            }
+        });
+
+        alert.show();
+    }
 }
 ///////////////////////////////////////////////////////////////////////////

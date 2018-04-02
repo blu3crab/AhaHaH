@@ -38,14 +38,18 @@ import android.widget.ImageView;
 
 import com.adaptivehandyapps.ahahah.BuildConfig;
 import com.adaptivehandyapps.ahahah.R;
+import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
+import com.adaptivehandyapps.util.PrefsUtils;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class CameraActivity extends Activity {
+
 	// class members
 	private final String TAG = "CameraActivity";
 	
 	private Activity mParentActivity;
+	private Context mContext;
 
 	private static final int ACTION_TAKE_PHOTO = 2;
 	
@@ -57,8 +61,6 @@ public class CameraActivity extends Activity {
 	private ImageView mPhotoView;
 	private ImageView mThumbView;
 	
-	// use parent instance of mImageAlbumStorage
-	private ImageAlbumStorage mImageAlbumStorage = null;
 	private String mImageName;
 	private String mCurrentPhotoPath;
 	
@@ -67,17 +69,19 @@ public class CameraActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		mParentActivity = AhaHahActivity.mParentActivity;
-		
+
+//		mParentActivity = AhaHahActivity.mParentActivity;
+		mParentActivity = AhaHahActivity.getAhaHahActivity();
+		mContext = this;
+
 		// get device dimensions
-		DisplayMetrics displayMetrics = getDisplayMetrics();
-		mTargetDeviceW = displayMetrics.widthPixels;   
+		DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(this);
+		mTargetDeviceW = displayMetrics.widthPixels;
 		mTargetDeviceH = displayMetrics.heightPixels;
 		Log.v(TAG, "target device W/H: " + mTargetDeviceW + "/" + mTargetDeviceH);
 
 		mPhotoView = (ImageView) mParentActivity.findViewById(R.id.imageViewSplash);
-		int photoViewW = mPhotoView.getWidth();   
+		int photoViewW = mPhotoView.getWidth();
 		int photoViewH = mPhotoView.getHeight();
 		Log.v(TAG, "imageViewSplash W/H: " + photoViewW + "/" + photoViewH);
 
@@ -86,9 +90,6 @@ public class CameraActivity extends Activity {
 		int thumbViewH = mThumbView.getHeight();
 		Log.v(TAG, "imageViewThumb W/H: " + thumbViewW + "/" + thumbViewH);
 		
-		// use parent activity to access mImageAlbumStorage
-		mImageAlbumStorage = ((AhaHahActivity)mParentActivity).getImageAlbumStorage();
-
 		if (isIntentAvailable(this, MediaStore.ACTION_IMAGE_CAPTURE)) {
 			// camera is available, launch camera intent
 			dispatchTakePhotoIntent();
@@ -117,13 +118,14 @@ public class CameraActivity extends Activity {
 	private void dispatchTakePhotoIntent () {
 		mIntentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		
-		File photo = null;
-		
+//		File photo = null;
+//
 		try {
 			// timestamp an image name & create the file
 			mImageName = ImageAlbumStorage.timestampImageName();
+			String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
 			Log.v(TAG, "timestampImageName: "+ mImageName);
-			photo = mImageAlbumStorage.createImageFile(ImageAlbumStorage.IMG_DIR_FULL, mImageName);
+			File photo = ImageAlbumStorage.createImageFile(ImageAlbumStorage.IMG_DIR_FULL, mImageName, albumName);
             if (photo == null) return;
 			mCurrentPhotoPath = photo.getAbsolutePath();
 			Log.v(TAG, "createImageFile: "+ mCurrentPhotoPath);
@@ -135,13 +137,12 @@ public class CameraActivity extends Activity {
 
 			// start camera for result of photo
 			startActivityForResult(mIntentTakePhoto, ACTION_TAKE_PHOTO);
+
 		} catch (IOException e) {
 			e.printStackTrace();
-			photo = null;
+//			photo = null;
 			mCurrentPhotoPath = null;
 		}
-//		// start camera for result of photo
-//		startActivityForResult(mIntentTakePhoto, ACTION_TAKE_PHOTO);
 	}
 	///////////////////////////////////////////////////////////////////////////////
 
@@ -150,10 +151,8 @@ public class CameraActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if (resultCode == RESULT_OK ) {
-			// unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
+			// TODO: unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
 			addPhotoToAlbum();
-//			// indicate album has been updated
-//			mImageAlbumStorage.refreshImageLists(true);
 		} else {
 			Log.v(TAG, "onActivityResult: intent " + intent + ", result code " + resultCode);
 		}
@@ -171,7 +170,7 @@ public class CameraActivity extends Activity {
 		Log.v(TAG,"addPhotoToAlbum...");
 		if (mCurrentPhotoPath != null) {
 			// add FULL image
-			mImageAlbumStorage.addToMediaDB(this, mCurrentPhotoPath);
+			ImageAlbumStorage.addToMediaDB(this, mCurrentPhotoPath);
 			// setup view & add FIT & THUMB bitmaps to media DB
 			setupView();
 			// clear path indicating completion
@@ -190,7 +189,7 @@ public class CameraActivity extends Activity {
 		int photoH = bmOptions.outHeight;
 		Log.v(TAG, "setupView: photo W/H: " + photoW + "/" + photoH);
 		// round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
-		scaleFactor = Math.min(photoW/getTargetWidth (), photoH/getTargetHeight())+1;
+		scaleFactor = Math.min(photoW/getTargetWidth(), photoH/getTargetHeight())+1;
 		Log.v(TAG, "setupView: FIT scale factor: " + scaleFactor);
 		// set bitmap options to scale the image decode target
 		bmOptions.inJustDecodeBounds = false;
@@ -203,37 +202,7 @@ public class CameraActivity extends Activity {
 		mPhotoView.setImageBitmap(bitmap);
 		mPhotoView.setVisibility(View.VISIBLE);
 		
-//		// write scaled FIT bitmap to FIT directory
-//		mCurrentPhotoPath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_FIT, mImageName);
-
-//		//////////////////////////THUMB///////////////
-//		// set bitmap options to scale the image decode target
-//		scaleFactor = Math.min(photoW/(photoW/10), photoH/(photoH/10));
-//		Log.v(TAG, "setupView: THUMB scale factor: " + scaleFactor);
-//
-//		bmOptions.inJustDecodeBounds = false;
-//		bmOptions.inSampleSize = scaleFactor;
-//		bmOptions.inPurgeable = true;
-//
-//		// decode the JPEG into the bitmap
-//		bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-//
-//		// associate bitmap with view
-//		mThumbView.setImageBitmap(bitmap);
-//		mThumbView.setVisibility(View.VISIBLE);
-//
-//		// write scaled THUMB bitmap to THUMB directory
-//		mCurrentPhotoPath = mImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_THUMB, mImageName);
 	}
 	///////////////////////////////////////////////////////////////////////////////
-	public DisplayMetrics getDisplayMetrics() {
-		final DisplayMetrics displayMetrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-		Log.v(TAG, "display metrics W/H: " + displayMetrics.widthPixels + "/" + displayMetrics.heightPixels);
-		return displayMetrics;
-	}
-	///////////////////////////////////////////////////////////////////////////////
-
-
 }
     

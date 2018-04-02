@@ -19,76 +19,37 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
-import com.adaptivehandyapps.util.AhaSettings;
+import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
+import com.adaptivehandyapps.util.PrefsUtils;
 
 public class AhaHahActivity extends Activity {
+//    public class AhaHahActivity extends Activity
+//            implements NavigationView.OnNavigationItemSelectedListener {
 
-	private final String TAG = "AhaHahActivity";
+	private static final String TAG = "AhaHahActivity";
+    private static final Boolean TOAST_DISPLAY_METRICS = true;
 
 	// permissions
 	public final static int PERMISSIONS_REQUEST = 125;
 
-	public static AhaHahActivity mParentActivity;
+	private static AhaHahActivity mParentActivity;
 	
-	private AhaSettings mAhaSettings = null;
-	private ImageAlbumStorage mImageAlbumStorage = null;
+//	private ImageAlbumStorage mImageAlbumStorage = null;
 	private String mProjectFolder = null;
 
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    private static int mWidth = 0;
-    private static int mHeight = 0;
-    private static float mXdpi = 0;
-    private static float mYdpi = 0;
-    private static float mDensity = 0;
-    private static int mDensityDpi = 0;
-    // display resolution support 
-    private static String getScreenResolution(Context context)
-    {
-		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-		Display display = wm.getDefaultDisplay();
-		DisplayMetrics metrics = new DisplayMetrics();
-		display.getMetrics(metrics);
-		mXdpi = metrics.xdpi;
-		mYdpi = metrics.ydpi;
-		mDensity = metrics.density;
-		mDensityDpi = metrics.densityDpi;
-		mWidth = metrics.widthPixels;
-		mHeight = metrics.heightPixels;
-		
-		String toastText = "Display: " +
-				mWidth + " x " + mHeight + ", " + mXdpi + " x " + mYdpi;
-//		System.out.println(toastText);
-//		Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
-//		Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
-		return toastText;
-    }
-
-	public static int getDisplayWidth(Context context) {
-		getScreenResolution(context);
-		return mWidth;
-	}
-	public static int getDisplayHeight(Context context) {
-		getScreenResolution(context);
-		return mHeight;
-	}
-	//////////////////////////////////////////////////////////////////////////////////////////
-
-	//////////////// start activities //////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////// start activities //////////////////////////
 	
     public void startCameraActivity (View view) {
     	// create intent & start activity 
@@ -121,17 +82,18 @@ public class AhaHahActivity extends Activity {
     public static AhaHahActivity getAhaHahActivity() {
     	return mParentActivity;
     }
-    // Camera & Gallery activities use this single copy of ImageAlbumStorage
-    public ImageAlbumStorage getImageAlbumStorage() {
-    	return mImageAlbumStorage;
-    }
+//    // Camera & Gallery activities use this single copy of ImageAlbumStorage
+//    public ImageAlbumStorage getImageAlbumStorage() {
+//    	return mImageAlbumStorage;
+//    }
 
     private String setImageAlbumFolder(String projectFolder) {
     	String albumPath = getString(R.string.album_folder_name)+ "/" + projectFolder;
-		mImageAlbumStorage = new ImageAlbumStorage(albumPath);
+    	PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, projectFolder);
+//		mImageAlbumStorage = new ImageAlbumStorage(albumPath);
 		Log.v(TAG, "setImageAlbumFolder album path: " + albumPath);
 
-        if (!mImageAlbumStorage.isMediaMounted()) {
+        if (!ImageAlbumStorage.isMediaMounted()) {
             Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
             Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
             Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
@@ -144,7 +106,7 @@ public class AhaHahActivity extends Activity {
     private void setProjectFolder(String projectFolder) {
     	mProjectFolder = projectFolder;
 		setImageAlbumFolder(getProjectFolder());
-		mAhaSettings.setAlbumName(getProjectFolder());
+		PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, getProjectFolder());
     }
     //////////////// activity lifecycle methods ////////////////
 
@@ -157,56 +119,30 @@ public class AhaHahActivity extends Activity {
 			Log.d(TAG, "onCreate permissions granted...");
 			init();
 		}
-
-//		// seed screen resolution
-//		getScreenResolution(this);
-//
-//		setContentView(R.layout.activity_ahahah);
-//
-//		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
-//		v.layout(0, 0, mWidth, mHeight);
-//
-//		mParentActivity = this;
-//
-//		// restore project folder setting or set default
-//		mAhaSettings = new AhaSettings();
-//		mAhaSettings.restoreSettings();
-//
-//		if (mAhaSettings.getAlbumName().equals(mAhaSettings.NADA)) {
-//			// instantiate image album storage class with default project folder
-//			setProjectFolder(getString(R.string.default_project_name));
-//			Log.v(TAG, "onCreate default project folder: " + getProjectFolder());
-//		}
-//		else {
-//			// instantiate image album storage class with default project folder
-//			setProjectFolder(mAhaSettings.getAlbumName());
-//			Log.v(TAG, "onCreate restore project folder: " + getProjectFolder());
-//		}
 	}
 
 	private Boolean init() {
 		// seed screen resolution
-		getScreenResolution(this);
+        String toastText = AhaDisplayMetrics.toString(this);
+        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
-		setContentView(R.layout.activity_ahahah);
+        setContentView(R.layout.activity_ahahah);
 
 		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
-		v.layout(0, 0, mWidth, mHeight);
+		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
 
 		mParentActivity = this;
 
 		// restore project folder setting or set default
-		mAhaSettings = new AhaSettings();
-		mAhaSettings.restoreSettings();
-
-		if (mAhaSettings.getAlbumName().equals(mAhaSettings.NADA)) {
+        String albumName = PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY);
+		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) {
 			// instantiate image album storage class with default project folder
 			setProjectFolder(getString(R.string.default_project_name));
 			Log.v(TAG, "onCreate default project folder: " + getProjectFolder());
 		}
 		else {
 			// instantiate image album storage class with default project folder
-			setProjectFolder(mAhaSettings.getAlbumName());
+			setProjectFolder(albumName);
 			Log.v(TAG, "onCreate restore project folder: " + getProjectFolder());
 		}
     	return true;
@@ -259,7 +195,7 @@ public class AhaHahActivity extends Activity {
 
 		// obtain list of existing folders
 		List<String> folderList = new ArrayList<String>();
-		folderList = mImageAlbumStorage.getProjectFolders(getString(R.string.album_folder_name));
+		folderList = ImageAlbumStorage.getProjectFolders(getString(R.string.album_folder_name));
 
         // dynamically add existing folders to menu
 		for (String folder: folderList) {
@@ -359,8 +295,6 @@ public class AhaHahActivity extends Activity {
 
     protected void onPause() {
     	// perform light weight cleanup, release resources, save draft data
-		// save project folder setting
-    	if (mAhaSettings != null) mAhaSettings.saveSettings();
         super.onPause();
 		// say hello
 		Log.v(TAG, "onPause");     	
@@ -430,17 +364,14 @@ public class AhaHahActivity extends Activity {
 
 		if (requestCode == PERMISSIONS_REQUEST) {
             boolean permissionGranted = true;
-//            if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) permissionGranted = false;
             for (int i = 0; i < grantResults.length; i++) {
                 Log.d(TAG, "onRequestPermissionsResult permissions " + permissions[i] + " grant result " + grantResults[i]);
                 if (grantResults[i] != PackageManager.PERMISSION_GRANTED) permissionGranted = false;
             }
 
             if (permissionGranted) {
-//                if (requestForPermission(this)) {
                     Log.d(TAG, "onRequestPermissionsResult granted - init view.");
                     init();
-//                }
 			}
 			else {
 				// denied
