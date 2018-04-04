@@ -42,8 +42,6 @@ public class SketchActivity extends Activity {
     private Activity mParentActivity;
     private Context mContext;
 
-//	private ImageAlbumStorage mImageAlbumStorage = null;
-
 	private static SketchActivity mSketchActivity;
 
 	private SketchSetting mSketchSettings = null;	// sketch settings
@@ -62,13 +60,8 @@ public class SketchActivity extends Activity {
 	
 //	private OrientationEventListener mOrientationListener;
 
-	private String mForecastText = "LaLaLaLaLa";
-
 	private String mImagePath = "";
 	private Bitmap mImageBitmap;
-
-//	private ShareActionProvider mShareActionProvider;
-
 	///////////////////////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +75,6 @@ public class SketchActivity extends Activity {
 		// set canvas dimensions to display dimensions until touch view canvas created
 		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
 		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
-//		// use parent activity to access mImageAlbumStorage
-//		mImageAlbumStorage = ((AhaHahActivity)mParentActivity).getImageAlbumStorage();
 
 		// set sketch activity reference
 		mSketchActivity = this;
@@ -471,8 +462,8 @@ public class SketchActivity extends Activity {
 			imageName = ImageAlbumStorage.timestampImageName();
 			Log.v(TAG, "timestampImageName: "+ imageName);
 			
-			// write (pre-scaled) FIT bitmap to FIT directory 
-			String imagePath = ImageAlbumStorage.addBitmapToMediaDB(this, bitmap, ImageAlbumStorage.IMG_DIR_FIT, imageName, albumName);
+			// write to project album
+			String imagePath = ImageAlbumStorage.addBitmapToMediaDB(this, bitmap, albumName, imageName);
 			Log.v(TAG, "added imagePath: "+ imagePath);
 			// retain latest saved image
 			mImagePath = imagePath;

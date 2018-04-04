@@ -4,6 +4,8 @@
 // Copyright © 2015 Adaptive Handy Apps, LLC.  All Rights Reserved.
 package com.adaptivehandyapps.activity;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,20 +16,26 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import com.adaptivehandyapps.ahahah.BuildConfig;
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
@@ -40,76 +48,20 @@ public class AhaHahActivity extends Activity {
 	private static final String TAG = "AhaHahActivity";
     private static final Boolean TOAST_DISPLAY_METRICS = true;
 
-	// permissions
+	// permission request codes
 	public final static int PERMISSIONS_REQUEST = 125;
+	// activity request codes
+	private static final int ACTION_TAKE_PHOTO = 2;
 
 	private static AhaHahActivity mParentActivity;
 	
-//	private ImageAlbumStorage mImageAlbumStorage = null;
-	private String mProjectFolder = null;
-
-    ///////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////// start activities //////////////////////////
-	
-    public void startCameraActivity (View view) {
-    	// create intent & start activity 
-    	Intent intent = new Intent(this, CameraActivity.class);
-    	startActivity(intent);
-		Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
-    }
-    
-    public void startGalleryActivity (View view) {
-    	// create intent & start activity 
-//    	Intent intent = new Intent(this, GalleryActivity.class);
-//    	startActivity(intent);
-//		Toast.makeText(this, "Viewing gallery " + mImageAlbumStorage.getImageAlbumName(), Toast.LENGTH_LONG).show();
-        Intent intent = new Intent();
-        intent.setAction(android.content.Intent.ACTION_VIEW);
-        intent.setType("image/*");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-		Toast.makeText(this, "Viewing gallery - touch back when finished.", Toast.LENGTH_LONG).show();
-    }
-    public void startSketchActivity (View view) {
-    	// create intent & start activity 
-    	Intent intent = new Intent(this, SketchActivity.class);
-    	startActivity(intent);
-		Toast.makeText(this, R.string.sketch_hint, Toast.LENGTH_SHORT).show();
-    }
-
     ////////////////////////////////////////////////////////////////////////
     // setters/getters
     public static AhaHahActivity getAhaHahActivity() {
     	return mParentActivity;
     }
-//    // Camera & Gallery activities use this single copy of ImageAlbumStorage
-//    public ImageAlbumStorage getImageAlbumStorage() {
-//    	return mImageAlbumStorage;
-//    }
 
-    private String setImageAlbumFolder(String projectFolder) {
-    	String albumPath = getString(R.string.album_folder_name)+ "/" + projectFolder;
-    	PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, projectFolder);
-//		mImageAlbumStorage = new ImageAlbumStorage(albumPath);
-		Log.v(TAG, "setImageAlbumFolder album path: " + albumPath);
-
-        if (!ImageAlbumStorage.isMediaMounted()) {
-            Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
-            Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
-            Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
-        }
-        return albumPath;
-    }
-    private String getProjectFolder() {
-    	return mProjectFolder;
-    }
-    private void setProjectFolder(String projectFolder) {
-    	mProjectFolder = projectFolder;
-		setImageAlbumFolder(getProjectFolder());
-		PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, getProjectFolder());
-    }
     //////////////// activity lifecycle methods ////////////////
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -133,18 +85,13 @@ public class AhaHahActivity extends Activity {
 
 		mParentActivity = this;
 
-		// restore project folder setting or set default
+		// restore project folder setting or set default if nada
         String albumName = PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY);
-		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) {
-			// instantiate image album storage class with default project folder
-			setProjectFolder(getString(R.string.default_project_name));
-			Log.v(TAG, "onCreate default project folder: " + getProjectFolder());
-		}
-		else {
-			// instantiate image album storage class with default project folder
-			setProjectFolder(albumName);
-			Log.v(TAG, "onCreate restore project folder: " + getProjectFolder());
-		}
+		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) albumName = getString(R.string.default_project_name);
+		// instantiate image album storage class with default project folder
+		setProjectFolder(albumName);
+		Log.v(TAG, "onCreate set project folder: " + albumName);
+
     	return true;
 	}
 
@@ -223,7 +170,7 @@ public class AhaHahActivity extends Activity {
 	    			else {
 		    			// instantiate image album storage class with selected project folder
 	    				setProjectFolder(projectFolder);
-		    			Log.v(TAG, "onMenuItemClick project folder: " + getProjectFolder());
+		    			Log.v(TAG, "onMenuItemClick project folder: " + projectFolder);
 	    			}
 	    		}
 				return true;
@@ -248,7 +195,7 @@ public class AhaHahActivity extends Activity {
 				String projectFolder = input.getText().toString();
 				// instantiate image album storage class with selected project folder
 				setProjectFolder(projectFolder);
-				Log.v(TAG, "setNewProjectFolder project folder: " + getProjectFolder());
+				Log.v(TAG, "setNewProjectFolder project folder: " + projectFolder);
 			}
 		});
 
@@ -310,6 +257,93 @@ public class AhaHahActivity extends Activity {
 		// say hello
 		Log.v(TAG, "onDestroy");     	
     }
+
+	///////////////////////////////////////////////////////////////////////////////
+	// camera activity
+	public void startCameraActivity (View view) {
+//		// create intent & start activity
+//		Intent intent = new Intent(this, CameraActivity.class);
+//		startActivity(intent);
+		if (isIntentAvailable(this, MediaStore.ACTION_IMAGE_CAPTURE)) {
+            Log.v(TAG, "camera available...");
+            Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivity(intentTakePhoto);
+//			// camera is available, launch camera intent
+//			dispatchTakePhotoIntent();
+//			Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
+		} else {
+			Log.v(TAG, "camera NOT available...");
+			Toast.makeText(this, "camera NOT available...", Toast.LENGTH_SHORT).show();
+		}
+
+		Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
+	}
+
+	// establish if camera intent is available
+	public static boolean isIntentAvailable (Context context, String action) {
+		final PackageManager packageManager = context.getPackageManager();
+		final Intent intent = new Intent(action);
+		List<ResolveInfo> list =
+				packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+		return list.size() > 0;
+	}
+
+	private void dispatchTakePhotoIntent () {
+		Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		try {
+			// timestamp an image name & create the file
+			String imageName = ImageAlbumStorage.timestampImageName();
+			Log.v(TAG, "timestampImageName: "+ imageName);
+			// create file in camera dir
+			File photo = ImageAlbumStorage.createImageFile(null, imageName);
+			if (photo == null) return;
+			String currentPhotoPath = photo.getAbsolutePath();
+			Log.v(TAG, "createImageFile: "+ currentPhotoPath);
+			// put file handle in take photo intent extras
+			Uri imageUri = FileProvider.getUriForFile(this,
+					BuildConfig.APPLICATION_ID + ".provider", photo);
+			intentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+
+			// start camera for result of photo
+			startActivityForResult(intentTakePhoto, ACTION_TAKE_PHOTO);
+
+		} catch (IOException e) {
+			Log.e(TAG, e.getMessage());
+		}
+	}
+	// take photo result - capture resulting image
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		Log.v(TAG, "onActivityResult: request code " + requestCode + ", result code " + resultCode);
+		if (resultCode == RESULT_OK ) {
+			if (requestCode == ACTION_TAKE_PHOTO) {
+				// TODO: unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
+				Uri imageUri = intent.getData();
+				Log.v(TAG, "onActivityResult URI " + imageUri);
+			}
+		} else {
+			Log.e(TAG, "onActivityResult NOT OK! request code " + requestCode + ", result code " + resultCode);
+		}
+	}
+	///////////////////////////////////////////////////////////////////////////////
+	// gallery activity (view not select)
+	public void startGalleryActivity (View view) {
+		// create intent & start activity
+		Intent intent = new Intent();
+		intent.setAction(android.content.Intent.ACTION_VIEW);
+		intent.setType("image/*");
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(intent);
+		Toast.makeText(this, "Viewing gallery - touch back when finished.", Toast.LENGTH_LONG).show();
+	}
+	///////////////////////////////////////////////////////////////////////////////
+	// sketch activity
+	public void startSketchActivity (View view) {
+		// create intent & start activity
+		Intent intent = new Intent(this, SketchActivity.class);
+		startActivity(intent);
+		Toast.makeText(this, R.string.sketch_hint, Toast.LENGTH_SHORT).show();
+	}
 
 	///////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
@@ -378,6 +412,17 @@ public class AhaHahActivity extends Activity {
 				Log.e(TAG, "onRequestPermissionsResult permissions not granted - finish.");
 				finishAndRemoveTask();
 			}
+		}
+	}
+	///////////////////////////////////////////////////////////////////////////////
+	private void setProjectFolder(String projectFolder) {
+		PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, projectFolder);
+		Log.v(TAG, "setProjectFolder: " + projectFolder);
+
+		if (!ImageAlbumStorage.isMediaMounted()) {
+			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////

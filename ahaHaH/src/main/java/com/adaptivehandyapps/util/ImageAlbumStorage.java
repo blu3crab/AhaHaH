@@ -21,16 +21,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
-
 public class ImageAlbumStorage {
-
-	///////////////////////////////////////////////////////////////////////////////
-	// class data
 	private static final String TAG = "ImageAlbumStorage";
-
-	// sub-directories for full, fit & thumb image versions
-	public static final String IMG_DIR_FULL = "/full/";  	// full res image
-	public static final String IMG_DIR_FIT = "/fit/";		// fit to device display
 
 	// standard storage location
 	private static final String CAMERA_DIR_ROOT = "/dcim/";
@@ -41,11 +33,10 @@ public class ImageAlbumStorage {
 		
 	///////////////////////////////////////////////////////////////////////////////
 	// add bitmap to media DB
-	public static final String addBitmapToMediaDB(Activity activity, Bitmap bitmap, String dir, String name, String albumName) {
-//		File f = null;
+	public static final String addBitmapToMediaDB(Activity activity, Bitmap bitmap, String albumName, String name) {
 		String imagePath = null;
 		try {
-            File f = createImageFile(dir, name, albumName);
+            File f = createImageFile(albumName, name);
 			imagePath = f.getAbsolutePath();
 			
 		    try {
@@ -63,7 +54,6 @@ public class ImageAlbumStorage {
 		} catch (IOException e) {
 	        Log.d(TAG, "Exception: " + e.getMessage());
 			e.printStackTrace();
-//			f = null;
 		}
 		return imagePath;
 	}
@@ -86,11 +76,10 @@ public class ImageAlbumStorage {
 	}
 	///////////////////////////////////////////////////////////////////////////////
 	// create image file
-	public static final File createImageFile(String imageDir, String imageName, String albumName) throws IOException {
+	public static final File createImageFile(String albumName, String imageName) throws IOException {
 		// get or create image album directory
-		File albumF = makeAlbumDir(imageDir, albumName);
+		File albumF = makeAlbumDir(albumName);
 		// create image file
-//		File imageF = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX, albumF);
         if (albumF != null) {
             File imageF = new File(albumF.getPath() + File.separator + imageName);
             return imageF;
@@ -104,13 +93,12 @@ public class ImageAlbumStorage {
      }
     ///////////////////////////////////////////////////////////////////////////////
 	// get album directory, creating subdirs if not present
-	public static final File makeAlbumDir(String imgdir, String albumName) {
+	public static final File makeAlbumDir(String albumName) {
 		File storageDir = null;
 		
 		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
 			// if FIT, set storage dir to AHA project album
-			if (imgdir.equals(IMG_DIR_FIT)) {
-//				storageDir = getAlbumStorageDir(mAlbumName + imgdir);
+			if (albumName != null) {
 				storageDir = getAlbumStorageDir(albumName);
 			}
 			else {

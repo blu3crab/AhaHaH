@@ -64,39 +64,5 @@ public class PrefsUtils {
 		prefs.edit().putBoolean(key, value).apply();
 		return;
 	}
-//
-//
-//	/////////////save/restore settings////////////////
-//	public static final String PREFS_NAME = "AhaSettingsFile";
-//	private String mKeyAlbum = "Album";
-//
-//
-//	/////////////getters/setters////////////////
-//	public String getAlbumName() { return mAlbumName; }
-//
-//	public boolean setAlbumName(String name)
-//	{
-//		mAlbumName = name;
-//		return true;
-//	}
-//
-//	///////////////////////////////////////////////////////////////////////////////
-//	// save sketch settings
-//	public void saveSettings() {
-//		SharedPreferences settings = mParentActivity.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-//	    SharedPreferences.Editor editor = settings.edit();
-////	    editor.remove(PREFS_NAME);
-//
-//	    editor.putString(mKeyAlbum, mAlbumName);
-//
-//	    // commit the edits!
-//	    editor.commit();
-//
-//	}
-//	// restore sketch settings
-//	public void restoreSettings() {
-//		SharedPreferences settings = mParentActivity.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-//
-//		mAlbumName = settings.getString(mKeyAlbum, NADA);
-//	}
+	///////////////////////////////////////////////////////////////////////////
 }

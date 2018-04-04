@@ -23,11 +23,13 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.EditText;
 
 import com.adaptivehandyapps.activity.SketchActivity;
 import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
+import com.adaptivehandyapps.util.AhaDisplayMetrics;
 
 public class ShapeManager {
 
@@ -320,6 +322,13 @@ public class ShapeManager {
 			shapeObject.setName(imagePath);
 			shapeObject.setPaint(paint);
 			Log.v(TAG, "BACKDROP image path: " + imagePath);
+
+			// get device dimensions
+			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(mParentActivity);
+			int targetDeviceW = displayMetrics.widthPixels;
+			int targetDeviceH = displayMetrics.heightPixels;
+			Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
+
 			// get size of photo
 			BitmapFactory.Options bmOptions = new BitmapFactory.Options();
 			bmOptions.inJustDecodeBounds = true;
@@ -327,24 +336,33 @@ public class ShapeManager {
 			int imageW = bmOptions.outWidth;
 			int imageH = bmOptions.outHeight;
 			Log.v(TAG, "photo W/H: " + imageW + "/" + imageH);
+			// round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
+			int scaleFactor = Math.min(imageW/targetDeviceW, imageH/targetDeviceH)+1;
+			Log.v(TAG, "setupView: FIT scale factor: " + scaleFactor);
+			// set bitmap options to scale the image decode target
+			bmOptions.inJustDecodeBounds = false;
+			bmOptions.inSampleSize = scaleFactor;
+			bmOptions.inPurgeable = true;
+
+			// set bitmap
+			Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+			shapeObject.setObject(bitmap);
+
 			// set focus to screen center
 			PointF focus = new PointF(
-					(float)mParentActivity.getCanvasWidth()/2, 
-					(float)mParentActivity.getCanvasHeight()/2);
+					(float)targetDeviceW/2,
+					(float)targetDeviceH/2);
 			shapeObject.setFocus(focus);
 			Log.v(TAG, "focus: " + shapeObject.getFocus());
-			// set bounds based on image size around focus
-			// TODO: set image bounding rect using canvas width/height?
+			// set bounds based on canvas size around focus
 			RectF rect = new RectF();
-			rect.bottom = focus.y + (float)imageH/2;
-			rect.left = focus.x - (float)imageW/2;
-			rect.top = focus.y - (float)imageH/2;
-			rect.right = focus.x + (float)imageW/2;
-			shapeObject.setBound(rect);  
+			rect.bottom = focus.y + (float)targetDeviceH/2;
+			rect.left = focus.x - (float)targetDeviceW/2;
+			rect.top = focus.y - (float)targetDeviceH/2;
+			rect.right = focus.x + (float)targetDeviceW/2;
+			shapeObject.setBound(rect);
 			Log.v(TAG, "bound: " + shapeObject.getBound());
-			// set bitmap
-			Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
-			shapeObject.setObject(bitmap); 
+
 			// check if backdrop image already present
 			ShapeObject testShapeObject = null;
 			if (mShapeList.size()>1) {

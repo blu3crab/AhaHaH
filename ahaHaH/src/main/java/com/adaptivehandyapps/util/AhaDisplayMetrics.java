@@ -2,7 +2,6 @@ package com.adaptivehandyapps.util;
 //
 // Created by mat on 3/31/2018.
 //
-
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.util.Log;

@@ -123,9 +123,10 @@ public class CameraActivity extends Activity {
 		try {
 			// timestamp an image name & create the file
 			mImageName = ImageAlbumStorage.timestampImageName();
-			String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
+//			String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
 			Log.v(TAG, "timestampImageName: "+ mImageName);
-			File photo = ImageAlbumStorage.createImageFile(ImageAlbumStorage.IMG_DIR_FULL, mImageName, albumName);
+//			File photo = ImageAlbumStorage.createImageFile(ImageAlbumStorage.IMG_DIR_FULL, mImageName, albumName);
+			File photo = ImageAlbumStorage.createImageFile(null, mImageName);
             if (photo == null) return;
 			mCurrentPhotoPath = photo.getAbsolutePath();
 			Log.v(TAG, "createImageFile: "+ mCurrentPhotoPath);
