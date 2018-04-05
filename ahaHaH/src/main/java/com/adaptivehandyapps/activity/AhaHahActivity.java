@@ -29,7 +29,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -37,6 +36,7 @@ import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.BuildConfig;
 import com.adaptivehandyapps.ahahah.R;
+import com.adaptivehandyapps.sketch.SketchActivity;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
@@ -46,20 +46,27 @@ public class AhaHahActivity extends Activity {
 //            implements NavigationView.OnNavigationItemSelectedListener {
 
 	private static final String TAG = "AhaHahActivity";
+	// toast display metrics at startup
     private static final Boolean TOAST_DISPLAY_METRICS = true;
+    // capture photo path by launching camera activity for result
+    private static final Boolean CAPTURE_PHOTO_PATH = true;
 
 	// permission request codes
 	public final static int PERMISSIONS_REQUEST = 125;
 	// activity request codes
 	private static final int ACTION_TAKE_PHOTO = 2;
 
-	private static AhaHahActivity mParentActivity;
+//	private static AhaHahActivity mParentActivity;
 	
     ////////////////////////////////////////////////////////////////////////
     // setters/getters
-    public static AhaHahActivity getAhaHahActivity() {
-    	return mParentActivity;
-    }
+//    public static AhaHahActivity getAhaHahActivity() {
+//    	return mParentActivity;
+//    }
+
+    String mPhotoCapturePath;
+    public String getPhotoCapturePath() { return mPhotoCapturePath; }
+    public void setPhotoCapturePath(String photoCapturePath) { this.mPhotoCapturePath = photoCapturePath; }
 
     //////////////// activity lifecycle methods ////////////////
 	@Override
@@ -78,12 +85,12 @@ public class AhaHahActivity extends Activity {
         String toastText = AhaDisplayMetrics.toString(this);
         if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
-        setContentView(R.layout.activity_ahahah);
+//        setContentView(R.layout.activity_ahahah);
+//
+//		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
+//		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
 
-		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
-		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
-
-		mParentActivity = this;
+//		mParentActivity = this;
 
 		// restore project folder setting or set default if nada
         String albumName = PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY);
@@ -92,7 +99,10 @@ public class AhaHahActivity extends Activity {
 		setProjectFolder(albumName);
 		Log.v(TAG, "onCreate set project folder: " + albumName);
 
-    	return true;
+		// launch sketch activity
+        this.startSketchActivity(getCurrentFocus());
+
+        return true;
 	}
 
 	@Override
@@ -261,16 +271,22 @@ public class AhaHahActivity extends Activity {
 	///////////////////////////////////////////////////////////////////////////////
 	// camera activity
 	public void startCameraActivity (View view) {
-//		// create intent & start activity
-//		Intent intent = new Intent(this, CameraActivity.class);
-//		startActivity(intent);
+		// create intent & start activity
 		if (isIntentAvailable(this, MediaStore.ACTION_IMAGE_CAPTURE)) {
+            // camera is available, launch camera intent
+		    // NO GO! allow repeated photo snaps
             Log.v(TAG, "camera available...");
-            Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivity(intentTakePhoto);
-//			// camera is available, launch camera intent
-//			dispatchTakePhotoIntent();
-//			Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
+            if (!CAPTURE_PHOTO_PATH) {
+                // no album targeted, launch vanilla camera intent
+                Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivity(intentTakePhoto);
+            }
+            else {
+                // dispatch camera intent after specifying path for capture
+                String photoCapturePath = dispatchTakePhotoIntent();
+                setPhotoCapturePath(photoCapturePath);
+            }
+			Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
 		} else {
 			Log.v(TAG, "camera NOT available...");
 			Toast.makeText(this, "camera NOT available...", Toast.LENGTH_SHORT).show();
@@ -288,7 +304,7 @@ public class AhaHahActivity extends Activity {
 		return list.size() > 0;
 	}
 
-	private void dispatchTakePhotoIntent () {
+	private String dispatchTakePhotoIntent () {
 		Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		try {
 			// timestamp an image name & create the file
@@ -296,7 +312,7 @@ public class AhaHahActivity extends Activity {
 			Log.v(TAG, "timestampImageName: "+ imageName);
 			// create file in camera dir
 			File photo = ImageAlbumStorage.createImageFile(null, imageName);
-			if (photo == null) return;
+			if (photo == null) return PrefsUtils.DEFAULT_STRING_NADA;
 			String currentPhotoPath = photo.getAbsolutePath();
 			Log.v(TAG, "createImageFile: "+ currentPhotoPath);
 			// put file handle in take photo intent extras
@@ -306,9 +322,11 @@ public class AhaHahActivity extends Activity {
 
 			// start camera for result of photo
 			startActivityForResult(intentTakePhoto, ACTION_TAKE_PHOTO);
+			return currentPhotoPath;
 
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
+            return PrefsUtils.DEFAULT_STRING_NADA;
 		}
 	}
 	// take photo result - capture resulting image
@@ -318,8 +336,8 @@ public class AhaHahActivity extends Activity {
 		if (resultCode == RESULT_OK ) {
 			if (requestCode == ACTION_TAKE_PHOTO) {
 				// TODO: unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
-				Uri imageUri = intent.getData();
-				Log.v(TAG, "onActivityResult URI " + imageUri);
+				String path = getPhotoCapturePath();
+				Log.v(TAG, "onActivityResult getPhotoCapturePath " + path);
 			}
 		} else {
 			Log.e(TAG, "onActivityResult NOT OK! request code " + requestCode + ", result code " + resultCode);

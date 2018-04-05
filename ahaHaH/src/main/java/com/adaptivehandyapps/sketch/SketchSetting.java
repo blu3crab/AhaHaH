@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.adaptivehandyapps.activity.SketchActivity;
 import com.adaptivehandyapps.ahahah.R;
 
 public class SketchSetting {

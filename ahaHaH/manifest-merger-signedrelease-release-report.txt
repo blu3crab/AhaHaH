@@ -193,7 +193,7 @@ ADDED from AndroidManifest.xml:83:9
 		ADDED from AndroidManifest.xml:87:13
 	android:name
 		ADDED from AndroidManifest.xml:84:13
-activity#com.adaptivehandyapps.activity.SketchActivity
+activity#com.adaptivehandyapps.sketch.SketchActivity
 ADDED from AndroidManifest.xml:93:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:95:13

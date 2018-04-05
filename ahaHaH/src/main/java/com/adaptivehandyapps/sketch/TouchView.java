@@ -25,8 +25,6 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Toast;
 
-import com.adaptivehandyapps.activity.SketchActivity;
-
 public class TouchView extends View implements
 		OnGestureListener, OnDoubleTapListener {
 
@@ -34,7 +32,7 @@ public class TouchView extends View implements
 
 	private SketchActivity mParentActivity;
 	private SketchSetting mSketchSetting;
-	private ShapeManager mShapeManager;
+	private ShapeModel mShapeModel;
 
 	// current touch position
 	private Paint mPaintCurrent;
@@ -75,10 +73,10 @@ public class TouchView extends View implements
 		// obtain sketch settings
 		mParentActivity = SketchActivity.getSketchActivity();
 		mSketchSetting = mParentActivity.getSketchSettings();
-		mShapeManager = mParentActivity.getShapeManager();
+		mShapeModel = mParentActivity.getShapeManager();
 		
 		// instantiate shape list
-//		mShapeList = mShapeManager.getShapeList();
+//		mShapeList = mShapeModel.getShapeList();
 
 		// pre-allocate draw/layout objects
 		mCanvas = new Canvas();
@@ -150,7 +148,7 @@ public class TouchView extends View implements
 		setMeasuredDimension(mCanvasWidth, mCanvasHeight);
 
 		// use canvas dimensions to set focus & bounds of background rect (0th)
-        List<ShapeObject> shapeList = mShapeManager.getShapeList();
+        List<ShapeObject> shapeList = mShapeModel.getShapeList();
 		ShapeObject shapeObject = shapeList.get(0);
 		mBgFocus.x = getCanvasWidth()/2;
 		mBgFocus.y = getCanvasHeight()/2;
@@ -172,7 +170,7 @@ public class TouchView extends View implements
 		// canvas
 		canvas.save();
 
-        List<ShapeObject> shapeList = mShapeManager.getShapeList();
+        List<ShapeObject> shapeList = mShapeModel.getShapeList();
         for (int size = shapeList.size(), i = 0; i < size; i++) {
 			mShapeObject = shapeList.get(i);
 			Log.d(TAG,"OnDraw: shape " + mShapeObject.getName());
@@ -184,8 +182,8 @@ public class TouchView extends View implements
 //			Log.d(TAG,"OnDraw: bound " + mShapeObject.getBound());
 		}
 		// draw visual indicator of focus
-		mFocus = mShapeManager.getShapeListFocus();
-		if (mFocus != ShapeManager.NOFOCUS) {
+		mFocus = mShapeModel.getShapeListFocus();
+		if (mFocus != ShapeModel.NOFOCUS) {
 			mShapeObject = shapeList.get(mFocus);
 	        Log.d(TAG,"OnDraw: draw focus(" + mFocus + ") at " + mShapeObject.getFocus().x + ", " + mShapeObject.getFocus().y);
 			// draw cross-hair at shape focus
@@ -265,14 +263,14 @@ public class TouchView extends View implements
 	///////////////////////////////////////////////////////////////////////////
     // clear view
 	public boolean clearView() {
-		mShapeManager.initShapeList();
+		mShapeModel.initShapeList();
 		invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////
     // update paint
 	public boolean updatePaint() {
-		if (mShapeManager.updatePaint()) {
+		if (mShapeModel.updatePaint()) {
 			invalidate();
 			return true;
 		}
@@ -315,33 +313,33 @@ public class TouchView extends View implements
 			case MotionEvent.ACTION_DOWN:
 		        // if no gestures detected, start shape or move
 				if (!mGestureDetected) {
-					if (mShapeManager.getShapeListFocus() == ShapeManager.NOFOCUS) {
-						mShapeManager.startShape(mTouchX, mTouchY);
+					if (mShapeModel.getShapeListFocus() == ShapeModel.NOFOCUS) {
+						mShapeModel.startShape(mTouchX, mTouchY);
 					}
 					else {
-						mShapeManager.startMove(mTouchX, mTouchY);
+						mShapeModel.startMove(mTouchX, mTouchY);
 					}
 				}
 				return true;
 			case MotionEvent.ACTION_MOVE:
 		        // if no gestures detected, refine shape or move
 				if (!mGestureDetected) {
-					if (mShapeManager.getShapeListFocus() == ShapeManager.NOFOCUS) {
-						mShapeManager.refineShape(mTouchX, mTouchY);
+					if (mShapeModel.getShapeListFocus() == ShapeModel.NOFOCUS) {
+						mShapeModel.refineShape(mTouchX, mTouchY);
 					}
 					else {
-						mShapeManager.refineMove(mTouchX, mTouchY);
+						mShapeModel.refineMove(mTouchX, mTouchY);
 					}
 				}
 				break;
 			case MotionEvent.ACTION_UP:
 		        // if no gestures detected, complete shape or move
 				if (!mGestureDetected) {
-					if (mShapeManager.getShapeListFocus() == ShapeManager.NOFOCUS) {
-						mShapeManager.completeShape(mTouchX, mTouchY);
+					if (mShapeModel.getShapeListFocus() == ShapeModel.NOFOCUS) {
+						mShapeModel.completeShape(mTouchX, mTouchY);
 					}
 					else {
-						mShapeManager.refineMove(mTouchX, mTouchY);
+						mShapeModel.refineMove(mTouchX, mTouchY);
 					}
 				}
 				// clear any gesture
@@ -361,9 +359,9 @@ public class TouchView extends View implements
 				Log.v(TAG, "onTouchEvent multi-touch loop (" + i + ") id, x, y: " + event.getPointerId(i) + ", " + event.getX(i) + ", " + event.getY(i));
 			}
 			// enable pinch-zoom if shape has focus
-			if (mShapeManager.getShapeListFocus() != ShapeManager.NOFOCUS) {  
+			if (mShapeModel.getShapeListFocus() != ShapeModel.NOFOCUS) {
 				// resize based on scale factor
-				mShapeManager.resizeShape(mScaleFactor);
+				mShapeModel.resizeShape(mScaleFactor);
 				
 				switch(maskedAction) {
 				case MotionEvent.ACTION_DOWN:
@@ -405,10 +403,10 @@ public class TouchView extends View implements
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, 
             float velocityX, float velocityY) {
-        Log.d(TAG, "onFling: " + mShapeManager.getShapeListFocus());
+        Log.d(TAG, "onFling: " + mShapeModel.getShapeListFocus());
 //        Log.d(TAG, "onFling: " + event1.toString()+event2.toString());
 //		Toast.makeText(mParentActivity, "onFling", Toast.LENGTH_SHORT).show();
-        if ( mShapeManager.getShapeListFocus() != ShapeManager.NOFOCUS) {
+        if ( mShapeModel.getShapeListFocus() != ShapeModel.NOFOCUS) {
             Toast.makeText(mParentActivity, "Double tap to clear focus.", Toast.LENGTH_SHORT).show();
         }
 //        else {
@@ -422,9 +420,9 @@ public class TouchView extends View implements
         Log.d(TAG, "onLongPress: "); 
 //        Log.d(TAG, "onLongPress: " + event.toString()); 
         // set focus
-        int focus = mShapeManager.setShapeListFocus(event.getX(), event.getY());
-        if ( focus != ShapeManager.NOFOCUS) {
-            List<ShapeObject> shapeList = mShapeManager.getShapeList();
+        int focus = mShapeModel.setShapeListFocus(event.getX(), event.getY());
+        if ( focus != ShapeModel.NOFOCUS) {
+            List<ShapeObject> shapeList = mShapeModel.getShapeList();
             mShapeObject = shapeList.get(focus);
         	Log.d(TAG, "onLongPress: shape focus " + mShapeObject.getName());
 			Toast.makeText(mParentActivity, "LongPress: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
@@ -463,9 +461,9 @@ public class TouchView extends View implements
         Log.d(TAG, "onSingleTapConfirmed: ");
 //        Log.d(TAG, "onSingleTapConfirmed: " + event.toString());
         // set next shape as focus
-        int focus = mShapeManager.setNextShapeListFocus();
-        if ( focus != ShapeManager.NOFOCUS) {
-            List<ShapeObject> shapeList = mShapeManager.getShapeList();
+        int focus = mShapeModel.setNextShapeListFocus();
+        if ( focus != ShapeModel.NOFOCUS) {
+            List<ShapeObject> shapeList = mShapeModel.getShapeList();
         	mShapeObject = shapeList.get(focus);
         	Log.d(TAG, "onSingleTapConfirmed: shape focus " + mShapeObject.getName());
 			Toast.makeText(mParentActivity, "Single Tap Confirmed: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
@@ -481,8 +479,8 @@ public class TouchView extends View implements
         Log.d(TAG, "onDoubleTap: ");
 //        Log.d(TAG, "onDoubleTap: " + event.toString());
         // clear focus
-        mShapeManager.clearShapeListFocus();
-        Log.d(TAG, "onDoubleTap: draw list focus " + mShapeManager.getShapeListFocus());
+        mShapeModel.clearShapeListFocus();
+        Log.d(TAG, "onDoubleTap: draw list focus " + mShapeModel.getShapeListFocus());
 		Toast.makeText(mParentActivity, "Double Tap: focus cleared.", Toast.LENGTH_SHORT).show();
         mGestureDetected = true;
         // focus altered

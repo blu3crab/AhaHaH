@@ -27,13 +27,12 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.EditText;
 
-import com.adaptivehandyapps.activity.SketchActivity;
 import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 
-public class ShapeManager {
+public class ShapeModel {
 
-	private static final String TAG = "ShapeManager"; 
+	private static final String TAG = "ShapeModel";
 
 	// parent activity for sketch setting 
 	private SketchActivity mParentActivity;
@@ -76,7 +75,7 @@ public class ShapeManager {
 
 	////////////////////////////////////////////////////////////////////////////
 	// constructor
-	public ShapeManager() {
+	public ShapeModel() {
 		// obtain sketch settings
 		mParentActivity = SketchActivity.getSketchActivity();
 		mSketchSetting = mParentActivity.getSketchSettings();

@@ -2,7 +2,7 @@
 <resources>
 
     <!-- titles --> 
-    <string name="app_name_text">MarkIt!</string>
+    <string name="app_name_text">mARkit!</string>
     <string name="author_name">"Adaptive Handy Apps"</string>
     <string name="title_activity_camera">CameraActivity</string>
     <string name="title_activity_gallery">GalleryActivity</string>

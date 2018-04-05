@@ -2,7 +2,7 @@
 // Contributor(s): M.A.Tucker
 // Origination: MAR 2013
 // Copyright © 2015 Adaptive Handy Apps, LLC.  All Rights Reserved.
-package com.adaptivehandyapps.activity;
+package com.adaptivehandyapps.sketch;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,10 +22,8 @@ import android.view.View.OnClickListener;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import com.adaptivehandyapps.activity.AhaHahActivity;
 import com.adaptivehandyapps.ahahah.R;
-import com.adaptivehandyapps.sketch.ShapeManager;
-import com.adaptivehandyapps.sketch.SketchSetting;
-import com.adaptivehandyapps.sketch.TouchView;
 import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
@@ -39,13 +36,13 @@ public class SketchActivity extends Activity {
     public static final int REQUEST_CODE_SELECT_BACKDROP = 2;
     public static final int REQUEST_CODE_SELECT_OVERLAY = 3;
 
-    private Activity mParentActivity;
+//    private Activity mParentActivity;
     private Context mContext;
 
 	private static SketchActivity mSketchActivity;
 
 	private SketchSetting mSketchSettings = null;	// sketch settings
-	private ShapeManager mShapeManager = null;		// shape manager
+	private ShapeModel mShapeModel = null;		// shape manager
 	private TouchView mTouchView = null;			// touch view
 
     // canvas dimensions 
@@ -69,7 +66,7 @@ public class SketchActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		// set parent activity reference
 //        mParentActivity = AhaHahActivity.mParentActivity;
-        mParentActivity = AhaHahActivity.getAhaHahActivity();
+//        mParentActivity = AhaHahActivity.getAhaHahActivity();
         mContext = this;
 
 		// set canvas dimensions to display dimensions until touch view canvas created
@@ -85,24 +82,24 @@ public class SketchActivity extends Activity {
 		// restore saved sketch settings
 		mSketchSettings.restoreSketchSettings();
 		// instantiate shape manager
-		mShapeManager = new ShapeManager();
+		mShapeModel = new ShapeModel();
 		// if project folder has not changed
         String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
 		if ( albumName.equals(mSketchSettings.getAlbumName())) {
-			// load ShapeManager shape list
-			mShapeManager.load(temp);
+			// load ShapeModel shape list
+			mShapeModel.load(temp);
 			Log.v(TAG, "onCreate loading: " + mSketchSettings.getAlbumName());
 		}
 		else {
-			// reset ShapeManager shape list based on obsolete project folder
+			// reset ShapeModel shape list based on obsolete project folder
 			mSketchSettings.setAlbumName(albumName);
-			// delete ShapeManager shape list
-			mShapeManager.delete(temp);			
+			// delete ShapeModel shape list
+			mShapeModel.delete(temp);
 			Log.v(TAG, "onCreate reset to: " + mSketchSettings.getAlbumName());
 		}
 
 		// instantiate touch view after layout (id:the_canvas)
-		setContentView(R.layout.activity_sketch);
+		setContentView(R.layout.sketch_canvas);
 		mTouchView = (TouchView) findViewById(R.id.the_canvas);
 
 		// fixed landscape orientation
@@ -122,8 +119,8 @@ public class SketchActivity extends Activity {
 		Log.v(TAG, "onPause");     	
     	// perform light weight cleanup, release resources, save draft data
 		mSketchSettings.saveSketchSettings();
-		// save ShapeManager shape list
-		mShapeManager.save(temp);
+		// save ShapeModel shape list
+		mShapeModel.save(temp);
 		
         super.onPause();
     }
@@ -165,7 +162,7 @@ public class SketchActivity extends Activity {
     // provide access to touch view
 	public TouchView getTouchView() { return mTouchView; }
     // provide access to shape manager
-    public ShapeManager getShapeManager() { return mShapeManager; }
+    public ShapeModel getShapeManager() { return mShapeModel; }
     // canvas dimensions
     public int getCanvasWidth() { return mCanvasWidth; }
     public void setCanvasWidth(int dim) { mCanvasWidth = dim; }
@@ -174,7 +171,7 @@ public class SketchActivity extends Activity {
 
     ///////////////////////////////////////////////////////////////////////////
     public void updatePaint() {
-        mShapeManager.updatePaint();
+        mShapeModel.updatePaint();
         mTouchView.invalidate();
     }
 	///////////////////////////////////////////////////////////////////////////
@@ -290,12 +287,12 @@ public class SketchActivity extends Activity {
 					case R.id.action_sketch_file_new:
 						Log.v(TAG, "onMenuItemClick file new.");
 						// if current shape list contains more than BG rect
-						if (mShapeManager.getShapeList().size() > 1) {
+						if (mShapeModel.getShapeList().size() > 1) {
 							// prompt to save current sketch
 							saveSketchAlert();
 						}
 						// clear sketch canvas...unfortunately, canvas cleared prior to save
-//						mShapeManager.clearShapeList();
+//						mShapeModel.clearShapeList();
 						break;
 					case R.id.action_sketch_file_loadbackdrop:
 						Log.v(TAG, "onMenuItemClick load backdrop.");
@@ -304,13 +301,13 @@ public class SketchActivity extends Activity {
 					case R.id.action_sketch_file_loadoverlay:
 						Log.v(TAG, "onMenuItemClick load overlay image.");
 	        			// ensure rect is focus
-	        			focus = mShapeManager.getShapeListFocus();
-	        			if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
+	        			focus = mShapeModel.getShapeListFocus();
+	        			if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
 	            			// start gallery to select image OVERLAY (focus)
 							startGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
 	        			}
 	        			else {
-	      	        		Toast.makeText(mParentActivity, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
+	      	        		Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
 	        			}
 
 						break;
@@ -327,54 +324,54 @@ public class SketchActivity extends Activity {
 					case R.id.action_sketch_erase_backdrop:
 						Log.v(TAG, "onMenuItemClick erase backdrop.");
 						// if 1st shape is image, assume backdrop & clear
-	        			if (mShapeManager.isShapeType(ShapeType.IMAGE, ShapeManager.BACKDROP_IMAGE_INX)) {
-	        				mShapeManager.clearShape(ShapeManager.BACKDROP_IMAGE_INX);
+	        			if (mShapeModel.isShapeType(ShapeType.IMAGE, ShapeModel.BACKDROP_IMAGE_INX)) {
+	        				mShapeModel.clearShape(ShapeModel.BACKDROP_IMAGE_INX);
 	        			}
 	        			else {
-	     	        		Toast.makeText(mParentActivity, R.string.sketch_no_backdrop_toast, Toast.LENGTH_LONG).show();      				
+	     	        		Toast.makeText(mContext, R.string.sketch_no_backdrop_toast, Toast.LENGTH_LONG).show();
 	        			}
 	        			break;
 					case R.id.action_sketch_erase_overlay:
 						Log.v(TAG, "onMenuItemClick erase overlay.");
 						// if focus is image, revert to rect
-	        			focus = mShapeManager.getShapeListFocus();
-	        			if (mShapeManager.isShapeType(ShapeType.IMAGE, focus)) {
-	        				mShapeManager.revertShapeToRect(focus);
+	        			focus = mShapeModel.getShapeListFocus();
+	        			if (mShapeModel.isShapeType(ShapeType.IMAGE, focus)) {
+	        				mShapeModel.revertShapeToRect(focus);
 	        			}
 	        			else {
-	     	        		Toast.makeText(mParentActivity, R.string.sketch_no_overlay_toast, Toast.LENGTH_LONG).show();      				
+	     	        		Toast.makeText(mContext, R.string.sketch_no_overlay_toast, Toast.LENGTH_LONG).show();
 	        			}
 						break;
 					case R.id.action_sketch_erase_select:
 						Log.v(TAG, "onMenuItemClick erase selected shape.");
 						// if shape is selected, clear focus shape
-	        			focus = mShapeManager.getShapeListFocus();
-	        			if (focus != ShapeManager.NOFOCUS) {
-	        				mShapeManager.clearShape(focus);
+	        			focus = mShapeModel.getShapeListFocus();
+	        			if (focus != ShapeModel.NOFOCUS) {
+	        				mShapeModel.clearShape(focus);
 	        			}
 	        			else {
-	     	        		Toast.makeText(mParentActivity, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();      				
+	     	        		Toast.makeText(mContext, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();
 	        			}
 						break;
 					case R.id.action_sketch_erase_last:
 						Log.v(TAG, "onMenuItemClick erase last shape.");
 						// clear last shape
-						int lastInx = mShapeManager.getShapeList().size()-1;
-						if (!mShapeManager.clearShape(lastInx)) {
-	     	        		Toast.makeText(mParentActivity, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();      											
+						int lastInx = mShapeModel.getShapeList().size()-1;
+						if (!mShapeModel.clearShape(lastInx)) {
+	     	        		Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
 						}
 						break;
 					case R.id.action_sketch_erase_all:
 						Log.v(TAG, "onMenuItemClick erase all.");
 						// clear sketch canvas
 //						mTouchView.clearView();
-						mShapeManager.initShapeList();
+						mShapeModel.initShapeList();
 						break;
 					}
 				}
 				else if (mSketchSettings.setMenuSelection(mPopupMenuResId, item)) {
 //					mTouchView.updatePaint();
-					mShapeManager.updatePaint();
+					mShapeModel.updatePaint();
 				}
                 else {
                     Log.e(TAG, "showPopupMenu.setOnMenuItemClickListener sees invalid menuResId.");
@@ -409,16 +406,16 @@ public class SketchActivity extends Activity {
 					case REQUEST_CODE_SELECT_BACKDROP:
 						// set image as backdrop (0th indicates insert BACKDROP)
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
-						mShapeManager.setImageShape(imagePath, 0);
+						mShapeModel.setImageShape(imagePath, 0);
 						mTouchView.invalidate();
 						break;
 					case REQUEST_CODE_SELECT_OVERLAY:
 						// if rect selected, set image to selected rect shape
-						int focus = mShapeManager.getShapeListFocus();
+						int focus = mShapeModel.getShapeListFocus();
 						Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY focus shape inx: " + focus);
-						if (mShapeManager.isShapeType(ShapeType.RECT, focus)) {
+						if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
 							// set image as OVERLAY (focus)
-							mShapeManager.setImageShape(imagePath, focus);
+							mShapeModel.setImageShape(imagePath, focus);
 						}
 						else {
 							Log.e(TAG, "onActivityResult OVERLAY failure - focus (" + focus + ") is not RECT. ");
@@ -470,7 +467,7 @@ public class SketchActivity extends Activity {
 			mImageBitmap = bitmap;
 			
             Log.v(TAG, "Sketch saved to " + albumName);
-            Toast.makeText(mParentActivity, "Sketch saved to " + albumName, Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "Sketch saved to " + albumName, Toast.LENGTH_LONG).show();
         }
 		catch (Exception e) {
 			e.printStackTrace();
@@ -490,7 +487,7 @@ public class SketchActivity extends Activity {
                // Yes, proceed to clear current sketch
                Log.v(TAG, "saveSketchAlert proceed? YES");
                // clear sketch canvas
-               mShapeManager.initShapeList();
+               mShapeModel.initShapeList();
                mTouchView.invalidate();
             }
         });

@@ -62,7 +62,7 @@
         </activity>
         
         <activity
-            android:name="com.adaptivehandyapps.activity.SketchActivity"
+            android:name="com.adaptivehandyapps.sketch.SketchActivity"
             android:screenOrientation="landscape"
             android:label="@string/title_activity_sketch" 
             android:parentActivityName="com.adaptivehandyapps.activity.AhaHahActivity" >
