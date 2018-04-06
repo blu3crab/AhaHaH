@@ -4,7 +4,8 @@
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
      -->
-    <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <!--style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar"-->
+    <style name="AppBaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -18,7 +19,13 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-	<!-- doesn't seem to adapt popups? -->
+    <style name="SplashLayout">
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- doesn't seem to adapt popups? -->
     <style name="PopupMenu">
         <item name="android:textSize">8sp</item>
     </style>

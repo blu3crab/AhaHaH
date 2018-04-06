@@ -17,6 +17,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,8 +45,6 @@ import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
 
 public class AhaHahActivity extends Activity {
-//    public class AhaHahActivity extends Activity
-//            implements NavigationView.OnNavigationItemSelectedListener {
 
 	private static final String TAG = "AhaHahActivity";
 	// toast display metrics at startup
@@ -57,7 +58,7 @@ public class AhaHahActivity extends Activity {
 	private static final int ACTION_TAKE_PHOTO = 2;
 
 //	private static AhaHahActivity mParentActivity;
-	
+
     ////////////////////////////////////////////////////////////////////////
     // setters/getters
 //    public static AhaHahActivity getAhaHahActivity() {
@@ -85,10 +86,10 @@ public class AhaHahActivity extends Activity {
         String toastText = AhaDisplayMetrics.toString(this);
         if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
-//        setContentView(R.layout.activity_ahahah);
-//
-//		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
-//		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
+        setContentView(R.layout.activity_ahahah);
+
+		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
+		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
 
 //		mParentActivity = this;
 
@@ -99,8 +100,8 @@ public class AhaHahActivity extends Activity {
 		setProjectFolder(albumName);
 		Log.v(TAG, "onCreate set project folder: " + albumName);
 
-		// launch sketch activity
-        this.startSketchActivity(getCurrentFocus());
+//		// launch sketch activity
+//        this.startSketchActivity(getCurrentFocus());
 
         return true;
 	}
@@ -247,7 +248,9 @@ public class AhaHahActivity extends Activity {
     	// initialize resources released during OnPause
         super.onResume();
 		// say hello
-		Log.v(TAG, "onResume");     	
+		Log.v(TAG, "onResume");
+		// setup splash view
+        setupSplashView();
     }
 
     protected void onPause() {
@@ -443,5 +446,62 @@ public class AhaHahActivity extends Activity {
 			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
 		}
 	}
+    private Boolean setupSplashView() {
+        ImageView splashView = (ImageView) findViewById(R.id.imageViewSplash);
+        ImageView thumbView = (ImageView) findViewById(R.id.imageViewThumb);
+        String imagePath = PrefsUtils.getPrefs(this, PrefsUtils.IMAGEPATH_KEY);
+        // if image path & target views defined
+        if (!imagePath.equals(PrefsUtils.DEFAULT_STRING_NADA) && splashView != null && thumbView != null) {
+            // ensure file still exists
+            File file = new File(imagePath);
+            if (!file.exists()) return false;
+
+            // get device dimensions
+            DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(this);
+            int targetDeviceW = displayMetrics.widthPixels;
+            int targetDeviceH = displayMetrics.heightPixels;
+            Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
+
+            int scaleFactor = 1;
+            // get size of photo
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(imagePath, bmOptions);
+            //////////////////////////FIT////////////////////////
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+            Log.v(TAG, "setupView: photo W/H: " + photoW + "/" + photoH);
+            // round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
+            scaleFactor = Math.min(photoW / targetDeviceW, photoH / targetDeviceH) + 1;
+            Log.v(TAG, "setupView: FIT scale factor: " + scaleFactor);
+            // set bitmap options to scale the image decode target
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+            bmOptions.inPurgeable = true;
+
+            // decode the JPEG into the bitmap
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+            // associate bitmap with view
+            splashView.setImageBitmap(bitmap);
+            splashView.setVisibility(View.VISIBLE);
+
+            //////////////////////////THUMB///////////////
+            // set bitmap options to scale the image decode target
+            scaleFactor = Math.min(photoW / (photoW / 10), photoH / (photoH / 10));
+            Log.v(TAG, "setupView: THUMB scale factor: " + scaleFactor);
+
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+            bmOptions.inPurgeable = true;
+
+            // decode the JPEG into the bitmap
+            bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+
+            // associate bitmap with view
+            thumbView.setImageBitmap(bitmap);
+            thumbView.setVisibility(View.VISIBLE);
+        }
+        return true;
+    }
 	///////////////////////////////////////////////////////////////////////////////
 }

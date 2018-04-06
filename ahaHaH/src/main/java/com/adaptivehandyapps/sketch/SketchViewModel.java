@@ -16,8 +16,8 @@ import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
 
-public class SketchSetting {
-	private static final String TAG = "SketchSetting"; 
+public class SketchViewModel {
+	private static final String TAG = "SketchViewModel";
 	
 	private SketchActivity mParentActivity;
 
@@ -84,7 +84,7 @@ public class SketchSetting {
 
 	///////////////////////////////////////////////////////////////////////////////
     // constructor
-	public SketchSetting() {
+	public SketchViewModel() {
 		mParentActivity = SketchActivity.getSketchActivity();
 	}
 	/////////////getters////////////////
@@ -102,10 +102,10 @@ public class SketchSetting {
 		}
 	}
 	public Paint.Style getStyle() { 
-		if (mStyleFill == SketchSetting.Style.STROKE) {
+		if (mStyleFill == SketchViewModel.Style.STROKE) {
 			return Paint.Style.STROKE;
 		}
-		else if (mStyleFill == SketchSetting.Style.FILL) {
+		else if (mStyleFill == SketchViewModel.Style.FILL) {
 			return Paint.Style.FILL;
 		}
 		else {

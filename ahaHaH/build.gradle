@@ -13,8 +13,8 @@ android {
         release
     }
 
-    compileSdkVersion 24
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.0"
     buildTypes {
         debug {
             debuggable true
@@ -35,7 +35,7 @@ android {
             applicationId 'com.adaptivehandyapps.ahahah'
             proguardFile 'C:/Tuc/AhaDev/AhaHAH/app/proguard-project.txt'
             signingConfig signingConfigs.release
-            targetSdkVersion 24
+            targetSdkVersion 27
             versionCode 3
             versionName '3.0'
         }
@@ -67,6 +67,6 @@ android {
 
 dependencies {
     compile project(':colorPickerView')
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
 }

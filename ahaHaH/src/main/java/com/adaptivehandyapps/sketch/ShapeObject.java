@@ -18,7 +18,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 
-import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
+import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
 
 // shape list object
 public class ShapeObject implements java.io.Serializable{

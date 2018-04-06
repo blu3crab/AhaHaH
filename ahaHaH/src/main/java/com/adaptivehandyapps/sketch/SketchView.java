@@ -25,13 +25,13 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Toast;
 
-public class TouchView extends View implements
+public class SketchView extends View implements
 		OnGestureListener, OnDoubleTapListener {
 
 	private static final String TAG = "TouchView"; 
 
 	private SketchActivity mParentActivity;
-	private SketchSetting mSketchSetting;
+	private SketchViewModel mSketchViewModel;
 	private ShapeModel mShapeModel;
 
 	// current touch position
@@ -68,11 +68,11 @@ public class TouchView extends View implements
 
 	///////////////////////////////////////////////////////////////////////////
     // constructor
-	public TouchView(Context context, AttributeSet attrs) {
+	public SketchView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		// obtain sketch settings
 		mParentActivity = SketchActivity.getSketchActivity();
-		mSketchSetting = mParentActivity.getSketchSettings();
+		mSketchViewModel = mParentActivity.getSketchViewModel();
 		mShapeModel = mParentActivity.getShapeManager();
 		
 		// instantiate shape list
@@ -103,7 +103,7 @@ public class TouchView extends View implements
 		mPaintFocus.setColor(Color.GRAY);
 		mPaintFocus.setStyle(Paint.Style.STROKE);
 		mPaintFocus.setAntiAlias(true);
-//		mPaintFocus.setStrokeWidth(mSketchSetting.getSize());  
+//		mPaintFocus.setStrokeWidth(mSketchViewModel.getSize());
 		mPaintFocus.setStrokeWidth(4.0f);  
 
 		// zoom
@@ -227,7 +227,7 @@ public class TouchView extends View implements
 				PointF pt = shapeObject.getFocus();
 				float textSize = rrect.bottom - rrect.top;
 				paint.setTextSize(textSize); 
-				float textWidth = (float) (mSketchSetting.getSize()/2.0);
+				float textWidth = (float) (mSketchViewModel.getSize()/2.0);
 				paint.setStrokeWidth(textWidth);
 				canvas.drawText(label, pt.x, pt.y, paint); 
 				break;

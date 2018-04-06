@@ -27,7 +27,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.EditText;
 
-import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
+import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 
 public class ShapeModel {
@@ -36,7 +36,7 @@ public class ShapeModel {
 
 	// parent activity for sketch setting 
 	private SketchActivity mParentActivity;
-	private SketchSetting mSketchSetting;
+	private SketchViewModel mSketchViewModel;
 	// working
 	private ShapeObject mShapeObject;	// working shape list object
 	private ShapeType mShapeType;		// working sketch shape type
@@ -78,7 +78,7 @@ public class ShapeModel {
 	public ShapeModel() {
 		// obtain sketch settings
 		mParentActivity = SketchActivity.getSketchActivity();
-		mSketchSetting = mParentActivity.getSketchSettings();
+		mSketchViewModel = mParentActivity.getSketchViewModel();
 		initShapeList();
 	}
 	////////////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ public class ShapeModel {
 		// add canvas paint, background full-screen rect as 0th draw shape element
 		mShapeList = new ArrayList<ShapeObject>();
 		ShapeObject shapeObject = new ShapeObject();
-		shapeObject.setShapeType(SketchSetting.ShapeType.RECT);
+		shapeObject.setShapeType(SketchViewModel.ShapeType.RECT);
 		shapeObject.setName(mBgRectName);
 		Log.v(TAG, "shape name: " + mBgRectName);
 		shapeObject.setFocus(new PointF(
@@ -317,7 +317,7 @@ public class ShapeModel {
 		if (shapeListInx <= 0) {
 			// BACKDROP - if position zero then create shape & insert as 1st element
 			shapeObject = new ShapeObject();
-			shapeObject.setShapeType(SketchSetting.ShapeType.IMAGE);
+			shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
 			shapeObject.setName(imagePath);
 			shapeObject.setPaint(paint);
 			Log.v(TAG, "BACKDROP image path: " + imagePath);
@@ -378,8 +378,8 @@ public class ShapeModel {
 			// OVERLAY - if position non-zero then get object from list
 			shapeObject = mShapeList.get(shapeListInx);
 			if (shapeObject != null &&
-					shapeObject.getShapeType() == SketchSetting.ShapeType.RECT) {
-				shapeObject.setShapeType(SketchSetting.ShapeType.IMAGE);
+					shapeObject.getShapeType() == SketchViewModel.ShapeType.RECT) {
+				shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
 				shapeObject.setName(imagePath);
 				Log.v(TAG, "OVERLAY image path: " + imagePath);
 				// set bitmap
@@ -397,7 +397,7 @@ public class ShapeModel {
 	// start shape - create draw object capturing initial touch, paint settings
 	public boolean startShape(float x, float y) {
 		// working shape
-		mShapeType = mSketchSetting.getShape();
+		mShapeType = mSketchViewModel.getShape();
 		mShapeObject = new ShapeObject();
 		mShapeObject.setShapeType(mShapeType);
 		mShapeObject.setName(mShapeType.toString()+mShapeList.size());
@@ -406,9 +406,9 @@ public class ShapeModel {
 		// working paint
 		mPaint = new Paint();
 		mPaint.setAntiAlias(true);
-		mPaint.setStrokeWidth(mSketchSetting.getSize());  
-		mPaint.setColor(mSketchSetting.getColor());
-		mPaint.setStyle(mSketchSetting.getStyle());
+		mPaint.setStrokeWidth(mSketchViewModel.getSize());
+		mPaint.setColor(mSketchViewModel.getColor());
+		mPaint.setStyle(mSketchViewModel.getStyle());
 		mPaint.setStrokeJoin(Paint.Join.ROUND);
 		// 
 		switch (mShapeType)
@@ -439,10 +439,10 @@ public class ShapeModel {
 			mCenter = new PointF (x, y);
 			// set rect around center
 			mRect = new RectF();
-			float left = x - mSketchSetting.getSize();
-			float top = y - mSketchSetting.getSize();
-			float right = x + mSketchSetting.getSize();
-			float bottom = y + mSketchSetting.getSize();
+			float left = x - mSketchViewModel.getSize();
+			float top = y - mSketchViewModel.getSize();
+			float right = x + mSketchViewModel.getSize();
+			float bottom = y + mSketchViewModel.getSize();
 			mRect.set(left, top, right, bottom);
 			mShapeObject.setFocus(mCenter);
 			mShapeObject.setBound(mRect);
@@ -452,7 +452,7 @@ public class ShapeModel {
 		case CIRCLE:
 			// touch is center
 			mCenter = new PointF (x, y);
-			mRadius = mSketchSetting.getSize();
+			mRadius = mSketchViewModel.getSize();
 			// set rect around center
 			mCircle = new float[3];
 			mCircle[0] = mCenter.x;
@@ -476,7 +476,7 @@ public class ShapeModel {
 	// refine shape - adding touches to resize or refine
 	public boolean refineShape(float x, float y) {
 		// working shape
-		mShapeType = mSketchSetting.getShape();
+		mShapeType = mSketchViewModel.getShape();
 
 		switch (mShapeType)
 		{
@@ -544,7 +544,7 @@ public class ShapeModel {
         }
 
         // if focus hold set
-		if (mSketchSetting.getFocusHold()) {
+		if (mSketchViewModel.getFocusHold()) {
 			// set focus to new shape
 			mShapeListFocus = setShapeListFocus (mShapeList.size()-1);
 		}
@@ -624,9 +624,9 @@ public class ShapeModel {
 //		// working paint
 //		mPaint = new Paint();
 //		mPaint.setAntiAlias(true);
-//		mPaint.setStrokeWidth(mSketchSetting.getSize());  
+//		mPaint.setStrokeWidth(mSketchViewModel.getSize());
 //		mPaint.setColor(Color.WHITE);
-//		mPaint.setStyle(mSketchSetting.getStyle());
+//		mPaint.setStyle(mSketchViewModel.getStyle());
 //		mPaint.setStrokeJoin(Paint.Join.ROUND);
 //		// 
 //		mPath = new Path();
@@ -844,10 +844,10 @@ public class ShapeModel {
 	public boolean updatePaint() {
 		if (getShapeListFocus() != NOFOCUS) {
 			mShapeObject = mShapeList.get(getShapeListFocus());
-			mShapeObject.getPaint().setColor(mSketchSetting.getColor());
+			mShapeObject.getPaint().setColor(mSketchViewModel.getColor());
             if (getShapeListFocus() != CANVAS_SHAPELIST_INX) {
-                mShapeObject.getPaint().setStyle(mSketchSetting.getStyle());
-                mShapeObject.getPaint().setStrokeWidth(mSketchSetting.getSize());
+                mShapeObject.getPaint().setStyle(mSketchViewModel.getStyle());
+                mShapeObject.getPaint().setStrokeWidth(mSketchViewModel.getSize());
             }
 			return true;
 		}
@@ -860,7 +860,7 @@ public class ShapeModel {
 	
 	private boolean isDelta (PointF center, float x, float y) {
 		// true if delta between center & point is detectable (greater than line size) 
-		if (Math.abs(center.x - x) > mSketchSetting.getSize() || Math.abs(center.y - y) > mSketchSetting.getSize()) {
+		if (Math.abs(center.x - x) > mSketchViewModel.getSize() || Math.abs(center.y - y) > mSketchViewModel.getSize()) {
 			return true;
 		}
 		return false;

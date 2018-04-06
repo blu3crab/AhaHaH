@@ -19,17 +19,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.adaptivehandyapps.activity.AhaHahActivity;
 import com.adaptivehandyapps.ahahah.R;
-import com.adaptivehandyapps.sketch.SketchSetting.ShapeType;
+import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
 
 public class SketchActivity extends Activity {
+	//            implements NavigationView.OnNavigationItemSelectedListener {
+
 	// sketch activity
 	private static final String TAG = "SketchActivity";
 
@@ -41,9 +43,9 @@ public class SketchActivity extends Activity {
 
 	private static SketchActivity mSketchActivity;
 
-	private SketchSetting mSketchSettings = null;	// sketch settings
+	private SketchViewModel mSketchViewModel = null;	// sketch settings
 	private ShapeModel mShapeModel = null;		// shape manager
-	private TouchView mTouchView = null;			// touch view
+	private SketchView mSketchView = null;			// touch view
 
     // canvas dimensions 
     private int mCanvasWidth = -1;
@@ -76,31 +78,32 @@ public class SketchActivity extends Activity {
 		// set sketch activity reference
 		mSketchActivity = this;
 		// instantiate sketch setting
-		mSketchSettings = new SketchSetting();
+		mSketchViewModel = new SketchViewModel();
 		// set defaults for unsaved items
-		mSketchSettings.setDefaultSettings();
+		mSketchViewModel.setDefaultSettings();
 		// restore saved sketch settings
-		mSketchSettings.restoreSketchSettings();
+		mSketchViewModel.restoreSketchSettings();
 		// instantiate shape manager
 		mShapeModel = new ShapeModel();
 		// if project folder has not changed
         String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
-		if ( albumName.equals(mSketchSettings.getAlbumName())) {
+		if ( albumName.equals(mSketchViewModel.getAlbumName())) {
 			// load ShapeModel shape list
 			mShapeModel.load(temp);
-			Log.v(TAG, "onCreate loading: " + mSketchSettings.getAlbumName());
+			Log.v(TAG, "onCreate loading: " + mSketchViewModel.getAlbumName());
 		}
 		else {
 			// reset ShapeModel shape list based on obsolete project folder
-			mSketchSettings.setAlbumName(albumName);
+			mSketchViewModel.setAlbumName(albumName);
 			// delete ShapeModel shape list
 			mShapeModel.delete(temp);
-			Log.v(TAG, "onCreate reset to: " + mSketchSettings.getAlbumName());
+			Log.v(TAG, "onCreate reset to: " + mSketchViewModel.getAlbumName());
 		}
 
 		// instantiate touch view after layout (id:the_canvas)
-		setContentView(R.layout.sketch_canvas);
-		mTouchView = (TouchView) findViewById(R.id.the_canvas);
+//		setContentView(R.layout.sketch_canvas);
+		setContentView(R.layout.sketch_nav_drawer);
+		mSketchView = (SketchView) findViewById(R.id.the_canvas);
 
 		// fixed landscape orientation
 		// get orientation degree - follow scale listener pattern or make it work somehow...
@@ -118,7 +121,7 @@ public class SketchActivity extends Activity {
     protected void onPause() {
 		Log.v(TAG, "onPause");     	
     	// perform light weight cleanup, release resources, save draft data
-		mSketchSettings.saveSketchSettings();
+		mSketchViewModel.saveSketchSettings();
 		// save ShapeModel shape list
 		mShapeModel.save(temp);
 		
@@ -158,10 +161,11 @@ public class SketchActivity extends Activity {
     // getters:
     public static SketchActivity getSketchActivity() { return mSketchActivity; }
     // provide access to sketch settings
-    public SketchSetting getSketchSettings() { return mSketchSettings; }
+    public SketchViewModel getSketchViewModel() { return mSketchViewModel; }
     // provide access to touch view
-	public TouchView getTouchView() { return mTouchView; }
+	public SketchView getTouchView() { return mSketchView; }
     // provide access to shape manager
+
     public ShapeModel getShapeManager() { return mShapeModel; }
     // canvas dimensions
     public int getCanvasWidth() { return mCanvasWidth; }
@@ -172,7 +176,7 @@ public class SketchActivity extends Activity {
     ///////////////////////////////////////////////////////////////////////////
     public void updatePaint() {
         mShapeModel.updatePaint();
-        mTouchView.invalidate();
+        mSketchView.invalidate();
     }
 	///////////////////////////////////////////////////////////////////////////
 	// action menu handling
@@ -186,7 +190,7 @@ public class SketchActivity extends Activity {
 	private Intent createShareIntent() {
 		if (mImageBitmap == null) {
 			// save bitmap
-			Bitmap bitmap = mTouchView.getCanvasBitmap();
+			Bitmap bitmap = mSketchView.getCanvasBitmap();
 			saveSketch(bitmap);
 			Log.v(TAG, "createShareIntent save sketch.");
 		}
@@ -263,7 +267,7 @@ public class SketchActivity extends Activity {
 	//
 	private void showPopupMenu(View v) {
         // ensure menuResId is valid (e.g. onStop may invalidate)
-        if (!mSketchSettings.isValidMenuResId(mPopupMenuResId)) {
+        if (!mSketchViewModel.isValidMenuResId(mPopupMenuResId)) {
             Log.e(TAG, "showPopupMenu sees invalid menuResId.");
             return;
         }
@@ -271,9 +275,9 @@ public class SketchActivity extends Activity {
 		PopupMenu popupMenu = new PopupMenu(SketchActivity.this, v);
 	    popupMenu.getMenuInflater().inflate(mPopupMenuResId, popupMenu.getMenu());
 
-        if (mSketchSettings.isValidCheckMenuResId(mPopupMenuResId)) {
+        if (mSketchViewModel.isValidCheckMenuResId(mPopupMenuResId)) {
             // check menu selections
-            mSketchSettings.checkMenuSelections(mPopupMenuResId, popupMenu.getMenu());
+            mSketchViewModel.checkMenuSelections(mPopupMenuResId, popupMenu.getMenu());
         }
 
 		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -312,7 +316,7 @@ public class SketchActivity extends Activity {
 
 						break;
 					case R.id.action_sketch_file_savesketch:
-						Bitmap bitmap = mTouchView.getCanvasBitmap();
+						Bitmap bitmap = mSketchView.getCanvasBitmap();
 						saveSketch(bitmap);
 						Log.v(TAG, "onMenuItemClick save sketch.");
 						break;
@@ -369,14 +373,14 @@ public class SketchActivity extends Activity {
 						break;
 					}
 				}
-				else if (mSketchSettings.setMenuSelection(mPopupMenuResId, item)) {
+				else if (mSketchViewModel.setMenuSelection(mPopupMenuResId, item)) {
 //					mTouchView.updatePaint();
 					mShapeModel.updatePaint();
 				}
                 else {
                     Log.e(TAG, "showPopupMenu.setOnMenuItemClickListener sees invalid menuResId.");
                 }
-				mTouchView.invalidate();
+				mSketchView.invalidate();
 				return true;
 			}
 		});
@@ -407,7 +411,7 @@ public class SketchActivity extends Activity {
 						// set image as backdrop (0th indicates insert BACKDROP)
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
 						mShapeModel.setImageShape(imagePath, 0);
-						mTouchView.invalidate();
+						mSketchView.invalidate();
 						break;
 					case REQUEST_CODE_SELECT_OVERLAY:
 						// if rect selected, set image to selected rect shape
@@ -420,7 +424,7 @@ public class SketchActivity extends Activity {
 						else {
 							Log.e(TAG, "onActivityResult OVERLAY failure - focus (" + focus + ") is not RECT. ");
 						}
-						mTouchView.invalidate();
+						mSketchView.invalidate();
 						break;
 					default:
 						Log.e(TAG, "GalleryActivity unknown request code: " + requestCode);
@@ -457,14 +461,15 @@ public class SketchActivity extends Activity {
             String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
 			// timestamp an image name & create the file
 			imageName = ImageAlbumStorage.timestampImageName();
-			Log.v(TAG, "timestampImageName: "+ imageName);
+			Log.v(TAG, "saveSketch timestampImageName: "+ imageName);
 			
 			// write to project album
 			String imagePath = ImageAlbumStorage.addBitmapToMediaDB(this, bitmap, albumName, imageName);
-			Log.v(TAG, "added imagePath: "+ imagePath);
+			Log.v(TAG, "saveSketch added imagePath: "+ imagePath);
 			// retain latest saved image
 			mImagePath = imagePath;
 			mImageBitmap = bitmap;
+			PrefsUtils.setPrefs(mContext, PrefsUtils.IMAGEPATH_KEY, mImagePath);
 			
             Log.v(TAG, "Sketch saved to " + albumName);
             Toast.makeText(mContext, "Sketch saved to " + albumName, Toast.LENGTH_LONG).show();
@@ -488,7 +493,7 @@ public class SketchActivity extends Activity {
                Log.v(TAG, "saveSketchAlert proceed? YES");
                // clear sketch canvas
                mShapeModel.initShapeList();
-               mTouchView.invalidate();
+               mSketchView.invalidate();
             }
         });
 

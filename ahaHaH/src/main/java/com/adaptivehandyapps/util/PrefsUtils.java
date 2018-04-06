@@ -15,6 +15,7 @@ public class PrefsUtils {
 	////////////////////////////////////////////////////////////////////////////
 	// preferences keys
 	public static final String ALBUMNAME_KEY = "albumName";
+	public static final String IMAGEPATH_KEY = "imagePath";
 
 	//////////////settings//////////////////////////
 	public final static String DEFAULT_STRING_NADA = "nada";
@@ -23,8 +24,9 @@ public class PrefsUtils {
 	///////////////////////////////////////////////////////////////////////////
 	public static void setDefaults(Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
 		prefs.edit().putString(ALBUMNAME_KEY, DEFAULT_STRING_NADA);
+		prefs.edit().putString(IMAGEPATH_KEY, DEFAULT_STRING_NADA);
+
 		return;
 	}
 	///////////////////////////////////////////////////////////////////////////
