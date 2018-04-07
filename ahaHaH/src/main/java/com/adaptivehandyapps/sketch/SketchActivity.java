@@ -14,12 +14,14 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
@@ -29,19 +31,20 @@ import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
 
-public class SketchActivity extends Activity {
-	//            implements NavigationView.OnNavigationItemSelectedListener {
-
+public class SketchActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener {
 	// sketch activity
 	private static final String TAG = "SketchActivity";
 
     public static final int REQUEST_CODE_SELECT_BACKDROP = 2;
     public static final int REQUEST_CODE_SELECT_OVERLAY = 3;
 
-//    private Activity mParentActivity;
-    private Context mContext;
-
 	private static SketchActivity mSketchActivity;
+	private Context mContext;
+
+	private NavigationView mNavigationView;
+	private DrawerLayout mDrawerLayout;
+//	private NavMenu mNavMenu;
+//	private NavItem mNavItem;
 
 	private SketchViewModel mSketchViewModel = null;	// sketch settings
 	private ShapeModel mShapeModel = null;		// shape manager
@@ -66,17 +69,10 @@ public class SketchActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.v(TAG,"onCreate...");
 		super.onCreate(savedInstanceState);
-		// set parent activity reference
-//        mParentActivity = AhaHahActivity.mParentActivity;
-//        mParentActivity = AhaHahActivity.getAhaHahActivity();
-        mContext = this;
-
-		// set canvas dimensions to display dimensions until touch view canvas created
-		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
-		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
-
 		// set sketch activity reference
 		mSketchActivity = this;
+        mContext = this;
+
 		// instantiate sketch setting
 		mSketchViewModel = new SketchViewModel();
 		// set defaults for unsaved items
@@ -100,9 +96,23 @@ public class SketchActivity extends Activity {
 			Log.v(TAG, "onCreate reset to: " + mSketchViewModel.getAlbumName());
 		}
 
+		// set view layout
+//		setContentView(R.layout.sketch_canvas_obsolete);
+		setContentView(R.layout.sketch_drawer_layout);
+
+		// setup drawer
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerLayout.openDrawer(GravityCompat.START);
+
+		// setup navigation view
+		mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+		mNavigationView.setNavigationItemSelectedListener(this);
+
+		// set canvas dimensions to display dimensions until touch view canvas created
+		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
+		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
+
 		// instantiate touch view after layout (id:the_canvas)
-//		setContentView(R.layout.sketch_canvas);
-		setContentView(R.layout.sketch_nav_drawer);
 		mSketchView = (SketchView) findViewById(R.id.the_canvas);
 
 		// fixed landscape orientation
@@ -115,6 +125,23 @@ public class SketchActivity extends Activity {
 //	    // determine landscape or portrait orientation
 //	    int orientation = getResources().getConfiguration().orientation; 
 //    	Log.v(TAG, "getResources orientation: " + orientation);
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////
+
+	@SuppressWarnings("StatementWithEmptyBody")
+	@Override
+	public boolean onNavigationItemSelected(MenuItem item) {
+		// Handle navigation view item clicks here.
+		String itemname = item.toString();
+//		String itemSplit[] = itemname.split(":");
+        // for static menu items, extract id & compare to resource
+        int id = item.getItemId();
+		Log.d(TAG, "onNavigationItemSelected itemname: " + itemname + ", id:" + id);
+
+		// close drawer
+//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerLayout.closeDrawer(GravityCompat.START);
+		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// activity life-cycle
@@ -159,7 +186,9 @@ public class SketchActivity extends Activity {
     }
 	///////////////////////////////////////////////////////////////////////////
     // getters:
-    public static SketchActivity getSketchActivity() { return mSketchActivity; }
+	public static SketchActivity getSketchActivity() { return mSketchActivity; }
+	public Context getContext() { return mContext; }
+
     // provide access to sketch settings
     public SketchViewModel getSketchViewModel() { return mSketchViewModel; }
     // provide access to touch view
