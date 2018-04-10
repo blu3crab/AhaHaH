@@ -35,8 +35,13 @@ public class ShapeModel {
 	private static final String TAG = "ShapeModel";
 
 	// parent activity for sketch setting 
-	private SketchActivity mParentActivity;
+//	private SketchActivity mParentActivity;
+    // context
+    private Context mContext;
+    // view model
 	private SketchViewModel mSketchViewModel;
+
+
 	// working
 	private ShapeObject mShapeObject;	// working shape list object
 	private ShapeType mShapeType;		// working sketch shape type
@@ -73,15 +78,38 @@ public class ShapeModel {
 //	private BigInteger startTime;
 //	private BigInteger doneTime;
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    private static volatile ShapeModel instance;
+
+    public synchronized static ShapeModel getInstance(Context c)
+    {
+        if (instance == null){
+            synchronized (ShapeModel.class) {   // Check for the second time.
+                //if there is no instance available... create new one
+                if (instance == null){
+                    instance = new ShapeModel(c);
+                }
+            }
+        }
+
+        return instance;
+    }
 	////////////////////////////////////////////////////////////////////////////
 	// constructor
-	public ShapeModel() {
+	public ShapeModel(Context context) {
+        setContext(context);
 		// obtain sketch settings
-		mParentActivity = SketchActivity.getSketchActivity();
-		mSketchViewModel = mParentActivity.getSketchViewModel();
+//		mParentActivity = SketchActivity.getSketchActivity();
+//		mSketchViewModel = mParentActivity.getSketchViewModel();
+        mSketchViewModel = SketchViewModel.getInstance(context);
 		initShapeList();
 	}
-	////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+
+    private Context getContext() { return mContext; }
+    private void setContext(Context context) { this.mContext = context; }
+
+    ////////////////////////////////////////////////////////////////////////////
 	public void initShapeList() {
 		// add canvas paint, background full-screen rect as 0th draw shape element
 		mShapeList = new ArrayList<ShapeObject>();
@@ -90,11 +118,11 @@ public class ShapeModel {
 		shapeObject.setName(mBgRectName);
 		Log.v(TAG, "shape name: " + mBgRectName);
 		shapeObject.setFocus(new PointF(
-				mParentActivity.getCanvasWidth()/2.0f, 
-				mParentActivity.getCanvasHeight()/2.0f));
+				mSketchViewModel.getCanvasWidth()/2.0f,
+                mSketchViewModel.getCanvasHeight()/2.0f));
 		shapeObject.setBound(new RectF (
-				0.0f, 0.0f, 
-				mParentActivity.getCanvasWidth(), mParentActivity.getCanvasHeight())); 
+				0.0f, 0.0f,
+                mSketchViewModel.getCanvasWidth(), mSketchViewModel.getCanvasHeight()));
 		Paint paintCanvas = new Paint();
 		paintCanvas.setColor(Color.CYAN);
 		shapeObject.setPaint(paintCanvas);
@@ -106,101 +134,101 @@ public class ShapeModel {
 //        mShapeListFocus = setShapeListFocus(0);
     }
 	
-	////////////////////////////////////////////////////////////////////////////
-	// save shape list
-	public boolean save (String filename) {
-		Log.v(TAG, "save shape list to " + filename);     	
-		// snap start time
-	    long startTime = System.currentTimeMillis();
-
-		try {	
-			FileOutputStream fos = mParentActivity.openFileOutput(filename, Context.MODE_PRIVATE);
-		    ObjectOutputStream oos = new ObjectOutputStream(fos);
-			for (int size = mShapeList.size(), i = 0; i < size; i++) {
-				mShapeObject = mShapeList.get(i);				
-				mShapeObject.serialize(oos);
-
-        		Log.v(TAG, "serialized " + mShapeObject.getShapeType());
-			}
-		    oos.flush();
-		    oos.close();
-			fos.close();
-		} catch (Exception e) {
-//			Log.e(TAG, "serialize exception: " + e.getCause().toString() + " - " + e.getMessage());
-			Log.e(TAG, "serialize exception: " + e.getMessage());
-		}
-        // snap completion time
-	    long doneTime = System.currentTimeMillis();
-        long responseTime = doneTime - startTime; 
-        Log.v(TAG, "elapsed serialization time: " + responseTime + " ms");
-		return true;
-	}
-	////////////////////////////////////////////////////////////////////////////
-	// load shape list
-	public boolean load (String filename) {
-		Log.v(TAG, "load shape list from " + filename); 
-		// snap start time
-	    long startTime = System.currentTimeMillis();
-       // clear shape list
-		mShapeList = new ArrayList<ShapeObject>();
-		FileInputStream fis = null;
-        try {
-        	fis = mParentActivity.openFileInput(filename);
-        	Log.v(TAG, "fis available: " + fis.available());
-            ObjectInputStream ois = new ObjectInputStream(fis);
-			Log.v(TAG, "ois available: " + ois.available());
-        	try {
-        		boolean more = true;
-        		while (more) {
-        			ShapeObject mShapeObject = new ShapeObject();
-        			more = mShapeObject.deserialize(ois);
-        			if (more) {
-		    			Log.v(TAG, "deserialized " + mShapeObject.getShapeType());
-		        		mShapeList.add(mShapeObject);
-        			}
-        		}
-	        }
-	        catch (Exception e) {
-	            Log.e(TAG, e.getMessage());    	
-	        }
-			Log.v(TAG, "deserialized " + mShapeList.size() + " shape objects.");
-			// invalid file format or corrupted file
-			if (mShapeList.size() == 0) {
-				initShapeList();
-			}
-			ois.close();
-        } 
-        catch(IOException e) {
-            Log.e(TAG, "open file exception:" + e.getMessage());
-        } 
-        finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "close exception: " + e.getMessage());
-                }
-            }
-        }
-        // snap completion time
-	    long doneTime = System.currentTimeMillis();
-	    long responseTime = doneTime - startTime; 
-        Log.v(TAG, "elapsed deserialization time: " + responseTime + " ms");
-		return true;
-	}
-	////////////////////////////////////////////////////////////////////////////
-	// delete shape list
-	public boolean delete (String filename) {
-		Log.v(TAG, "delete shape list in " + filename); 
-        try {
-        	boolean success = mParentActivity.deleteFile(filename);
-        	Log.v(TAG, "delete file returns: " + success);
-        } 
-        catch(Exception e) {
-            Log.e(TAG, "delete file exception:" + e.getMessage());
-        } 
-		return true;
-	}
+//	////////////////////////////////////////////////////////////////////////////
+//	// save shape list
+//	public boolean save (String filename) {
+//		Log.v(TAG, "save shape list to " + filename);
+//		// snap start time
+//	    long startTime = System.currentTimeMillis();
+//
+//		try {
+//			FileOutputStream fos = mParentActivity.openFileOutput(filename, Context.MODE_PRIVATE);
+//		    ObjectOutputStream oos = new ObjectOutputStream(fos);
+//			for (int size = mShapeList.size(), i = 0; i < size; i++) {
+//				mShapeObject = mShapeList.get(i);
+//				mShapeObject.serialize(oos);
+//
+//        		Log.v(TAG, "serialized " + mShapeObject.getShapeType());
+//			}
+//		    oos.flush();
+//		    oos.close();
+//			fos.close();
+//		} catch (Exception e) {
+////			Log.e(TAG, "serialize exception: " + e.getCause().toString() + " - " + e.getMessage());
+//			Log.e(TAG, "serialize exception: " + e.getMessage());
+//		}
+//        // snap completion time
+//	    long doneTime = System.currentTimeMillis();
+//        long responseTime = doneTime - startTime;
+//        Log.v(TAG, "elapsed serialization time: " + responseTime + " ms");
+//		return true;
+//	}
+//	////////////////////////////////////////////////////////////////////////////
+//	// load shape list
+//	public boolean load (String filename) {
+//		Log.v(TAG, "load shape list from " + filename);
+//		// snap start time
+//	    long startTime = System.currentTimeMillis();
+//       // clear shape list
+//		mShapeList = new ArrayList<ShapeObject>();
+//		FileInputStream fis = null;
+//        try {
+//        	fis = mParentActivity.openFileInput(filename);
+//        	Log.v(TAG, "fis available: " + fis.available());
+//            ObjectInputStream ois = new ObjectInputStream(fis);
+//			Log.v(TAG, "ois available: " + ois.available());
+//        	try {
+//        		boolean more = true;
+//        		while (more) {
+//        			ShapeObject mShapeObject = new ShapeObject();
+//        			more = mShapeObject.deserialize(ois);
+//        			if (more) {
+//		    			Log.v(TAG, "deserialized " + mShapeObject.getShapeType());
+//		        		mShapeList.add(mShapeObject);
+//        			}
+//        		}
+//	        }
+//	        catch (Exception e) {
+//	            Log.e(TAG, e.getMessage());
+//	        }
+//			Log.v(TAG, "deserialized " + mShapeList.size() + " shape objects.");
+//			// invalid file format or corrupted file
+//			if (mShapeList.size() == 0) {
+//				initShapeList();
+//			}
+//			ois.close();
+//        }
+//        catch(IOException e) {
+//            Log.e(TAG, "open file exception:" + e.getMessage());
+//        }
+//        finally {
+//            if (fis != null) {
+//                try {
+//                    fis.close();
+//                } catch (IOException e) {
+//                    Log.e(TAG, "close exception: " + e.getMessage());
+//                }
+//            }
+//        }
+//        // snap completion time
+//	    long doneTime = System.currentTimeMillis();
+//	    long responseTime = doneTime - startTime;
+//        Log.v(TAG, "elapsed deserialization time: " + responseTime + " ms");
+//		return true;
+//	}
+//	////////////////////////////////////////////////////////////////////////////
+//	// delete shape list
+//	public boolean delete (String filename) {
+//		Log.v(TAG, "delete shape list in " + filename);
+//        try {
+//        	boolean success = mParentActivity.deleteFile(filename);
+//        	Log.v(TAG, "delete file returns: " + success);
+//        }
+//        catch(Exception e) {
+//            Log.e(TAG, "delete file exception:" + e.getMessage());
+//        }
+//		return true;
+//	}
 	////////////////////////////////////////////////////////////////////////////
 	// getters/setters, utility
 	public List<ShapeObject> getShapeList () {
@@ -322,8 +350,8 @@ public class ShapeModel {
 			shapeObject.setPaint(paint);
 			Log.v(TAG, "BACKDROP image path: " + imagePath);
 
-			// get device dimensions
-			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(mParentActivity);
+			// TODO: get device dimensions or canvas dimensions?
+			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(getContext());
 			int targetDeviceW = displayMetrics.widthPixels;
 			int targetDeviceH = displayMetrics.heightPixels;
 			Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
@@ -514,8 +542,8 @@ public class ShapeModel {
 				float radius = setRadius(mCenter, x, y);
 				if ( mCenter.x-radius > CANVAS_MIN &&
 						mCenter.y-radius > CANVAS_MIN &&
-						mCenter.x+radius < mParentActivity.getCanvasWidth() &&
-						mCenter.y+radius < mParentActivity.getCanvasHeight()) {
+						mCenter.x+radius < mSketchViewModel.getCanvasWidth() &&
+						mCenter.y+radius < mSketchViewModel.getCanvasHeight()) {
 					// update radius reflecting touch - radius derived from c**2 =a**2 + b**2 
 					mRadius = setRadius(mCenter, x, y);
 					mCircle[2] = mRadius;
@@ -564,13 +592,13 @@ public class ShapeModel {
 		return true;
 	}
 	private void enterLabelText(final ShapeObject shapeObject) {
-		AlertDialog.Builder alert = new AlertDialog.Builder(mParentActivity);
+		AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
 
 		alert.setTitle("New Label");
 		alert.setMessage("Please enter your label:");
 
 		// Set an EditText view to get user input 
-		final EditText input = new EditText(mParentActivity);
+		final EditText input = new EditText(getContext());
 		alert.setView(input);
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -672,9 +700,9 @@ public class ShapeModel {
 		// disallow shape moving off screen
 		mRect = mShapeObject.getBound();
 		if (mRect.left + deltaX < CANVAS_MIN || 
-				mRect.right + deltaX > mParentActivity.getCanvasWidth() || 
+				mRect.right + deltaX > mSketchViewModel.getCanvasWidth() ||
 				mRect.top + deltaY < CANVAS_MIN || 
-				mRect.bottom + deltaY > mParentActivity.getCanvasHeight()) {
+				mRect.bottom + deltaY > mSketchViewModel.getCanvasHeight()) {
 			return false;
 		}
 
@@ -878,14 +906,14 @@ public class ShapeModel {
 			}
 			else {
 				// touch left of center
-				if (center.x + (center.x - x) < mParentActivity.getCanvasWidth()) {
+				if (center.x + (center.x - x) < mSketchViewModel.getCanvasWidth()) {
 					rect.left = x;
 					rect.right = center.x + (center.x - x);
 				}
 			}
 			if (y < center.y) {
 				// touch above center
-				if (center.y + (center.y - y) < mParentActivity.getCanvasHeight()) {
+				if (center.y + (center.y - y) < mSketchViewModel.getCanvasHeight()) {
 					rect.top = y;
 					rect.bottom = center.y + (center.y - y);
 				}
@@ -917,7 +945,7 @@ public class ShapeModel {
 		mDX = (rect.right - rect.left) * scaleFactor / 2.0f;
 		Log.v(TAG, "mDX " + mDX);
 		if ((rect.left - mDX) < CANVAS_MIN || 
-			(rect.right + mDX) > mParentActivity.getCanvasWidth() ||
+			(rect.right + mDX) > mSketchViewModel.getCanvasWidth() ||
 			(rect.left - mDX) > (rect.right + mDX) ) {
 			Log.v(TAG, "resizeRect fails: X too large or small...");
 			return false;
@@ -925,7 +953,7 @@ public class ShapeModel {
 		mDY = (rect.bottom - rect.top) * scaleFactor / 2;
 		Log.v(TAG, "mDY " + mDY);
 		if ((rect.top - mDY) < CANVAS_MIN || 
-			(rect.bottom + mDY) > mParentActivity.getCanvasHeight() ||
+			(rect.bottom + mDY) > mSketchViewModel.getCanvasHeight() ||
 			(rect.top - mDY) > (mRect.bottom + mDY) ) {
 			Log.v(TAG, "resizeRect fails: Y too large or small...");
 			return false;

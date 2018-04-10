@@ -5,6 +5,8 @@
 package com.adaptivehandyapps.sketch;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
+
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
@@ -15,11 +17,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
+import com.adaptivehandyapps.util.AhaDisplayMetrics;
+import com.adaptivehandyapps.util.PrefsUtils;
 
 public class SketchViewModel {
 	private static final String TAG = "SketchViewModel";
-	
-	private SketchActivity mParentActivity;
+
+	// activity context
+	private Context mContext;
 
 	//////////////settings//////////////////////////
 	// shapes
@@ -67,8 +72,8 @@ public class SketchViewModel {
 	// hold focus switch
 	private boolean mFocusHold = false;
 	// album name
-	private final static String NADA = "nada";
-	private String mAlbumName = NADA;
+//	private final static String NADA = "nada";
+//	private String mAlbumName = NADA;
 
 	/////////////save/restore settings////////////////
 	private int MODE_PRIVATE = 0;
@@ -82,12 +87,130 @@ public class SketchViewModel {
 	private String mKeyCustomColor = "CustomColor";
 	private String mKeyFocusHold = "FocusHold";
 
+	// canvas dimensions
+	private int mCanvasWidth = -1;
+	private int mCanvasHeight = -1;
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	private static volatile SketchViewModel instance;
+
+	public synchronized static SketchViewModel getInstance(Context c)
+	{
+		if (instance == null){
+			synchronized (SketchViewModel.class) {   // Check for the second time.
+				//if there is no instance available... create new one
+				if (instance == null){
+					instance = new SketchViewModel(c);
+				}
+			}
+		}
+
+		return instance;
+	}
 	///////////////////////////////////////////////////////////////////////////////
     // constructor
-	public SketchViewModel() {
-		mParentActivity = SketchActivity.getSketchActivity();
+	public SketchViewModel(Context context) {
+		setContext(context);
+		// set canvas dimensions to display dimensions until touch view canvas created
+		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(getContext());
+		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(getContext());
+		// restore settings
+		restoreSketchSettings();
+	}
+	//
+	/////////////save, restore, menu methods////////////////
+	//
+//	// save sketch settings
+//	public void saveSketchSettings() {
+//		SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+//	    SharedPreferences.Editor editor = settings.edit();
+////	    editor.remove(PREFS_NAME);
+//
+//	    editor.putInt(mKeyShape, mShape.ordinal());
+//	    editor.putInt(mKeyTool, mTool.ordinal());
+//	    editor.putInt(mKeyStyleSize, mStyleSize.ordinal());
+//	    editor.putInt(mKeyStyleFill, mStyleFill.ordinal());
+//	    editor.putInt(mKeyColor, mColor);
+//	    editor.putInt(mKeyCustomColor, mCustomColor);
+//	    editor.putBoolean(mKeyFocusHold, mFocusHold);
+//	    editor.putString(mKeyAlbum, mAlbumName);
+//
+//	    // commit the edits!
+//	    editor.commit();
+//
+//	}
+	// restore sketch settings
+	public void restoreSketchSettings() {
+		SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+		//		mAlbumName = settings.getString(mKeyAlbum, NADA);
+		String albumName = PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY);
+		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) albumName = getContext().getString(R.string.default_project_name);
+
+		mShape = ShapeType.values()[settings.getInt(mKeyShape, 0)];
+		mTool = Tool.values()[settings.getInt(mKeyTool, 0)];
+		mStyleSize = Style.values()[settings.getInt(mKeyStyleSize, 0)];
+		mStyleFill = Style.values()[settings.getInt(mKeyStyleFill, 0)];
+		mColor = settings.getInt(mKeyColor, mPalette[Palette.NADA.ordinal()]);
+		mCustomColor = settings.getInt(mKeyCustomColor, mPalette[Palette.NADA.ordinal()]);
+		mFocusHold = settings.getBoolean(mKeyFocusHold, false);
+
+		// if no settings, set defaults
+		if (mShape == ShapeType.NADA ||
+				mTool == Tool.NADA ||
+				mStyleSize == Style.NADA ||
+				mStyleFill == Style.NADA ||
+				mStyleFocus == Style.NADA ||
+				mColor == mPalette[Palette.NADA.ordinal()] ) {
+			setDefaultSettings();
+		}
+	}
+
+	// set default sketch settings
+	public void setDefaultSettings() {
+		mShape = ShapeType.FREE;
+		mTool = Tool.PEN;
+		mStyleSize = Style.SMALL;
+		mStyleFill = Style.STROKE;
+		mStyleFocus = Style.FOCUS;
+		mColor = mPalette[Palette.RED.ordinal()];
+		mCustomColor = mPalette[Palette.NADA.ordinal()];
+		mFocusHold = false;
+		setAlbumName(PrefsUtils.DEFAULT_STRING_NADA);
+
+		return;
 	}
 	/////////////getters////////////////
+	private Context getContext() { return mContext; }
+	private void setContext(Context context) { this.mContext = context; }
+
+	// canvas dimensions
+	public int getCanvasWidth() { return mCanvasWidth; }
+	public void setCanvasWidth(int dim) { mCanvasWidth = dim; }
+	public int getCanvasHeight() { return mCanvasHeight; }
+	public void setCanvasHeight(int dim) { mCanvasHeight = dim; }
+
+	public String getAlbumName() { return PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY); }
+	public Boolean setAlbumName(String albumName)
+	{
+		// TODO: if project folder has not changed
+//		String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
+//		if ( albumName.equals(mSketchViewModel.getAlbumName())) {
+//			// load ShapeModel shape list
+//			mShapeModel.load(temp);
+//			Log.v(TAG, "onCreate loading: " + mSketchViewModel.getAlbumName());
+//		}
+//		else {
+//			// reset ShapeModel shape list based on obsolete project folder
+//			mSketchViewModel.setAlbumName(albumName);
+//			// delete ShapeModel shape list
+//			mShapeModel.delete(temp);
+//			Log.v(TAG, "onCreate reset to: " + mSketchViewModel.getAlbumName());
+//		}
+
+		PrefsUtils.setPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY, albumName);
+		return true;
+	}
 	public ShapeType getShape() { return mShape; }
 	public Tool getTool() { return mTool; }
 	public float getSize() { 
@@ -119,72 +242,7 @@ public class SketchViewModel {
 	public boolean getFocusHold() { return mFocusHold; }
 	private void setFocusHold(boolean focusHold) { mFocusHold = focusHold; }
 	
-	public String getAlbumName() { return mAlbumName; }
-	public boolean setAlbumName(String name) 
-	{ 
-		mAlbumName = name;
-		return true; 
-	}
-	
-	//
-	/////////////save, restore, menu methods////////////////
-	//
-	// save sketch settings
-	public void saveSketchSettings() {
-		SharedPreferences settings = mParentActivity.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-	    SharedPreferences.Editor editor = settings.edit();
-//	    editor.remove(PREFS_NAME);
 
-	    editor.putInt(mKeyShape, mShape.ordinal());
-	    editor.putInt(mKeyTool, mTool.ordinal());
-	    editor.putInt(mKeyStyleSize, mStyleSize.ordinal());
-	    editor.putInt(mKeyStyleFill, mStyleFill.ordinal());
-	    editor.putInt(mKeyColor, mColor);
-	    editor.putInt(mKeyCustomColor, mCustomColor);
-	    editor.putBoolean(mKeyFocusHold, mFocusHold);
-	    editor.putString(mKeyAlbum, mAlbumName);
-
-	    // commit the edits!
-	    editor.commit();
-		
-	}
-	// restore sketch settings
-	public void restoreSketchSettings() {
-		SharedPreferences settings = mParentActivity.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-		mShape = ShapeType.values()[settings.getInt(mKeyShape, 0)];
-		mTool = Tool.values()[settings.getInt(mKeyTool, 0)];
-		mStyleSize = Style.values()[settings.getInt(mKeyStyleSize, 0)];
-		mStyleFill = Style.values()[settings.getInt(mKeyStyleFill, 0)];
-		mColor = settings.getInt(mKeyColor, mPalette[Palette.NADA.ordinal()]);
-		mCustomColor = settings.getInt(mKeyCustomColor, mPalette[Palette.NADA.ordinal()]);
-		mFocusHold = settings.getBoolean(mKeyFocusHold, false);
-		mAlbumName = settings.getString(mKeyAlbum, NADA);
-	    // if no settings, set defaults
-	    if (mShape == ShapeType.NADA ||
-	    	mTool == Tool.NADA || 
-	    	mStyleSize == Style.NADA || 
-	    	mStyleFill == Style.NADA ||
-	    	mStyleFocus == Style.NADA ||
-	    	mColor == mPalette[Palette.NADA.ordinal()] ) {
-			setDefaultSettings();
-	    }
-	}
-
-	// set default sketch settings
-	public void setDefaultSettings() {
-		mShape = ShapeType.FREE;
-		mTool = Tool.PEN;
-		mStyleSize = Style.SMALL;
-		mStyleFill = Style.STROKE;
-		mStyleFocus = Style.FOCUS;
-		mColor = mPalette[Palette.RED.ordinal()];
-		mCustomColor = mPalette[Palette.NADA.ordinal()];
-		mFocusHold = false;
-		mAlbumName = NADA;
-
-		return;
-	}
     ///////////////////////////////////////////////////////////////////////////////
     // ensure menuResId is valid (e.g. onStop may invalidate)
     public boolean isValidCheckMenuResId(int menuResId) {
@@ -215,7 +273,7 @@ public class SketchViewModel {
         }
 
         item.setChecked(true);
-		Toast.makeText(mParentActivity, item.toString(), Toast.LENGTH_LONG).show();
+		Toast.makeText(getContext(), item.toString(), Toast.LENGTH_LONG).show();
 
 		switch (menuResId) {
 		case R.menu.sketch_shape_menu: 
@@ -489,21 +547,21 @@ public class SketchViewModel {
 	private void launchColorPickerDialog() {
 //		int color = 0xFF008800;
 
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mParentActivity);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         int initialValue = prefs.getInt(mKeyCustomColor, 0xFF000000);
         
         Log.d("mColorPicker", "initial value:" + initialValue);
                         
-        final ColorPickerDialog colorDialog = new ColorPickerDialog(mParentActivity, initialValue);
+        final ColorPickerDialog colorDialog = new ColorPickerDialog(getContext(), initialValue);
         
         colorDialog.setAlphaSliderVisible(true);
         colorDialog.setTitle("Pick your Color!");
         
-        colorDialog.setButton(DialogInterface.BUTTON_POSITIVE, mParentActivity.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        colorDialog.setButton(DialogInterface.BUTTON_POSITIVE, getContext().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(mParentActivity, "Selected Color: " + colorToHexString(colorDialog.getColor()), Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Selected Color: " + colorToHexString(colorDialog.getColor()), Toast.LENGTH_LONG).show();
                 // capture custom color selection
                 mColor = colorDialog.getColor();
                 setCustomColor(mColor);
@@ -513,11 +571,12 @@ public class SketchViewModel {
                 editor.putInt(mKeyCustomColor, colorDialog.getColor());
                 editor.commit();
                 // invoke parent to update the color of a shape with focus
-                mParentActivity.updatePaint();
+				SketchActivity sketchActivity = (SketchActivity)getContext();
+				sketchActivity.updatePaint();
             }
         });
         
-        colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mParentActivity.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+        colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

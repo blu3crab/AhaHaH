@@ -47,8 +47,8 @@ import com.adaptivehandyapps.util.PrefsUtils;
 public class AhaHahActivity extends Activity {
 
 	private static final String TAG = "AhaHahActivity";
-	// toast display metrics at startup
-    private static final Boolean TOAST_DISPLAY_METRICS = true;
+//	// toast display metrics at startup
+//    private static final Boolean TOAST_DISPLAY_METRICS = true;
     // capture photo path by launching camera activity for result
     private static final Boolean CAPTURE_PHOTO_PATH = true;
 
@@ -82,23 +82,23 @@ public class AhaHahActivity extends Activity {
 	}
 
 	private Boolean init() {
-		// seed screen resolution
-        String toastText = AhaDisplayMetrics.toString(this);
-        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+//		// seed screen resolution
+//        String toastText = AhaDisplayMetrics.toString(this);
+//        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
         setContentView(R.layout.activity_ahahah);
 
-		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
-		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
+//		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
+//		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
 
 //		mParentActivity = this;
 
-		// restore project folder setting or set default if nada
-        String albumName = PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY);
-		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) albumName = getString(R.string.default_project_name);
-		// instantiate image album storage class with default project folder
-		setProjectFolder(albumName);
-		Log.v(TAG, "onCreate set project folder: " + albumName);
+//		// restore project folder setting or set default if nada
+//        String albumName = PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY);
+//		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) albumName = getString(R.string.default_project_name);
+//		// instantiate image album storage class with default project folder
+//		setProjectFolder(albumName);
+//		Log.v(TAG, "onCreate set project folder: " + albumName);
 
 //		// launch sketch activity
 //        this.startSketchActivity(getCurrentFocus());

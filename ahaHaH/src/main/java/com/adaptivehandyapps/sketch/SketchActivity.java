@@ -35,6 +35,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	// sketch activity
 	private static final String TAG = "SketchActivity";
 
+    // toast display metrics at startup
+    private static final Boolean TOAST_DISPLAY_METRICS = true;
+
+    // activity request codes
     public static final int REQUEST_CODE_SELECT_BACKDROP = 2;
     public static final int REQUEST_CODE_SELECT_OVERLAY = 3;
 
@@ -50,9 +54,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	private ShapeModel mShapeModel = null;		// shape manager
 	private SketchView mSketchView = null;			// touch view
 
-    // canvas dimensions 
-    private int mCanvasWidth = -1;
-    private int mCanvasHeight = -1;
+//    // canvas dimensions
+//    private int mCanvasWidth = -1;
+//    private int mCanvasHeight = -1;
 
 	// popup menu selection
 	private int mPopupMenuResId;
@@ -69,32 +73,40 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.v(TAG,"onCreate...");
 		super.onCreate(savedInstanceState);
+        // seed screen resolution
+        String toastText = AhaDisplayMetrics.toString(this);
+        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+
 		// set sketch activity reference
 		mSketchActivity = this;
-        mContext = this;
+        setContext(this);
 
-		// instantiate sketch setting
-		mSketchViewModel = new SketchViewModel();
-		// set defaults for unsaved items
-		mSketchViewModel.setDefaultSettings();
-		// restore saved sketch settings
-		mSketchViewModel.restoreSketchSettings();
+        // get (instantiate) view model and model
+        mSketchViewModel = SketchViewModel.getInstance(getContext());
+        mShapeModel = ShapeModel.getInstance(getContext());
+
+        // instantiate sketch setting
+//        mSketchViewModel = new SketchViewModel(mContext);
+//		// set defaults for unsaved items
+//		mSketchViewModel.setDefaultSettings();
+//		// restore saved sketch settings
+//		mSketchViewModel.restoreSketchSettings();
 		// instantiate shape manager
-		mShapeModel = new ShapeModel();
-		// if project folder has not changed
-        String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
-		if ( albumName.equals(mSketchViewModel.getAlbumName())) {
-			// load ShapeModel shape list
-			mShapeModel.load(temp);
-			Log.v(TAG, "onCreate loading: " + mSketchViewModel.getAlbumName());
-		}
-		else {
-			// reset ShapeModel shape list based on obsolete project folder
-			mSketchViewModel.setAlbumName(albumName);
-			// delete ShapeModel shape list
-			mShapeModel.delete(temp);
-			Log.v(TAG, "onCreate reset to: " + mSketchViewModel.getAlbumName());
-		}
+//        mShapeModel = new ShapeModel();
+//		// if project folder has not changed
+//        String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
+//		if ( albumName.equals(mSketchViewModel.getAlbumName())) {
+//			// load ShapeModel shape list
+//			mShapeModel.load(temp);
+//			Log.v(TAG, "onCreate loading: " + mSketchViewModel.getAlbumName());
+//		}
+//		else {
+//			// reset ShapeModel shape list based on obsolete project folder
+//			mSketchViewModel.setAlbumName(albumName);
+//			// delete ShapeModel shape list
+//			mShapeModel.delete(temp);
+//			Log.v(TAG, "onCreate reset to: " + mSketchViewModel.getAlbumName());
+//		}
 
 		// set view layout
 //		setContentView(R.layout.sketch_canvas_obsolete);
@@ -108,9 +120,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		mNavigationView = (NavigationView) findViewById(R.id.nav_view);
 		mNavigationView.setNavigationItemSelectedListener(this);
 
-		// set canvas dimensions to display dimensions until touch view canvas created
-		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
-		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
+//		// set canvas dimensions to display dimensions until touch view canvas created
+//		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
+//		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
 
 		// instantiate touch view after layout (id:the_canvas)
 		mSketchView = (SketchView) findViewById(R.id.the_canvas);
@@ -147,10 +159,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	// activity life-cycle
     protected void onPause() {
 		Log.v(TAG, "onPause");     	
-    	// perform light weight cleanup, release resources, save draft data
-		mSketchViewModel.saveSketchSettings();
-		// save ShapeModel shape list
-		mShapeModel.save(temp);
+//    	// perform light weight cleanup, release resources, save draft data
+//		mSketchViewModel.saveSketchSettings();
+//		// save ShapeModel shape list
+//		mShapeModel.save(temp);
 		
         super.onPause();
     }
@@ -187,7 +199,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	///////////////////////////////////////////////////////////////////////////
     // getters:
 	public static SketchActivity getSketchActivity() { return mSketchActivity; }
-	public Context getContext() { return mContext; }
+
+    public void setContext(Context context) { mContext = context; }
+    public Context getContext() { return mContext; }
 
     // provide access to sketch settings
     public SketchViewModel getSketchViewModel() { return mSketchViewModel; }
@@ -196,11 +210,11 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     // provide access to shape manager
 
     public ShapeModel getShapeManager() { return mShapeModel; }
-    // canvas dimensions
-    public int getCanvasWidth() { return mCanvasWidth; }
-    public void setCanvasWidth(int dim) { mCanvasWidth = dim; }
-    public int getCanvasHeight() { return mCanvasHeight; }
-    public void setCanvasHeight(int dim) { mCanvasHeight = dim; }
+//    // canvas dimensions
+//    public int getCanvasWidth() { return mCanvasWidth; }
+//    public void setCanvasWidth(int dim) { mCanvasWidth = dim; }
+//    public int getCanvasHeight() { return mCanvasHeight; }
+//    public void setCanvasHeight(int dim) { mCanvasHeight = dim; }
 
     ///////////////////////////////////////////////////////////////////////////
     public void updatePaint() {
@@ -215,26 +229,6 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.sketch_menu, menu);
 		return true;
-	}
-	private Intent createShareIntent() {
-		if (mImageBitmap == null) {
-			// save bitmap
-			Bitmap bitmap = mSketchView.getCanvasBitmap();
-			saveSketch(bitmap);
-			Log.v(TAG, "createShareIntent save sketch.");
-		}
-		// create share intent
-		Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
-		shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-		// share image
-		String path = MediaStore.Images.Media.insertImage(getContentResolver(), mImageBitmap, "title", null);
-		Uri imageUri = Uri.parse(path);
-
-		shareIntent.setType("image/jpeg");
-		shareIntent.putExtra(android.content.Intent.EXTRA_STREAM, imageUri);
-
-		return shareIntent;
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -291,6 +285,26 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 			showPopupMenu(v);
 		}
 	};
+    private Intent createShareIntent() {
+        if (mImageBitmap == null) {
+            // save bitmap
+            Bitmap bitmap = mSketchView.getCanvasBitmap();
+            saveSketch(bitmap);
+            Log.v(TAG, "createShareIntent save sketch.");
+        }
+        // create share intent
+        Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        // share image
+        String path = MediaStore.Images.Media.insertImage(getContentResolver(), mImageBitmap, "title", null);
+        Uri imageUri = Uri.parse(path);
+
+        shareIntent.setType("image/jpeg");
+        shareIntent.putExtra(android.content.Intent.EXTRA_STREAM, imageUri);
+
+        return shareIntent;
+    }
 	///////////////////////////////////////////////////////////////////////////
 	// private
 	//

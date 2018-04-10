@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- hints -->
+    <string name="camera_hint">Snap pictures.</string>
+    <string name="sketch_hint">Mark images.</string>
+    <string name="gallery_hint">View gallery.</string>
+    <string name="share_hint">Share projects.</string>
+    <string name="projects_hint">Select new or existing project.</string>
+    
+    <!-- menu -->
+    <string name="camera_button_text">Snap Pictures</string>
+    <string name="sketch_button_text">Mark Images</string>
+    <string name="gallery_button_text">View Gallery</string>
+    <string name="share_button_text">Share Project</string>
+    
+    <string name="action_camera">Snap</string>
+    <string name="action_sketch">Markup</string>
+    <string name="action_gallery">View</string>
+    <string name="action_share">Share</string>
+    <string name="action_projects">Projects</string>
+    <string name="action_settings">Settings</string>
+    
+    <!-- sketch -->
+    <string name="action_sketch_file">File</string>
+    <string name="action_sketch_shape">Shapes</string>
+    <string name="action_sketch_style">Styles</string>
+    <string name="action_sketch_color">Colors</string>
+    <string name="action_sketch_erase">Undo</string>
+    <string name="action_sketch_tool">Tools</string>
+    
+    <string name="action_sketch_file_new">New Sketch</string>
+    <string name="action_sketch_file_loadbackdrop">Load Backdrop Image</string>
+    <string name="action_sketch_file_loadoverlay">Load Overlay Image</string>
+    <string name="action_sketch_file_savesketch">Save Sketch Image</string>
+        
+    <string name="action_sketch_shape_free">Free Form</string>
+    <string name="action_sketch_shape_line">Line</string>
+    <string name="action_sketch_shape_rect">Rectangle</string>
+   	<string name="action_sketch_shape_label">Label</string>
+    <string name="action_sketch_shape_circle">Circle</string>
+    <string name="action_sketch_shape_oval">Oval</string>
+
+    <string name="action_sketch_style_small">Small</string>
+    <string name="action_sketch_style_medium">Medium</string>
+    <string name="action_sketch_style_large">Large</string>
+    <string name="action_sketch_style_fill">Fill</string>
+    <string name="action_sketch_style_stroke">Stroke</string>
+    <string name="action_sketch_style_strokefill">Stroke Fill</string>
+    <string name="action_sketch_style_focus">Hold Focus</string>
+    
+    <string name="action_sketch_color_black">black</string>
+    <string name="action_sketch_color_blue">blue</string>
+    <string name="action_sketch_color_green">green</string>
+    <string name="action_sketch_color_yellow">yellow</string>
+    <string name="action_sketch_color_orange">orange</string>
+    <string name="action_sketch_color_red">red</string>
+    <string name="action_sketch_color_violet">violet</string>
+    <string name="action_sketch_color_white">white</string>
+    <string name="action_sketch_color_custom">custom</string>
+    
+    <string name="action_sketch_erase_backdrop">Undo Backdrop Image</string>
+    <string name="action_sketch_erase_overlay">Undo Overlay Image</string>
+    <string name="action_sketch_erase_select">Undo Selected Shape</string>
+    <string name="action_sketch_erase_last">Undo Last Shape</string>
+    <string name="action_sketch_erase_all">Undo All</string>
+
+    <string name="action_sketch_tool_pen">Pen</string>
+    <string name="action_sketch_tool_brush">Brush</string>
+    <string name="action_sketch_tool_spray">Spray</string>
+    <string name="action_sketch_tool_bucket">Bucket</string>
+   
+</resources>

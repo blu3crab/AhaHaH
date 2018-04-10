@@ -28,9 +28,10 @@ import android.widget.Toast;
 public class SketchView extends View implements
 		OnGestureListener, OnDoubleTapListener {
 
-	private static final String TAG = "TouchView"; 
+	private static final String TAG = "SketchView";
 
-	private SketchActivity mParentActivity;
+//	private Context mContext;
+//	private SketchActivity mParentActivity;
 	private SketchViewModel mSketchViewModel;
 	private ShapeModel mShapeModel;
 
@@ -71,10 +72,13 @@ public class SketchView extends View implements
 	public SketchView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		// obtain sketch settings
-		mParentActivity = SketchActivity.getSketchActivity();
-		mSketchViewModel = mParentActivity.getSketchViewModel();
-		mShapeModel = mParentActivity.getShapeManager();
-		
+//		mParentActivity = SketchActivity.getSketchActivity();
+//		mSketchViewModel = mParentActivity.getSketchViewModel();
+//		mShapeModel = mParentActivity.getShapeManager();
+//		mParentActivity = (SketchActivity)context;
+		mSketchViewModel = SketchViewModel.getInstance(getContext());
+		mShapeModel = ShapeModel.getInstance(getContext());
+
 		// instantiate shape list
 //		mShapeList = mShapeModel.getShapeList();
 
@@ -107,7 +111,7 @@ public class SketchView extends View implements
 		mPaintFocus.setStrokeWidth(4.0f);  
 
 		// zoom
-		mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
+		mScaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleListener());
 		
 	    int orientation = getResources().getConfiguration().orientation; 
     	Log.v(TAG, "getResources orientation: " + orientation);
@@ -121,7 +125,7 @@ public class SketchView extends View implements
         // Instantiate the gesture detector with the
         // application context and an implementation of
         // GestureDetector.OnGestureListener
-        mDetector = new GestureDetectorCompat(context, this);
+        mDetector = new GestureDetectorCompat(getContext(), this);
         // Set the gesture detector as the double tap
         // listener.
         mDetector.setOnDoubleTapListener(this);
@@ -129,6 +133,12 @@ public class SketchView extends View implements
         mDetector.setIsLongpressEnabled(true);
 
 	}
+	///////////////////////////////////////////////////////////////////////////
+	// getters/setters
+	public Bitmap getCanvasBitmap() { return mCanvasBitmap;	}
+	public int getCanvasWidth() { return mCanvasWidth; }
+	public int getCanvasHeight() { return mCanvasHeight; }
+
 	///////////////////////////////////////////////////////////////////////////
     // onMeasure - create & replace canvas bitmap
 	@Override
@@ -138,9 +148,11 @@ public class SketchView extends View implements
 		
 		mCanvasWidth = MeasureSpec.getSize(widthMeasureSpec);
 		mCanvasHeight = MeasureSpec.getSize(heightMeasureSpec);
-		mParentActivity.setCanvasWidth(mCanvasWidth);
-		mParentActivity.setCanvasHeight(mCanvasHeight);
-		Log.v(TAG, "canvas W/H: " + mCanvasWidth + "/" + mCanvasHeight);
+//		mParentActivity.setCanvasWidth(mCanvasWidth);
+//		mParentActivity.setCanvasHeight(mCanvasHeight);
+		mSketchViewModel.setCanvasWidth(mCanvasWidth);
+		mSketchViewModel.setCanvasHeight(mCanvasHeight);
+		Log.v(TAG, "onMeasure canvas W/H: " + mCanvasWidth + "/" + mCanvasHeight);
 			  
 		mCanvasBitmap = Bitmap.createBitmap(mCanvasWidth, mCanvasHeight, Bitmap.Config.ARGB_8888);
 		mCanvas.setBitmap(mCanvasBitmap);
@@ -244,7 +256,7 @@ public class SketchView extends View implements
 				// TODO: set image bounding rect using canvas width/height?
 //			    int canvasWidth = canvas.getWidth();
 //			    int canvasHeight = canvas.getHeight();
-//				Log.v(TAG, "canvas w/h: " + canvasWidth + "/" + canvasHeight);
+//				Log.v(TAG, "drawShape canvas w/h: " + canvasWidth + "/" + canvasHeight);
 //				Log.v(TAG, "image bound: " + shapeObject.getBound());
 
 				Bitmap bitmap = (Bitmap)shapeObject.getObject();
@@ -276,12 +288,6 @@ public class SketchView extends View implements
 		}
 		return false;
 	}
-	//////////////////////////////////////////////////////////////////////////
-	// getters
-	public Bitmap getCanvasBitmap() { return mCanvasBitmap;	}
-	public int getCanvasWidth() { return mCanvasWidth; }
-	public int getCanvasHeight() { return mCanvasHeight; }
-
 	///////////////////////////////////////////////////////////////////////////
 	// gesture detectors
 	//
@@ -407,7 +413,7 @@ public class SketchView extends View implements
 //        Log.d(TAG, "onFling: " + event1.toString()+event2.toString());
 //		Toast.makeText(mParentActivity, "onFling", Toast.LENGTH_SHORT).show();
         if ( mShapeModel.getShapeListFocus() != ShapeModel.NOFOCUS) {
-            Toast.makeText(mParentActivity, "Double tap to clear focus.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Double tap to clear focus.", Toast.LENGTH_SHORT).show();
         }
 //        else {
 //            Toast.makeText(mParentActivity, "LongPress on shape to focus or Single tap to step through shape list.", Toast.LENGTH_SHORT).show();
@@ -425,7 +431,7 @@ public class SketchView extends View implements
             List<ShapeObject> shapeList = mShapeModel.getShapeList();
             mShapeObject = shapeList.get(focus);
         	Log.d(TAG, "onLongPress: shape focus " + mShapeObject.getName());
-			Toast.makeText(mParentActivity, "LongPress: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
+			Toast.makeText(getContext(), "LongPress: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
         }
         mGestureDetected = true;
         // focus altered
@@ -466,7 +472,7 @@ public class SketchView extends View implements
             List<ShapeObject> shapeList = mShapeModel.getShapeList();
         	mShapeObject = shapeList.get(focus);
         	Log.d(TAG, "onSingleTapConfirmed: shape focus " + mShapeObject.getName());
-			Toast.makeText(mParentActivity, "Single Tap Confirmed: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
+			Toast.makeText(getContext(), "Single Tap Confirmed: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
         }
         mGestureDetected = true;
         // focus altered
@@ -481,7 +487,7 @@ public class SketchView extends View implements
         // clear focus
         mShapeModel.clearShapeListFocus();
         Log.d(TAG, "onDoubleTap: draw list focus " + mShapeModel.getShapeListFocus());
-		Toast.makeText(mParentActivity, "Double Tap: focus cleared.", Toast.LENGTH_SHORT).show();
+		Toast.makeText(getContext(), "Double Tap: focus cleared.", Toast.LENGTH_SHORT).show();
         mGestureDetected = true;
         // focus altered
         invalidate();
