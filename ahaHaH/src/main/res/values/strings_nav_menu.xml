@@ -14,9 +14,9 @@
     <string name="gallery_button_text">View Gallery</string>
     <string name="share_button_text">Share Project</string>
     
-    <string name="action_camera">Snap</string>
+    <string name="action_camera">Camera</string>
     <string name="action_sketch">Markup</string>
-    <string name="action_gallery">View</string>
+    <string name="action_gallery">Gallery</string>
     <string name="action_share">Share</string>
     <string name="action_projects">Projects</string>
     <string name="action_settings">Settings</string>

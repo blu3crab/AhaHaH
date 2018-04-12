@@ -47,7 +47,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
 	private NavigationView mNavigationView;
 	private DrawerLayout mDrawerLayout;
-//	private NavMenu mNavMenu;
+	private NavMenu mNavMenu;
 //	private NavItem mNavItem;
 
 	private SketchViewModel mSketchViewModel = null;	// sketch settings
@@ -60,14 +60,14 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
 	// popup menu selection
 	private int mPopupMenuResId;
-    // TODO: save to & restore from Android/app/data
-	// temp file name for retaining shape list 
-	private String temp = "temp";
+//    // TODO: save to & restore from Android/app/data
+//	// temp file name for retaining shape list
+//	private String temp = "temp";
 	
 //	private OrientationEventListener mOrientationListener;
 
-	private String mImagePath = "";
-	private Bitmap mImageBitmap;
+//	private String mImagePath = "";
+//	private Bitmap mImageBitmap;
 	///////////////////////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +120,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		mNavigationView = (NavigationView) findViewById(R.id.nav_view);
 		mNavigationView.setNavigationItemSelectedListener(this);
 
+        // build nav menu
+        mNavMenu = new NavMenu(getContext(), mNavigationView);
+
 //		// set canvas dimensions to display dimensions until touch view canvas created
 //		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(this);
 //		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(this);
@@ -150,8 +153,54 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         int id = item.getItemId();
 		Log.d(TAG, "onNavigationItemSelected itemname: " + itemname + ", id:" + id);
 
+//		// map item to action code
+//        int action = mSketchViewModel.mapItemToAction(itemname);
+//        if (action < 0) {
+//            Log.e(TAG,"Oops! onNavigationItemSelected action code not found!");
+//            return false;
+//        }
+//        if (itemname.equals(getContext().getString(R.string.action_camera))) {
+//        }
+//        else if (itemname.equals(getContext().getString(R.string.action_gallery))) {
+//        }
+        if (itemname.equals(getContext().getString(R.string.action_sketch_file_new))) {
+//        if (action == SketchViewModel.ACTION_TYPE_FILE_NEW) {
+            Log.v(TAG, "onNavigationItemSelected file new.");
+            // if sketch defined
+            if (mSketchViewModel.isSketchDefined()) {
+                // prompt to save current sketch
+                saveSketchAlert();
+            }
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadbackdrop))) {
+            Log.v(TAG, "onNavigationItemSelected load backdrop.");
+            startGalleryActivity(REQUEST_CODE_SELECT_BACKDROP);
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadoverlay))) {
+            Log.v(TAG, "onNavigationItemSelected load overlay image.");
+            // ensure rect is focus
+//            int focus = mShapeModel.getShapeListFocus();
+//            if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
+            if (mSketchViewModel.isRectFocus()) {
+                // start gallery to select image OVERLAY (focus)
+                startGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
+            } else {
+                Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
+            }
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
+            Log.v(TAG, "onNavigationItemSelected save sketch.");
+            mSketchViewModel.serviceFileSaveSketch();
+//            Bitmap bitmap = mSketchView.getCanvasBitmap();
+//            saveSketch(bitmap);
+        }
+        else {
+            Log.v(TAG, "onNavigationItemSelected serviceAction " + itemname);
+            mSketchViewModel.serviceAction(itemname);
+//            Log.e(TAG, "Ooops!  onNavigationItemSelected finds unknown menu item " + itemname);
+        }
+
 		// close drawer
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerLayout.closeDrawer(GravityCompat.START);
 		return true;
 	}
@@ -159,8 +208,8 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	// activity life-cycle
     protected void onPause() {
 		Log.v(TAG, "onPause");     	
-//    	// perform light weight cleanup, release resources, save draft data
-//		mSketchViewModel.saveSketchSettings();
+    	// perform light weight cleanup, release resources, save draft data
+		mSketchViewModel.saveSketchSettings();
 //		// save ShapeModel shape list
 //		mShapeModel.save(temp);
 		
@@ -286,18 +335,21 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		}
 	};
     private Intent createShareIntent() {
-        if (mImageBitmap == null) {
-            // save bitmap
-            Bitmap bitmap = mSketchView.getCanvasBitmap();
-            saveSketch(bitmap);
-            Log.v(TAG, "createShareIntent save sketch.");
-        }
+//        if (mImageBitmap == null) {
+//            // save bitmap
+//            Bitmap bitmap = mSketchView.getCanvasBitmap();
+//            saveSketch(bitmap);
+//            Log.v(TAG, "createShareIntent save sketch.");
+//        }
         // create share intent
         Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         // share image
-        String path = MediaStore.Images.Media.insertImage(getContentResolver(), mImageBitmap, "title", null);
+//        String path = MediaStore.Images.Media.insertImage(getContentResolver(), mImageBitmap, "title", null);
+
+        Bitmap imageBitmap = mSketchView.getCanvasBitmap();
+        String path = MediaStore.Images.Media.insertImage(getContentResolver(), imageBitmap, "title", null);
         Uri imageUri = Uri.parse(path);
 
         shareIntent.setType("image/jpeg");
@@ -330,40 +382,40 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 				int focus;
 				// file menu
 				if (mPopupMenuResId == R.menu.sketch_file_menu) {
-					switch (item.getItemId()) {
-					case R.id.action_sketch_file_new:
-						Log.v(TAG, "onMenuItemClick file new.");
-						// if current shape list contains more than BG rect
-						if (mShapeModel.getShapeList().size() > 1) {
-							// prompt to save current sketch
-							saveSketchAlert();
-						}
-						// clear sketch canvas...unfortunately, canvas cleared prior to save
-//						mShapeModel.clearShapeList();
-						break;
-					case R.id.action_sketch_file_loadbackdrop:
-						Log.v(TAG, "onMenuItemClick load backdrop.");
-						startGalleryActivity(REQUEST_CODE_SELECT_BACKDROP);
-						break;
-					case R.id.action_sketch_file_loadoverlay:
-						Log.v(TAG, "onMenuItemClick load overlay image.");
-	        			// ensure rect is focus
-	        			focus = mShapeModel.getShapeListFocus();
-	        			if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
-	            			// start gallery to select image OVERLAY (focus)
-							startGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
-	        			}
-	        			else {
-	      	        		Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
-	        			}
-
-						break;
-					case R.id.action_sketch_file_savesketch:
-						Bitmap bitmap = mSketchView.getCanvasBitmap();
-						saveSketch(bitmap);
-						Log.v(TAG, "onMenuItemClick save sketch.");
-						break;
-					}
+//					switch (item.getItemId()) {
+//					case R.id.action_sketch_file_new:
+//						Log.v(TAG, "onMenuItemClick file new.");
+//						// if current shape list contains more than BG rect
+//						if (mShapeModel.getShapeList().size() > 1) {
+//							// prompt to save current sketch
+//							saveSketchAlert();
+//						}
+//						// clear sketch canvas...unfortunately, canvas cleared prior to save
+////						mShapeModel.clearShapeList();
+//						break;
+//					case R.id.action_sketch_file_loadbackdrop:
+//						Log.v(TAG, "onMenuItemClick load backdrop.");
+//						startGalleryActivity(REQUEST_CODE_SELECT_BACKDROP);
+//						break;
+//					case R.id.action_sketch_file_loadoverlay:
+//						Log.v(TAG, "onMenuItemClick load overlay image.");
+//	        			// ensure rect is focus
+//	        			focus = mShapeModel.getShapeListFocus();
+//	        			if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
+//	            			// start gallery to select image OVERLAY (focus)
+//							startGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
+//	        			}
+//	        			else {
+//	      	        		Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
+//	        			}
+//
+//						break;
+//					case R.id.action_sketch_file_savesketch:
+//						Bitmap bitmap = mSketchView.getCanvasBitmap();
+//						saveSketch(bitmap);
+//						Log.v(TAG, "onMenuItemClick save sketch.");
+//						break;
+//					}
 				}
 				// erase menu
 				else if (mPopupMenuResId == R.menu.sketch_erase_menu) {
@@ -451,23 +503,26 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 				Log.v(TAG, "onActivityResult image path: " + imagePath);
 				switch (requestCode) {
 					case REQUEST_CODE_SELECT_BACKDROP:
-						// set image as backdrop (0th indicates insert BACKDROP)
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
-						mShapeModel.setImageShape(imagePath, 0);
-						mSketchView.invalidate();
+						// set image as backdrop (0th indicates insert BACKDROP)
+                        mSketchViewModel.serviceFileLoadBackdrop(imagePath);
+//						mShapeModel.setImageShape(imagePath, 0);
+//						mSketchView.invalidate();
 						break;
 					case REQUEST_CODE_SELECT_OVERLAY:
-						// if rect selected, set image to selected rect shape
-						int focus = mShapeModel.getShapeListFocus();
-						Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY focus shape inx: " + focus);
-						if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
-							// set image as OVERLAY (focus)
-							mShapeModel.setImageShape(imagePath, focus);
-						}
-						else {
-							Log.e(TAG, "onActivityResult OVERLAY failure - focus (" + focus + ") is not RECT. ");
-						}
-						mSketchView.invalidate();
+                        Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY ");
+                        mSketchViewModel.serviceFileLoadOverlay(imagePath);
+//						// if rect selected, set image to selected rect shape
+//						int focus = mShapeModel.getShapeListFocus();
+//						Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY focus shape inx: " + focus);
+//						if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
+//							// set image as OVERLAY (focus)
+//							mShapeModel.setImageShape(imagePath, focus);
+//						}
+//						else {
+//							Log.e(TAG, "onActivityResult OVERLAY failure - focus (" + focus + ") is not RECT. ");
+//						}
+//						mSketchView.invalidate();
 						break;
 					default:
 						Log.e(TAG, "GalleryActivity unknown request code: " + requestCode);
@@ -496,33 +551,33 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 			}
 		}
 	}
-    ///////////////////////////////////////////////////////////////////////////
-    private String saveSketch (Bitmap bitmap) {
-
-		String imageName = "nada";
-		try {
-            String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
-			// timestamp an image name & create the file
-			imageName = ImageAlbumStorage.timestampImageName();
-			Log.v(TAG, "saveSketch timestampImageName: "+ imageName);
-			
-			// write to project album
-			String imagePath = ImageAlbumStorage.addBitmapToMediaDB(this, bitmap, albumName, imageName);
-			Log.v(TAG, "saveSketch added imagePath: "+ imagePath);
-			// retain latest saved image
-			mImagePath = imagePath;
-			mImageBitmap = bitmap;
-			PrefsUtils.setPrefs(mContext, PrefsUtils.IMAGEPATH_KEY, mImagePath);
-			
-            Log.v(TAG, "Sketch saved to " + albumName);
-            Toast.makeText(mContext, "Sketch saved to " + albumName, Toast.LENGTH_LONG).show();
-        }
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	   return imageName;
-    }
+//    ///////////////////////////////////////////////////////////////////////////
+//    private String saveSketch (Bitmap bitmap) {
+//
+//		String imageName = "nada";
+//		try {
+//            String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
+//			// timestamp an image name & create the file
+//			imageName = ImageAlbumStorage.timestampImageName();
+//			Log.v(TAG, "saveSketch timestampImageName: "+ imageName);
+//
+//			// write to project album
+//			String imagePath = ImageAlbumStorage.addBitmapToMediaDB(this, bitmap, albumName, imageName);
+//			Log.v(TAG, "saveSketch added imagePath: "+ imagePath);
+//			// retain latest saved image
+//			mImagePath = imagePath;
+//			mImageBitmap = bitmap;
+//			PrefsUtils.setPrefs(mContext, PrefsUtils.IMAGEPATH_KEY, mImagePath);
+//
+//            Log.v(TAG, "Sketch saved to " + albumName);
+//            Toast.makeText(mContext, "Sketch saved to " + albumName, Toast.LENGTH_LONG).show();
+//        }
+//		catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//	   return imageName;
+//    }
     ///////////////////////////////////////////////////////////////////////////
     private void saveSketchAlert() {
 	    AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -534,9 +589,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
            public void onClick(DialogInterface dialog, int whichButton) {
                // Yes, proceed to clear current sketch
                Log.v(TAG, "saveSketchAlert proceed? YES");
-               // clear sketch canvas
-               mShapeModel.initShapeList();
-               mSketchView.invalidate();
+               mSketchViewModel.serviceFileNew();
+//               // clear sketch canvas
+//               mShapeModel.initShapeList();
+//               mSketchView.invalidate();
             }
         });
 

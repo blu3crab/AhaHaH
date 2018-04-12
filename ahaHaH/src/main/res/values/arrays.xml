@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- file -->
+    <string-array name="File">
+        <item>@string/action_sketch_file_new</item>
+        <item>@string/action_sketch_file_loadbackdrop</item>
+        <item>@string/action_sketch_file_loadoverlay</item>
+        <item>@string/action_sketch_file_savesketch</item>
+    </string-array>
+
+    <!-- shapes -->
+    <string-array name="Shapes">
+        <item>@string/action_sketch_shape_free</item>
+        <item>@string/action_sketch_shape_line</item>
+        <item>@string/action_sketch_shape_rect</item>
+        <item>@string/action_sketch_shape_label</item>
+        <item>@string/action_sketch_shape_circle</item>
+        <item>@string/action_sketch_shape_oval</item>
+    </string-array>
+
+</resources>

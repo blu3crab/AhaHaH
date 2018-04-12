@@ -134,101 +134,101 @@ public class ShapeModel {
 //        mShapeListFocus = setShapeListFocus(0);
     }
 	
-//	////////////////////////////////////////////////////////////////////////////
-//	// save shape list
-//	public boolean save (String filename) {
-//		Log.v(TAG, "save shape list to " + filename);
-//		// snap start time
-//	    long startTime = System.currentTimeMillis();
-//
-//		try {
-//			FileOutputStream fos = mParentActivity.openFileOutput(filename, Context.MODE_PRIVATE);
-//		    ObjectOutputStream oos = new ObjectOutputStream(fos);
-//			for (int size = mShapeList.size(), i = 0; i < size; i++) {
-//				mShapeObject = mShapeList.get(i);
-//				mShapeObject.serialize(oos);
-//
-//        		Log.v(TAG, "serialized " + mShapeObject.getShapeType());
-//			}
-//		    oos.flush();
-//		    oos.close();
-//			fos.close();
-//		} catch (Exception e) {
-////			Log.e(TAG, "serialize exception: " + e.getCause().toString() + " - " + e.getMessage());
-//			Log.e(TAG, "serialize exception: " + e.getMessage());
-//		}
-//        // snap completion time
-//	    long doneTime = System.currentTimeMillis();
-//        long responseTime = doneTime - startTime;
-//        Log.v(TAG, "elapsed serialization time: " + responseTime + " ms");
-//		return true;
-//	}
-//	////////////////////////////////////////////////////////////////////////////
-//	// load shape list
-//	public boolean load (String filename) {
-//		Log.v(TAG, "load shape list from " + filename);
-//		// snap start time
-//	    long startTime = System.currentTimeMillis();
-//       // clear shape list
-//		mShapeList = new ArrayList<ShapeObject>();
-//		FileInputStream fis = null;
-//        try {
-//        	fis = mParentActivity.openFileInput(filename);
-//        	Log.v(TAG, "fis available: " + fis.available());
-//            ObjectInputStream ois = new ObjectInputStream(fis);
-//			Log.v(TAG, "ois available: " + ois.available());
-//        	try {
-//        		boolean more = true;
-//        		while (more) {
-//        			ShapeObject mShapeObject = new ShapeObject();
-//        			more = mShapeObject.deserialize(ois);
-//        			if (more) {
-//		    			Log.v(TAG, "deserialized " + mShapeObject.getShapeType());
-//		        		mShapeList.add(mShapeObject);
-//        			}
-//        		}
-//	        }
-//	        catch (Exception e) {
-//	            Log.e(TAG, e.getMessage());
-//	        }
-//			Log.v(TAG, "deserialized " + mShapeList.size() + " shape objects.");
-//			// invalid file format or corrupted file
-//			if (mShapeList.size() == 0) {
-//				initShapeList();
-//			}
-//			ois.close();
-//        }
-//        catch(IOException e) {
-//            Log.e(TAG, "open file exception:" + e.getMessage());
-//        }
-//        finally {
-//            if (fis != null) {
-//                try {
-//                    fis.close();
-//                } catch (IOException e) {
-//                    Log.e(TAG, "close exception: " + e.getMessage());
-//                }
-//            }
-//        }
-//        // snap completion time
-//	    long doneTime = System.currentTimeMillis();
-//	    long responseTime = doneTime - startTime;
-//        Log.v(TAG, "elapsed deserialization time: " + responseTime + " ms");
-//		return true;
-//	}
-//	////////////////////////////////////////////////////////////////////////////
-//	// delete shape list
-//	public boolean delete (String filename) {
-//		Log.v(TAG, "delete shape list in " + filename);
-//        try {
-//        	boolean success = mParentActivity.deleteFile(filename);
-//        	Log.v(TAG, "delete file returns: " + success);
-//        }
-//        catch(Exception e) {
-//            Log.e(TAG, "delete file exception:" + e.getMessage());
-//        }
-//		return true;
-//	}
+	////////////////////////////////////////////////////////////////////////////
+	// save shape list
+	public boolean save (String filename) {
+		Log.v(TAG, "save shape list to " + filename);
+		// snap start time
+	    long startTime = System.currentTimeMillis();
+
+		try {
+			FileOutputStream fos = getContext().openFileOutput(filename, Context.MODE_PRIVATE);
+		    ObjectOutputStream oos = new ObjectOutputStream(fos);
+			for (int size = mShapeList.size(), i = 0; i < size; i++) {
+				mShapeObject = mShapeList.get(i);
+				mShapeObject.serialize(oos);
+
+        		Log.v(TAG, "serialized " + mShapeObject.getShapeType());
+			}
+		    oos.flush();
+		    oos.close();
+			fos.close();
+		} catch (Exception e) {
+//			Log.e(TAG, "serialize exception: " + e.getCause().toString() + " - " + e.getMessage());
+			Log.e(TAG, "serialize exception: " + e.getMessage());
+		}
+        // snap completion time
+	    long doneTime = System.currentTimeMillis();
+        long responseTime = doneTime - startTime;
+        Log.v(TAG, "elapsed serialization time: " + responseTime + " ms");
+		return true;
+	}
+	////////////////////////////////////////////////////////////////////////////
+	// load shape list
+	public boolean load (String filename) {
+		Log.v(TAG, "load shape list from " + filename);
+		// snap start time
+	    long startTime = System.currentTimeMillis();
+       // clear shape list
+		mShapeList = new ArrayList<ShapeObject>();
+		FileInputStream fis = null;
+        try {
+        	fis = getContext().openFileInput(filename);
+        	Log.v(TAG, "fis available: " + fis.available());
+            ObjectInputStream ois = new ObjectInputStream(fis);
+			Log.v(TAG, "ois available: " + ois.available());
+        	try {
+        		boolean more = true;
+        		while (more) {
+        			ShapeObject mShapeObject = new ShapeObject();
+        			more = mShapeObject.deserialize(ois);
+        			if (more) {
+		    			Log.v(TAG, "deserialized " + mShapeObject.getShapeType());
+		        		mShapeList.add(mShapeObject);
+        			}
+        		}
+	        }
+	        catch (Exception e) {
+	            Log.e(TAG, e.getMessage());
+	        }
+			Log.v(TAG, "deserialized " + mShapeList.size() + " shape objects.");
+			// invalid file format or corrupted file
+			if (mShapeList.size() == 0) {
+				initShapeList();
+			}
+			ois.close();
+        }
+        catch(IOException e) {
+            Log.e(TAG, "open file exception:" + e.getMessage());
+        }
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "close exception: " + e.getMessage());
+                }
+            }
+        }
+        // snap completion time
+	    long doneTime = System.currentTimeMillis();
+	    long responseTime = doneTime - startTime;
+        Log.v(TAG, "elapsed deserialization time: " + responseTime + " ms");
+		return true;
+	}
+	////////////////////////////////////////////////////////////////////////////
+	// delete shape list
+	public boolean delete (String filename) {
+		Log.v(TAG, "delete shape list in " + filename);
+        try {
+        	boolean success = getContext().deleteFile(filename);
+        	Log.v(TAG, "delete file returns: " + success);
+        }
+        catch(Exception e) {
+            Log.e(TAG, "delete file exception:" + e.getMessage());
+        }
+		return true;
+	}
 	////////////////////////////////////////////////////////////////////////////
 	// getters/setters, utility
 	public List<ShapeObject> getShapeList () {
