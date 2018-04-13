@@ -126,13 +126,13 @@ public class SketchViewModel {
 	///////////////////////////////////////////////////////////////////////////
 	private static volatile SketchViewModel instance;
 
-	public synchronized static SketchViewModel getInstance(Context c)
+	public synchronized static SketchViewModel getInstance(Context c, SketchView sketchView)
 	{
 		if (instance == null){
 			synchronized (SketchViewModel.class) {   // Check for the second time.
 				//if there is no instance available... create new one
 				if (instance == null){
-					instance = new SketchViewModel(c);
+					instance = new SketchViewModel(c, sketchView);
 				}
 			}
 		}
@@ -141,15 +141,21 @@ public class SketchViewModel {
 	}
 	///////////////////////////////////////////////////////////////////////////////
     // constructor
-	public SketchViewModel(Context context) {
+	public SketchViewModel(Context context, SketchView sketchView) {
+		//Prevent form the reflection api.
+		if (instance != null){
+			throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
+		}
+
 		setContext(context);
 		// set canvas dimensions to display dimensions until touch view canvas created
 		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(getContext());
 		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(getContext());
 
 		// get (instantiate) view model and model
-		mSketchView = (SketchView) ((Activity)getContext()).findViewById(R.id.the_canvas);
-		mShapeModel = ShapeModel.getInstance(getContext());
+//        mSketchView = (SketchView) ((Activity)getContext()).findViewById(R.id.the_canvas);
+        mSketchView = sketchView;
+		mShapeModel = ShapeModel.getInstance(getContext(), this);
 
 		// restore settings
 		restoreSketchSettings();
@@ -226,6 +232,9 @@ public class SketchViewModel {
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// getters/setters
+    // TODO: temp reference for direct view access to model
+    public ShapeModel getShapeModel() { return mShapeModel; }
+
 	private Context getContext() { return mContext; }
 	private void setContext(Context context) { this.mContext = context; }
 
@@ -375,9 +384,11 @@ public class SketchViewModel {
 	}
 	///////////////////////////////////////////////////////////////////////////////
 	public Boolean serviceFileNew() {
-		// clear sketch canvas
+        // clear ShapeModel shape list & associated temp file
 		mShapeModel.initShapeList();
-		mSketchView.invalidate();
+        mShapeModel.delete(TEMP_FILE);
+        // clear sketch canvas
+        mSketchView.invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////

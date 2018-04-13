@@ -76,8 +76,9 @@ public class SketchView extends View implements
 //		mSketchViewModel = mParentActivity.getSketchViewModel();
 //		mShapeModel = mParentActivity.getShapeManager();
 //		mParentActivity = (SketchActivity)context;
-		mSketchViewModel = SketchViewModel.getInstance(getContext());
-		mShapeModel = ShapeModel.getInstance(getContext());
+		mSketchViewModel = SketchViewModel.getInstance(getContext(), this);
+//        mShapeModel = ShapeModel.getInstance(getContext());
+        mShapeModel = mSketchViewModel.getShapeModel();
 
 		// instantiate shape list
 //		mShapeList = mShapeModel.getShapeList();

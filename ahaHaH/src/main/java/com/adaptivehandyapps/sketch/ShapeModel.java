@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -81,13 +82,13 @@ public class ShapeModel {
     //////////////////////////////////////////////////////////////////////////////////////////
     private static volatile ShapeModel instance;
 
-    public synchronized static ShapeModel getInstance(Context c)
+    public synchronized static ShapeModel getInstance(Context c, SketchViewModel sketchViewModel)
     {
         if (instance == null){
             synchronized (ShapeModel.class) {   // Check for the second time.
                 //if there is no instance available... create new one
                 if (instance == null){
-                    instance = new ShapeModel(c);
+                    instance = new ShapeModel(c,sketchViewModel );
                 }
             }
         }
@@ -96,12 +97,13 @@ public class ShapeModel {
     }
 	////////////////////////////////////////////////////////////////////////////
 	// constructor
-	public ShapeModel(Context context) {
+	public ShapeModel(Context context, SketchViewModel sketchViewModel) {
         setContext(context);
 		// obtain sketch settings
 //		mParentActivity = SketchActivity.getSketchActivity();
 //		mSketchViewModel = mParentActivity.getSketchViewModel();
-        mSketchViewModel = SketchViewModel.getInstance(context);
+//        mSketchViewModel = SketchViewModel.getInstance(context);
+        mSketchViewModel = sketchViewModel;
 		initShapeList();
 	}
     ////////////////////////////////////////////////////////////////////////////
@@ -169,8 +171,6 @@ public class ShapeModel {
 		Log.v(TAG, "load shape list from " + filename);
 		// snap start time
 	    long startTime = System.currentTimeMillis();
-       // clear shape list
-		mShapeList = new ArrayList<ShapeObject>();
 		FileInputStream fis = null;
         try {
         	fis = getContext().openFileInput(filename);
@@ -178,6 +178,8 @@ public class ShapeModel {
             ObjectInputStream ois = new ObjectInputStream(fis);
 			Log.v(TAG, "ois available: " + ois.available());
         	try {
+                // clear shape list
+                mShapeList = new ArrayList<ShapeObject>();
         		boolean more = true;
         		while (more) {
         			ShapeObject mShapeObject = new ShapeObject();

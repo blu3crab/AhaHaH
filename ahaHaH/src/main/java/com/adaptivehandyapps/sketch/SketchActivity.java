@@ -80,11 +80,6 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		// set sketch activity reference
 		mSketchActivity = this;
         setContext(this);
-
-        // get (instantiate) view model and model
-        mSketchViewModel = SketchViewModel.getInstance(getContext());
-        mShapeModel = ShapeModel.getInstance(getContext());
-
         // instantiate sketch setting
 //        mSketchViewModel = new SketchViewModel(mContext);
 //		// set defaults for unsaved items
@@ -130,7 +125,13 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		// instantiate touch view after layout (id:the_canvas)
 		mSketchView = (SketchView) findViewById(R.id.the_canvas);
 
-		// fixed landscape orientation
+
+        // get (instantiate) view model and model
+        mSketchViewModel = SketchViewModel.getInstance(getContext(), mSketchView);
+//        mShapeModel = ShapeModel.getInstance(getContext());
+        mShapeModel = mSketchViewModel.getShapeModel();
+
+        // fixed landscape orientation
 		// get orientation degree - follow scale listener pattern or make it work somehow...
 //		mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {
 //	        public void onOrientationChanged(int orientation) {
