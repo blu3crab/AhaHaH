@@ -41,14 +41,39 @@ public class SketchViewModel {
 	public static final int ACTION_TYPE_FILE_LOADOVERLAY = 4;
 	public static final int ACTION_TYPE_FILE_SAVE_SKETCH = 5;
 
-	public static final int ACTION_TYPE_SHAPE_FREE = 6;
-	public static final int ACTION_TYPE_SHAPE_LINE = 7;
-	public static final int ACTION_TYPE_SHAPE_RECT = 8;
-	public static final int ACTION_TYPE_SHAPE_LABEL = 9;
-	public static final int ACTION_TYPE_SHAPE_CIRCLE = 10;
-	public static final int ACTION_TYPE_SHAPE_OVAL = 11;
+	public static final int SELECT_TYPE_UNKNOWN = -1;
 
-	// TODO: save to & restore from Android/app/data
+	public static final int SELECT_TYPE_SHAPE_FREE = 6;
+	public static final int SELECT_TYPE_SHAPE_LINE = 7;
+	public static final int SELECT_TYPE_SHAPE_RECT = 8;
+	public static final int SELECT_TYPE_SHAPE_LABEL = 9;
+	public static final int SELECT_TYPE_SHAPE_CIRCLE = 10;
+    public static final int SELECT_TYPE_SHAPE_OVAL = 11;
+
+    public static final int SELECT_TYPE_STYLE_SMALL = 21;
+    public static final int SELECT_TYPE_STYLE_MEDIUM = 22;
+    public static final int SELECT_TYPE_STYLE_LARGE = 23;
+    public static final int SELECT_TYPE_STYLE_FILL = 24;
+    public static final int SELECT_TYPE_STYLE_STROKE = 25;
+    public static final int SELECT_TYPE_STYLE_STROKE_FILL = 26;
+    public static final int SELECT_TYPE_STYLE_HOLD_FOCUS = 27;
+
+    public static final int SELECT_TYPE_COLOR_BLACK = 31;
+    public static final int SELECT_TYPE_COLOR_BLUE = 32;
+    public static final int SELECT_TYPE_COLOR_GREEN = 33;
+    public static final int SELECT_TYPE_COLOR_YELLOW = 34;
+    public static final int SELECT_TYPE_COLOR_ORANGE = 35;
+    public static final int SELECT_TYPE_COLOR_RED = 36;
+    public static final int SELECT_TYPE_COLOR_VIOLET = 37;
+    public static final int SELECT_TYPE_COLOR_WHITE = 38;
+    public static final int SELECT_TYPE_COLOR_CUSTOM = 39;
+
+    public static final int SELECT_TYPE_TOOL_PEN = 41;
+    public static final int SELECT_TYPE_TOOL_BRUSH = 42;
+    public static final int SELECT_TYPE_TOOL_SPRAY = 43;
+    public static final int SELECT_TYPE_TOOL_BUCKET = 44;
+
+    // TODO: save to & restore from Android/app/data
 	// temp file name for retaining shape list
 	private static final String TEMP_FILE = "tempfile";
 
@@ -334,46 +359,97 @@ public class SketchViewModel {
     }
 	///////////////////////////////////////////////////////////////////////////////
 	// menu handlers
-	public Boolean serviceAction(String itemname) {
+	public Boolean setSelection(String itemname) {
 		// map item to action & indicate failure if invalid
-		int action = mapItemToAction(itemname);
+		int action = mapItemToSelection(itemname);
 		Log.v(TAG,"");
 		if (action < 0) return false;
 
 		// service action
 		switch (action) {
-//			case ACTION_TYPE_CAMERA:
-//				break;
-//			case ACTION_TYPE_GALLERY:
-//				break;
-//			case ACTION_TYPE_FILE_NEW:
-//				break;
-//			case ACTION_TYPE_FILE_LOADBACKDROP:
-//				break;
-//			case ACTION_TYPE_FILE_LOADOVERLAY:
-//				break;
-//			case ACTION_TYPE_FILE_SAVE_SKETCH:
-//				break;
-			case ACTION_TYPE_SHAPE_FREE:
+			case SELECT_TYPE_SHAPE_FREE:
 				mShape = ShapeType.FREE;
 				break;
-			case ACTION_TYPE_SHAPE_LINE:
+			case SELECT_TYPE_SHAPE_LINE:
 				mShape = ShapeType.LINE;
 				break;
-			case ACTION_TYPE_SHAPE_RECT:
+			case SELECT_TYPE_SHAPE_RECT:
 				mShape = ShapeType.RECT;
 				break;
-			case ACTION_TYPE_SHAPE_LABEL:
+			case SELECT_TYPE_SHAPE_LABEL:
 				mShape = ShapeType.LABEL;
 				break;
-			case ACTION_TYPE_SHAPE_CIRCLE:
+			case SELECT_TYPE_SHAPE_CIRCLE:
 				mShape = ShapeType.CIRCLE;
 				break;
-			case ACTION_TYPE_SHAPE_OVAL:
+			case SELECT_TYPE_SHAPE_OVAL:
 				mShape = ShapeType.OVAL;
 				break;
+            case SELECT_TYPE_STYLE_SMALL:
+                mStyleSize = Style.SMALL;
+                return true;
+            case SELECT_TYPE_STYLE_MEDIUM:
+                mStyleSize = Style.MEDIUM;
+                return true;
+            case SELECT_TYPE_STYLE_LARGE:
+                mStyleSize = Style.LARGE;
+                return true;
+            case SELECT_TYPE_STYLE_FILL:
+                mStyleFill = Style.FILL;
+                return true;
+            case SELECT_TYPE_STYLE_STROKE:
+                mStyleFill = Style.STROKE;
+                return true;
+            case SELECT_TYPE_STYLE_STROKE_FILL:
+                mStyleFill = Style.STROKEFILL;
+                return true;
+            case SELECT_TYPE_STYLE_HOLD_FOCUS:
+                mStyleFocus = Style.FOCUS;
+                setFocusHold(!getFocusHold());
+                return true;
+            case SELECT_TYPE_COLOR_BLACK:
+                mColor = mPalette[Palette.BLACK.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_BLUE:
+                mColor = mPalette[Palette.BLUE.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_GREEN:
+                mColor = mPalette[Palette.GREEN.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_YELLOW:
+                mColor = mPalette[Palette.YELLOW.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_ORANGE:
+                mColor = mPalette[Palette.ORANGE.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_RED:
+                mColor = mPalette[Palette.RED.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_VIOLET:
+                mColor = mPalette[Palette.VIOLET.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_WHITE:
+                mColor = mPalette[Palette.WHITE.ordinal()];
+                return true;
+            case SELECT_TYPE_COLOR_CUSTOM:
+                // launch ColorPickerDialog
+//				mColor = 0xFF888888;
+                launchColorPickerDialog();
+                return true;
+            case SELECT_TYPE_TOOL_PEN:
+                mTool = Tool.PEN;
+                return true;
+            case SELECT_TYPE_TOOL_BRUSH:
+                mTool = Tool.BRUSH;
+                return true;
+            case SELECT_TYPE_TOOL_SPRAY:
+                mTool = Tool.SPRAY;
+                return true;
+            case SELECT_TYPE_TOOL_BUCKET:
+                mTool = Tool.BUCKET;
+                return true;
 			default:
-				Log.e(TAG, "Ooops! serviceAction finds unknown item " + action);
+				Log.e(TAG, "Ooops! setSelection finds unknown item " + action);
 				return false;
 		}
 		// TODO: upadte & invalidate on selection?
@@ -383,7 +459,7 @@ public class SketchViewModel {
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////
-	public Boolean serviceFileNew() {
+	public Boolean actionFileNew() {
         // clear ShapeModel shape list & associated temp file
 		mShapeModel.initShapeList();
         mShapeModel.delete(TEMP_FILE);
@@ -392,34 +468,91 @@ public class SketchViewModel {
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////
-	public Boolean serviceFileLoadBackdrop(String imagePath) {
+	public Boolean actionFileLoadBackdrop(String imagePath) {
 		// set backdrop image
 		mShapeModel.setImageShape(imagePath, 0);
 		mSketchView.invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////
-	public Boolean serviceFileLoadOverlay(String imagePath) {
+	public Boolean actionFileLoadOverlay(String imagePath) {
 		// if rect selected, set image to selected rect shape
 		int focus = mShapeModel.getShapeListFocus();
-		Log.v(TAG, "serviceFileLoadOverlay focus shape inx: " + focus);
+		Log.v(TAG, "actionFileLoadOverlay focus shape inx: " + focus);
 		if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
 			// set image as OVERLAY (focus)
 			mShapeModel.setImageShape(imagePath, focus);
 		}
 		else {
-			Log.e(TAG, "serviceFileLoadOverlay OVERLAY failure - focus (" + focus + ") is not RECT. ");
+			Log.e(TAG, "actionFileLoadOverlay OVERLAY failure - focus (" + focus + ") is not RECT. ");
 		}
 		mSketchView.invalidate();
 		return true;
 	}
-	///////////////////////////////////////////////////////////////////////////////
-	public Boolean serviceFileSaveSketch() {
-		Bitmap bitmap = mSketchView.getCanvasBitmap();
-		saveSketch(bitmap);
-		return true;
-	}
-	///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionFileSaveSketch() {
+        Log.v(TAG, "actionFileSaveSketch...");
+        Bitmap bitmap = mSketchView.getCanvasBitmap();
+        saveSketch(bitmap);
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionEraseBackdrop() {
+        Log.v(TAG, "actionEraseBackdrop...");
+        // if 1st shape is image, assume backdrop & clear
+        if (mShapeModel.isShapeType(ShapeType.IMAGE, ShapeModel.BACKDROP_IMAGE_INX)) {
+            mShapeModel.clearShape(ShapeModel.BACKDROP_IMAGE_INX);
+        }
+        else {
+            Toast.makeText(mContext, R.string.sketch_no_backdrop_toast, Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionEraseOverlay() {
+        Log.v(TAG, "actionEraseOverlay...");
+        // if focus is image, revert to rect
+        int focus = mShapeModel.getShapeListFocus();
+        if (mShapeModel.isShapeType(ShapeType.IMAGE, focus)) {
+            mShapeModel.revertShapeToRect(focus);
+        }
+        else {
+            Toast.makeText(mContext, R.string.sketch_no_overlay_toast, Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionEraseSelection() {
+        Log.v(TAG, "actionEraseSelection...");
+        // if shape is selected, clear focus shape
+        int focus = mShapeModel.getShapeListFocus();
+        if (focus != ShapeModel.NOFOCUS) {
+            mShapeModel.clearShape(focus);
+        }
+        else {
+            Toast.makeText(mContext, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionEraseLastShape() {
+        Log.v(TAG, "actionEraseLastShape...");
+			// clear last shape
+			int lastInx = mShapeModel.getShapeList().size()-1;
+			if (!mShapeModel.clearShape(lastInx)) {
+				Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
+			}
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionEraseAll() {
+        Log.v(TAG, "actionEraseAll...");
+        // clear sketch canvas
+        mShapeModel.initShapeList();
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 	private String saveSketch (Bitmap bitmap) {
 
 		String imageName = "nada";
@@ -448,41 +581,41 @@ public class SketchViewModel {
 
 
 
-	public boolean setMenuSelection(int menuResId, MenuItem item) {
-
-        if (!isValidMenuResId(menuResId)) {
-            Log.e(TAG, "checkMenuSelections sees invalid menuResId.");
-            return false;
-        }
-
-        item.setChecked(true);
-		Toast.makeText(getContext(), item.toString(), Toast.LENGTH_LONG).show();
-
-		switch (menuResId) {
-		case R.menu.sketch_shape_menu: 
-			switch (item.getItemId()) {
-			case R.id.action_sketch_shape_free:
-				mShape = ShapeType.FREE;
-				return true;
-			case R.id.action_sketch_shape_line:
-				mShape = ShapeType.LINE;
-				return true;
-			case R.id.action_sketch_shape_rect:
-				mShape = ShapeType.RECT;
-				return true;
-			case R.id.action_sketch_shape_label:
-				mShape = ShapeType.LABEL;
-				return true;
-			case R.id.action_sketch_shape_circle:
-				mShape = ShapeType.CIRCLE;
-				return true;
-			case R.id.action_sketch_shape_oval:
-				mShape = ShapeType.OVAL;
-				return true;
-			default:
-				Log.e(TAG, "setMenuSelection invalid item " + item.getItemId());
-				return false;
-			}
+//	public boolean setMenuSelection(int menuResId, MenuItem item) {
+//
+//        if (!isValidMenuResId(menuResId)) {
+//            Log.e(TAG, "checkMenuSelections sees invalid menuResId.");
+//            return false;
+//        }
+//
+//        item.setChecked(true);
+//		Toast.makeText(getContext(), item.toString(), Toast.LENGTH_LONG).show();
+//
+//		switch (menuResId) {
+//		case R.menu.sketch_shape_menu:
+//			switch (item.getItemId()) {
+//			case R.id.action_sketch_shape_free:
+//				mShape = ShapeType.FREE;
+//				return true;
+//			case R.id.action_sketch_shape_line:
+//				mShape = ShapeType.LINE;
+//				return true;
+//			case R.id.action_sketch_shape_rect:
+//				mShape = ShapeType.RECT;
+//				return true;
+//			case R.id.action_sketch_shape_label:
+//				mShape = ShapeType.LABEL;
+//				return true;
+//			case R.id.action_sketch_shape_circle:
+//				mShape = ShapeType.CIRCLE;
+//				return true;
+//			case R.id.action_sketch_shape_oval:
+//				mShape = ShapeType.OVAL;
+//				return true;
+//			default:
+//				Log.e(TAG, "setMenuSelection invalid item " + item.getItemId());
+//				return false;
+//			}
 //		case R.menu.sketch_tool_menu:
 //			switch (item.getItemId()) {
 //			case R.id.action_sketch_tool_pen:
@@ -501,74 +634,74 @@ public class SketchViewModel {
 //				Log.e(TAG, "setMenuSelection invalid item " + item.getItemId());
 //				return false;
 //			}
-		case R.menu.sketch_style_menu: 
-			switch (item.getItemId()) {
-			case R.id.action_sketch_style_small:
-				mStyleSize = Style.SMALL;
-				return true;
-			case R.id.action_sketch_style_medium:
-				mStyleSize = Style.MEDIUM;
-				return true;
-			case R.id.action_sketch_style_large:
-				mStyleSize = Style.LARGE;
-				return true;
-			case R.id.action_sketch_style_fill:
-				mStyleFill = Style.FILL;
-				return true;
-			case R.id.action_sketch_style_stroke:
-				mStyleFill = Style.STROKE;
-				return true;
-			case R.id.action_sketch_style_strokefill:
-				mStyleFill = Style.STROKEFILL;
-				return true;
-			case R.id.action_sketch_style_focus:
-				mStyleFocus = Style.FOCUS;
-				setFocusHold(!getFocusHold());
-				return true;
-			default:
-				Log.e(TAG, "setMenuSelection menu " + menuResId + " invalid item " + item.getItemId());
-				return false;
-			}
-		case R.menu.sketch_color_menu: 
-			switch (item.getItemId()) {
-			case R.id.action_sketch_color_black:
-				mColor = mPalette[Palette.BLACK.ordinal()];
-				return true;
-			case R.id.action_sketch_color_blue:
-				mColor = mPalette[Palette.BLUE.ordinal()];
-				return true;
-			case R.id.action_sketch_color_green:
-				mColor = mPalette[Palette.GREEN.ordinal()];
-				return true;
-			case R.id.action_sketch_color_yellow:
-				mColor = mPalette[Palette.YELLOW.ordinal()];
-				return true;
-			case R.id.action_sketch_color_orange:
-				mColor = mPalette[Palette.ORANGE.ordinal()];
-				return true;
-			case R.id.action_sketch_color_red:
-				mColor = mPalette[Palette.RED.ordinal()];
-				return true;
-			case R.id.action_sketch_color_violet:
-				mColor = mPalette[Palette.VIOLET.ordinal()];
-				return true;
-			case R.id.action_sketch_color_white:
-				mColor = mPalette[Palette.WHITE.ordinal()];
-				return true;
-			case R.id.action_sketch_color_custom:
-				// launch ColorPickerDialog
-//				mColor = 0xFF888888;
-				launchColorPickerDialog();
-				return true;
-			default:
-				Log.e(TAG, "setMenuSelection menu " + menuResId + " invalid item " + item.getItemId());
-				return false;
-			}
-		default:
-			Log.e(TAG, "setMenuSelection invalid menu " + menuResId);
-			return false;
-		}
-	}
+//		case R.menu.sketch_style_menu:
+//			switch (item.getItemId()) {
+//			case R.id.action_sketch_style_small:
+//				mStyleSize = Style.SMALL;
+//				return true;
+//			case R.id.action_sketch_style_medium:
+//				mStyleSize = Style.MEDIUM;
+//				return true;
+//			case R.id.action_sketch_style_large:
+//				mStyleSize = Style.LARGE;
+//				return true;
+//			case R.id.action_sketch_style_fill:
+//				mStyleFill = Style.FILL;
+//				return true;
+//			case R.id.action_sketch_style_stroke:
+//				mStyleFill = Style.STROKE;
+//				return true;
+//			case R.id.action_sketch_style_strokefill:
+//				mStyleFill = Style.STROKEFILL;
+//				return true;
+//			case R.id.action_sketch_style_focus:
+//				mStyleFocus = Style.FOCUS;
+//				setFocusHold(!getFocusHold());
+//				return true;
+//			default:
+//				Log.e(TAG, "setMenuSelection menu " + menuResId + " invalid item " + item.getItemId());
+//				return false;
+//			}
+//		case R.menu.sketch_color_menu:
+//			switch (item.getItemId()) {
+//			case R.id.action_sketch_color_black:
+//				mColor = mPalette[Palette.BLACK.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_blue:
+//				mColor = mPalette[Palette.BLUE.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_green:
+//				mColor = mPalette[Palette.GREEN.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_yellow:
+//				mColor = mPalette[Palette.YELLOW.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_orange:
+//				mColor = mPalette[Palette.ORANGE.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_red:
+//				mColor = mPalette[Palette.RED.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_violet:
+//				mColor = mPalette[Palette.VIOLET.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_white:
+//				mColor = mPalette[Palette.WHITE.ordinal()];
+//				return true;
+//			case R.id.action_sketch_color_custom:
+//				// launch ColorPickerDialog
+////				mColor = 0xFF888888;
+//				launchColorPickerDialog();
+//				return true;
+//			default:
+//				Log.e(TAG, "setMenuSelection menu " + menuResId + " invalid item " + item.getItemId());
+//				return false;
+//			}
+//		default:
+//			Log.e(TAG, "setMenuSelection invalid menu " + menuResId);
+//			return false;
+//		}
+//	}
 
     ///////////////////////////////////////////////////////////////////////////////
 	public void checkMenuSelections(int menuResId, Menu menu) {
@@ -798,28 +931,90 @@ public class SketchViewModel {
 		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
 			return ACTION_TYPE_FILE_SAVE_SKETCH;
 		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_free))) {
-			return ACTION_TYPE_SHAPE_FREE;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_line))) {
-			return ACTION_TYPE_SHAPE_LINE;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_rect))) {
-			return ACTION_TYPE_SHAPE_RECT;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_label))) {
-			return ACTION_TYPE_SHAPE_LABEL;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_circle))) {
-			return ACTION_TYPE_SHAPE_CIRCLE;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_oval))) {
-			return ACTION_TYPE_SHAPE_OVAL;
-		}
-		else {
-			Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
-			return ACTION_TYPE_UNKNOWN;
-		}
-
+        Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
+        return ACTION_TYPE_UNKNOWN;
 	}
+    ///////////////////////////////////////////////////////////////////////////////
+    // map menu items to action code
+    public int mapItemToSelection(String itemname) {
+
+        if (itemname.equals(getContext().getString(R.string.action_sketch_shape_free))) {
+            return SELECT_TYPE_SHAPE_FREE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_line))) {
+            return SELECT_TYPE_SHAPE_LINE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_rect))) {
+            return SELECT_TYPE_SHAPE_RECT;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_label))) {
+            return SELECT_TYPE_SHAPE_LABEL;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_circle))) {
+            return SELECT_TYPE_SHAPE_CIRCLE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_shape_oval))) {
+            return SELECT_TYPE_SHAPE_OVAL;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_small))) {
+            return SELECT_TYPE_STYLE_SMALL;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_medium))) {
+            return SELECT_TYPE_STYLE_MEDIUM;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_large))) {
+            return SELECT_TYPE_STYLE_LARGE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_fill))) {
+            return SELECT_TYPE_STYLE_FILL;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_stroke))) {
+            return SELECT_TYPE_STYLE_STROKE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_strokefill))) {
+            return SELECT_TYPE_STYLE_STROKE_FILL;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_focus))) {
+            return SELECT_TYPE_STYLE_HOLD_FOCUS;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_black))) {
+            return SELECT_TYPE_COLOR_BLACK;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_blue))) {
+            return SELECT_TYPE_COLOR_BLUE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_green))) {
+            return SELECT_TYPE_COLOR_GREEN;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_yellow))) {
+            return SELECT_TYPE_COLOR_YELLOW;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_orange))) {
+            return SELECT_TYPE_COLOR_ORANGE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_red))) {
+            return SELECT_TYPE_COLOR_RED;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_violet))) {
+            return SELECT_TYPE_COLOR_VIOLET;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_white))) {
+            return SELECT_TYPE_COLOR_WHITE;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_tool_pen))) {
+            return SELECT_TYPE_TOOL_PEN;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_tool_brush))) {
+            return SELECT_TYPE_TOOL_BRUSH;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_tool_spray))) {
+            return SELECT_TYPE_TOOL_SPRAY;
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_tool_bucket))) {
+            return SELECT_TYPE_TOOL_BUCKET;
+        }
+        Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
+        return SELECT_TYPE_UNKNOWN;
+
+    }
 }

@@ -88,10 +88,30 @@ public class NavMenu {
         iconId = android.R.drawable.ic_menu_gallery;
         monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.File));
         addSubMenu(navigationView, title, iconId, monikerList);
+        // add erase submenu
+        title = getContext().getString(R.string.action_sketch_erase);
+        iconId = R.drawable.ic_undo_black_48dp;
+        monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Erase));
+        addSubMenu(navigationView, title, iconId, monikerList);
         // add shapes submenu
         title = getContext().getString(R.string.action_sketch_shape);
         iconId = R.drawable.ic_bubble_chart_black_48dp;
         monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Shapes));
+        addSubMenu(navigationView, title, iconId, monikerList);
+        // add styles submenu
+        title = getContext().getString(R.string.action_sketch_style);
+        iconId = R.drawable.ic_border_color_black_48dp;
+        monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Styles));
+        addSubMenu(navigationView, title, iconId, monikerList);
+        // add colors submenu
+        title = getContext().getString(R.string.action_sketch_color);
+        iconId = R.drawable.ic_format_color_fill_black_48dp;
+        monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Colors));
+        addSubMenu(navigationView, title, iconId, monikerList);
+        // add tools submenu
+        title = getContext().getString(R.string.action_sketch_tool);
+        iconId = R.drawable.ic_format_paint_black_48dp;
+        monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Tools));
         addSubMenu(navigationView, title, iconId, monikerList);
 
         return true;

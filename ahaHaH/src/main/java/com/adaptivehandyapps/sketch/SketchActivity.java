@@ -28,8 +28,6 @@ import android.widget.Toast;
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
-import com.adaptivehandyapps.util.ImageAlbumStorage;
-import com.adaptivehandyapps.util.PrefsUtils;
 
 public class SketchActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener {
 	// sketch activity
@@ -189,15 +187,66 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
                 Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
             }
         }
-        else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
-            Log.v(TAG, "onNavigationItemSelected save sketch.");
-            mSketchViewModel.serviceFileSaveSketch();
+		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
+			Log.v(TAG, "onNavigationItemSelected save sketch.");
+			mSketchViewModel.actionFileSaveSketch();
 //            Bitmap bitmap = mSketchView.getCanvasBitmap();
 //            saveSketch(bitmap);
-        }
+		}
+		else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_backdrop))) {
+			Log.v(TAG, "onNavigationItemSelected erase backdrop.");
+			mSketchViewModel.actionEraseBackdrop();
+//			// if 1st shape is image, assume backdrop & clear
+//			if (mShapeModel.isShapeType(ShapeType.IMAGE, ShapeModel.BACKDROP_IMAGE_INX)) {
+//				mShapeModel.clearShape(ShapeModel.BACKDROP_IMAGE_INX);
+//			}
+//			else {
+//				Toast.makeText(mContext, R.string.sketch_no_backdrop_toast, Toast.LENGTH_LONG).show();
+//			}
+		}
+		else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_overlay))) {
+			Log.v(TAG, "onNavigationItemSelected erase overlay.");
+            mSketchViewModel.actionEraseOverlay();
+//			// if focus is image, revert to rect
+//			int focus = mShapeModel.getShapeListFocus();
+//			if (mShapeModel.isShapeType(ShapeType.IMAGE, focus)) {
+//				mShapeModel.revertShapeToRect(focus);
+//			}
+//			else {
+//				Toast.makeText(mContext, R.string.sketch_no_overlay_toast, Toast.LENGTH_LONG).show();
+//			}
+		}
+		else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_select))) {
+			Log.v(TAG, "onMenuItemClick erase selected shape.");
+			mSketchViewModel.actionEraseSelection();
+//			// if shape is selected, clear focus shape
+//			int focus = mShapeModel.getShapeListFocus();
+//			if (focus != ShapeModel.NOFOCUS) {
+//				mShapeModel.clearShape(focus);
+//			}
+//			else {
+//				Toast.makeText(mContext, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();
+//			}
+		}
+		else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_last))) {
+			Log.v(TAG, "onNavigationItemSelected erase last shape.");
+			mSketchViewModel.actionEraseLastShape();
+//			// clear last shape
+//			int lastInx = mShapeModel.getShapeList().size()-1;
+//			if (!mShapeModel.clearShape(lastInx)) {
+//				Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
+//			}
+		}
+		else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_all))) {
+			Log.v(TAG, "onNavigationItemSelected erase all.");
+			mSketchViewModel.actionEraseAll();
+//			// clear sketch canvas
+//			mShapeModel.initShapeList();
+		}
         else {
-            Log.v(TAG, "onNavigationItemSelected serviceAction " + itemname);
-            mSketchViewModel.serviceAction(itemname);
+            Log.v(TAG, "onNavigationItemSelected setSelection " + itemname);
+            // TODO: if custom color launch color dialog
+            mSketchViewModel.setSelection(itemname);
 //            Log.e(TAG, "Ooops!  onNavigationItemSelected finds unknown menu item " + itemname);
         }
 
@@ -469,10 +518,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 						break;
 					}
 				}
-				else if (mSketchViewModel.setMenuSelection(mPopupMenuResId, item)) {
-//					mTouchView.updatePaint();
-					mShapeModel.updatePaint();
-				}
+//				else if (mSketchViewModel.setMenuSelection(mPopupMenuResId, item)) {
+////					mTouchView.updatePaint();
+//					mShapeModel.updatePaint();
+//				}
                 else {
                     Log.e(TAG, "showPopupMenu.setOnMenuItemClickListener sees invalid menuResId.");
                 }
@@ -506,13 +555,13 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 					case REQUEST_CODE_SELECT_BACKDROP:
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
 						// set image as backdrop (0th indicates insert BACKDROP)
-                        mSketchViewModel.serviceFileLoadBackdrop(imagePath);
+                        mSketchViewModel.actionFileLoadBackdrop(imagePath);
 //						mShapeModel.setImageShape(imagePath, 0);
 //						mSketchView.invalidate();
 						break;
 					case REQUEST_CODE_SELECT_OVERLAY:
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY ");
-                        mSketchViewModel.serviceFileLoadOverlay(imagePath);
+                        mSketchViewModel.actionFileLoadOverlay(imagePath);
 //						// if rect selected, set image to selected rect shape
 //						int focus = mShapeModel.getShapeListFocus();
 //						Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY focus shape inx: " + focus);
@@ -590,7 +639,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
            public void onClick(DialogInterface dialog, int whichButton) {
                // Yes, proceed to clear current sketch
                Log.v(TAG, "saveSketchAlert proceed? YES");
-               mSketchViewModel.serviceFileNew();
+               mSketchViewModel.actionFileNew();
 //               // clear sketch canvas
 //               mShapeModel.initShapeList();
 //               mSketchView.invalidate();

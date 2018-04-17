@@ -29,6 +29,7 @@ public class SketchView extends View implements
 		OnGestureListener, OnDoubleTapListener {
 
 	private static final String TAG = "SketchView";
+	private static final float CANVAS_NAVEDGE_PAD = 0.025f;
 
 //	private Context mContext;
 //	private SketchActivity mParentActivity;
@@ -52,6 +53,7 @@ public class SketchView extends View implements
     // canvas dimensions 
     private int mCanvasWidth = -1;
     private int mCanvasHeight = -1;
+    private float mCanvasNavEdge;
     
     // pre-allocated draw/layout objects
     private Bitmap mCanvasBitmap = null;
@@ -139,6 +141,7 @@ public class SketchView extends View implements
 	public Bitmap getCanvasBitmap() { return mCanvasBitmap;	}
 	public int getCanvasWidth() { return mCanvasWidth; }
 	public int getCanvasHeight() { return mCanvasHeight; }
+	public float getCanvasNavEdge() { return mCanvasNavEdge; }
 
 	///////////////////////////////////////////////////////////////////////////
     // onMeasure - create & replace canvas bitmap
@@ -149,11 +152,12 @@ public class SketchView extends View implements
 		
 		mCanvasWidth = MeasureSpec.getSize(widthMeasureSpec);
 		mCanvasHeight = MeasureSpec.getSize(heightMeasureSpec);
+		mCanvasNavEdge = (float)mCanvasWidth * CANVAS_NAVEDGE_PAD;
 //		mParentActivity.setCanvasWidth(mCanvasWidth);
 //		mParentActivity.setCanvasHeight(mCanvasHeight);
 		mSketchViewModel.setCanvasWidth(mCanvasWidth);
 		mSketchViewModel.setCanvasHeight(mCanvasHeight);
-		Log.v(TAG, "onMeasure canvas W/H: " + mCanvasWidth + "/" + mCanvasHeight);
+		Log.v(TAG, "onMeasure canvas W/H/pad: " + mCanvasWidth + "/" + mCanvasHeight + "/" + mCanvasNavEdge);
 			  
 		mCanvasBitmap = Bitmap.createBitmap(mCanvasWidth, mCanvasHeight, Bitmap.Config.ARGB_8888);
 		mCanvas.setBitmap(mCanvasBitmap);
@@ -315,7 +319,9 @@ public class SketchView extends View implements
 			
 			mTouchX = event.getX();
 			mTouchY = event.getY();
-			
+			// exclude starting touches at nav edge boundary
+			if (mTouchX < getCanvasNavEdge()) return false;
+
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
 		        // if no gestures detected, start shape or move
@@ -424,8 +430,12 @@ public class SketchView extends View implements
 
     @Override
     public void onLongPress(MotionEvent event) {
-        Log.d(TAG, "onLongPress: "); 
-//        Log.d(TAG, "onLongPress: " + event.toString()); 
+//        Log.d(TAG, "onLongPress: ");
+        Log.d(TAG, "onLongPress: " + event.toString());
+
+        // exclude starting touches at nav edge boundary
+        if (event.getX() < getCanvasNavEdge()) return;
+
         // set focus
         int focus = mShapeModel.setShapeListFocus(event.getX(), event.getY());
         if ( focus != ShapeModel.NOFOCUS) {

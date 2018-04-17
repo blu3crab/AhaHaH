@@ -288,6 +288,17 @@ public class ShapeModel {
 		}
 		return mShapeListFocus;
 	}
+	public int setShapeListFocus(float x, float y) {
+		// focus detection - test if x,y is within draw element bounding rect
+		for (int size = mShapeList.size(), i = size-1; i > 0; i--) {
+			mShapeObject = mShapeList.get(i);
+			mRect = mShapeObject.getBound();
+			if (x >= mRect.left && x <= mRect.right && y >= mRect.top && y <= mRect.bottom) {
+				return setShapeListFocus(i);
+			}
+		}
+		return setShapeListFocus(CANVAS_SHAPELIST_INX);
+	}
 	public int getShapeListFocus() {
 		// return focus
 		return mShapeListFocus;
@@ -325,17 +336,6 @@ public class ShapeModel {
 		// set draw object
 		mShapeObject = mShapeList.get(mShapeListFocus);
 		return mShapeListFocus;
-	}
-	public int setShapeListFocus(float x, float y) {
-		// focus detection - test if x,y is within draw element bounding rect
-		for (int size = mShapeList.size(), i = size-1; i > 0; i--) {
-			mShapeObject = mShapeList.get(i);
-			mRect = mShapeObject.getBound();
-			if (x >= mRect.left && x <= mRect.right && y >= mRect.top && y <= mRect.bottom) {
-				return setShapeListFocus(i);
-			}
-		}
-		return setShapeListFocus(CANVAS_SHAPELIST_INX);
 	}
 	////////////////////////////////////////////////////////////////////////////
 	// set image type shape: BACKDROP or OVERLAY
@@ -507,6 +507,7 @@ public class ShapeModel {
 	public boolean refineShape(float x, float y) {
 		// working shape
 		mShapeType = mSketchViewModel.getShape();
+		Log.v(TAG, "refineShape name:" + mShapeObject.getName());
 
 		switch (mShapeType)
 		{
@@ -565,6 +566,7 @@ public class ShapeModel {
 	public boolean completeShape(float x, float y) {
 		// refine shape to reflect final point
 		refineShape(x, y);
+		Log.v(TAG, "completeShape name:" + mShapeObject.getName());
 
         if ((mShapeObject.getBound().right - mShapeObject.getBound().left) < SIZE_TINY &&
             (mShapeObject.getBound().bottom - mShapeObject.getBound().top) < SIZE_TINY ) {
