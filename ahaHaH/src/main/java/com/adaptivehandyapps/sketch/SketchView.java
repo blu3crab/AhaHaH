@@ -34,7 +34,7 @@ public class SketchView extends View implements
 //	private Context mContext;
 //	private SketchActivity mParentActivity;
 	private SketchViewModel mSketchViewModel;
-	private ShapeModel mShapeModel;
+//	private ShapeModel mShapeModel;
 
 	// current touch position
 	private Paint mPaintCurrent;
@@ -79,8 +79,7 @@ public class SketchView extends View implements
 //		mShapeModel = mParentActivity.getShapeManager();
 //		mParentActivity = (SketchActivity)context;
 		mSketchViewModel = SketchViewModel.getInstance(getContext(), this);
-//        mShapeModel = ShapeModel.getInstance(getContext());
-        mShapeModel = mSketchViewModel.getShapeModel();
+//        mShapeModel = mSketchViewModel.getShapeModel();
 
 		// instantiate shape list
 //		mShapeList = mShapeModel.getShapeList();
@@ -165,7 +164,7 @@ public class SketchView extends View implements
 		setMeasuredDimension(mCanvasWidth, mCanvasHeight);
 
 		// use canvas dimensions to set focus & bounds of background rect (0th)
-        List<ShapeObject> shapeList = mShapeModel.getShapeList();
+        List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
 		ShapeObject shapeObject = shapeList.get(0);
 		mBgFocus.x = getCanvasWidth()/2;
 		mBgFocus.y = getCanvasHeight()/2;
@@ -187,7 +186,7 @@ public class SketchView extends View implements
 		// canvas
 		canvas.save();
 
-        List<ShapeObject> shapeList = mShapeModel.getShapeList();
+        List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
         for (int size = shapeList.size(), i = 0; i < size; i++) {
 			mShapeObject = shapeList.get(i);
 			Log.d(TAG,"OnDraw: shape " + mShapeObject.getName());
@@ -199,8 +198,10 @@ public class SketchView extends View implements
 //			Log.d(TAG,"OnDraw: bound " + mShapeObject.getBound());
 		}
 		// draw visual indicator of focus
-		mFocus = mShapeModel.getShapeListFocus();
-		if (mFocus != ShapeModel.NOFOCUS) {
+//		mFocus = mShapeModel.getShapeListFocus();
+//		if (mFocus != ShapeModel.NOFOCUS) {
+		mFocus = mSketchViewModel.getShapeListFocus();
+		if (mFocus != SketchViewModel.NOFOCUS) {
 			mShapeObject = shapeList.get(mFocus);
 	        Log.d(TAG,"OnDraw: draw focus(" + mFocus + ") at " + mShapeObject.getFocus().x + ", " + mShapeObject.getFocus().y);
 			// draw cross-hair at shape focus
@@ -280,14 +281,14 @@ public class SketchView extends View implements
 	///////////////////////////////////////////////////////////////////////////
     // clear view
 	public boolean clearView() {
-		mShapeModel.initShapeList();
+		mSketchViewModel.initShapeList();
 		invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////
     // update paint
 	public boolean updatePaint() {
-		if (mShapeModel.updatePaint()) {
+		if (mSketchViewModel.updatePaint()) {
 			invalidate();
 			return true;
 		}
@@ -326,33 +327,39 @@ public class SketchView extends View implements
 			case MotionEvent.ACTION_DOWN:
 		        // if no gestures detected, start shape or move
 				if (!mGestureDetected) {
-					if (mShapeModel.getShapeListFocus() == ShapeModel.NOFOCUS) {
-						mShapeModel.startShape(mTouchX, mTouchY);
+					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
+//						mShapeModel.startShape(mTouchX, mTouchY);
+						mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_SHAPE, mTouchX, mTouchY, mScaleFactor);
 					}
 					else {
-						mShapeModel.startMove(mTouchX, mTouchY);
+//						mShapeModel.startMove(mTouchX, mTouchY);
+                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_MOVE, mTouchX, mTouchY, mScaleFactor);
 					}
 				}
 				return true;
 			case MotionEvent.ACTION_MOVE:
 		        // if no gestures detected, refine shape or move
 				if (!mGestureDetected) {
-					if (mShapeModel.getShapeListFocus() == ShapeModel.NOFOCUS) {
-						mShapeModel.refineShape(mTouchX, mTouchY);
+					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
+//						mShapeModel.refineShape(mTouchX, mTouchY);
+                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_SHAPE, mTouchX, mTouchY, mScaleFactor);
 					}
 					else {
-						mShapeModel.refineMove(mTouchX, mTouchY);
+//						mShapeModel.refineMove(mTouchX, mTouchY);
+                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
 					}
 				}
 				break;
 			case MotionEvent.ACTION_UP:
 		        // if no gestures detected, complete shape or move
 				if (!mGestureDetected) {
-					if (mShapeModel.getShapeListFocus() == ShapeModel.NOFOCUS) {
-						mShapeModel.completeShape(mTouchX, mTouchY);
+					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
+//						mShapeModel.completeShape(mTouchX, mTouchY);
+                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_COMPLETE_SHAPE, mTouchX, mTouchY, mScaleFactor);
 					}
 					else {
-						mShapeModel.refineMove(mTouchX, mTouchY);
+//						mShapeModel.refineMove(mTouchX, mTouchY);
+                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
 					}
 				}
 				// clear any gesture
@@ -372,10 +379,11 @@ public class SketchView extends View implements
 				Log.v(TAG, "onTouchEvent multi-touch loop (" + i + ") id, x, y: " + event.getPointerId(i) + ", " + event.getX(i) + ", " + event.getY(i));
 			}
 			// enable pinch-zoom if shape has focus
-			if (mShapeModel.getShapeListFocus() != ShapeModel.NOFOCUS) {
+			if (mSketchViewModel.getShapeListFocus() != SketchViewModel.NOFOCUS) {
 				// resize based on scale factor
-				mShapeModel.resizeShape(mScaleFactor);
-				
+//				mShapeModel.resizeShape(mScaleFactor);
+                mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_RESIZE_SHAPE, -1.0f, -1.0f, mScaleFactor);
+
 				switch(maskedAction) {
 				case MotionEvent.ACTION_DOWN:
 				case MotionEvent.ACTION_POINTER_DOWN:
@@ -416,10 +424,10 @@ public class SketchView extends View implements
     @Override
     public boolean onFling(MotionEvent event1, MotionEvent event2, 
             float velocityX, float velocityY) {
-        Log.d(TAG, "onFling: " + mShapeModel.getShapeListFocus());
+        Log.d(TAG, "onFling: " + mSketchViewModel.getShapeListFocus());
 //        Log.d(TAG, "onFling: " + event1.toString()+event2.toString());
 //		Toast.makeText(mParentActivity, "onFling", Toast.LENGTH_SHORT).show();
-        if ( mShapeModel.getShapeListFocus() != ShapeModel.NOFOCUS) {
+        if ( mSketchViewModel.getShapeListFocus() != SketchViewModel.NOFOCUS) {
             Toast.makeText(getContext(), "Double tap to clear focus.", Toast.LENGTH_SHORT).show();
         }
 //        else {
@@ -437,9 +445,9 @@ public class SketchView extends View implements
         if (event.getX() < getCanvasNavEdge()) return;
 
         // set focus
-        int focus = mShapeModel.setShapeListFocus(event.getX(), event.getY());
-        if ( focus != ShapeModel.NOFOCUS) {
-            List<ShapeObject> shapeList = mShapeModel.getShapeList();
+        int focus = mSketchViewModel.setShapeListFocus(event.getX(), event.getY());
+        if ( focus != SketchViewModel.NOFOCUS) {
+            List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
             mShapeObject = shapeList.get(focus);
         	Log.d(TAG, "onLongPress: shape focus " + mShapeObject.getName());
 			Toast.makeText(getContext(), "LongPress: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
@@ -478,9 +486,9 @@ public class SketchView extends View implements
         Log.d(TAG, "onSingleTapConfirmed: ");
 //        Log.d(TAG, "onSingleTapConfirmed: " + event.toString());
         // set next shape as focus
-        int focus = mShapeModel.setNextShapeListFocus();
-        if ( focus != ShapeModel.NOFOCUS) {
-            List<ShapeObject> shapeList = mShapeModel.getShapeList();
+        int focus = mSketchViewModel.setNextShapeListFocus();
+        if ( focus != SketchViewModel.NOFOCUS) {
+            List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
         	mShapeObject = shapeList.get(focus);
         	Log.d(TAG, "onSingleTapConfirmed: shape focus " + mShapeObject.getName());
 			Toast.makeText(getContext(), "Single Tap Confirmed: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
@@ -496,8 +504,8 @@ public class SketchView extends View implements
         Log.d(TAG, "onDoubleTap: ");
 //        Log.d(TAG, "onDoubleTap: " + event.toString());
         // clear focus
-        mShapeModel.clearShapeListFocus();
-        Log.d(TAG, "onDoubleTap: draw list focus " + mShapeModel.getShapeListFocus());
+		mSketchViewModel.clearShapeListFocus();
+        Log.d(TAG, "onDoubleTap: draw list focus " + mSketchViewModel.getShapeListFocus());
 		Toast.makeText(getContext(), "Double Tap: focus cleared.", Toast.LENGTH_SHORT).show();
         mGestureDetected = true;
         // focus altered

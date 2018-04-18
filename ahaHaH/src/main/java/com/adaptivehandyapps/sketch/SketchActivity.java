@@ -9,10 +9,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,8 +28,9 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
-import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
+
+import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
 
 public class SketchActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener {
 	// sketch activity
@@ -48,8 +51,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	private NavMenu mNavMenu;
 //	private NavItem mNavItem;
 
-	private SketchViewModel mSketchViewModel = null;	// sketch settings
-	private ShapeModel mShapeModel = null;		// shape manager
+	private SketchViewModel mSketchViewModel = null;	// sketch view model
+    private Boolean mSketchViewModelSaved = false;
+//	private ShapeModel mShapeModel = null;		// shape manager
 	private SketchView mSketchView = null;			// touch view
 
 //    // canvas dimensions
@@ -126,8 +130,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
         // get (instantiate) view model and model
         mSketchViewModel = SketchViewModel.getInstance(getContext(), mSketchView);
+        setSketchViewModelSaved(false);
+
 //        mShapeModel = ShapeModel.getInstance(getContext());
-        mShapeModel = mSketchViewModel.getShapeModel();
+//        mShapeModel = mSketchViewModel.getShapeModel();
 
         // fixed landscape orientation
 		// get orientation degree - follow scale listener pattern or make it work somehow...
@@ -237,12 +243,16 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 //				Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
 //			}
 		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_all))) {
-			Log.v(TAG, "onNavigationItemSelected erase all.");
-			mSketchViewModel.actionEraseAll();
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_all))) {
+            Log.v(TAG, "onNavigationItemSelected erase all.");
+            mSketchViewModel.actionEraseAll();
 //			// clear sketch canvas
 //			mShapeModel.initShapeList();
-		}
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_custom))) {
+            Log.v(TAG, "onNavigationItemSelected custom color.");
+            launchColorPickerDialog();
+        }
         else {
             Log.v(TAG, "onNavigationItemSelected setSelection " + itemname);
             // TODO: if custom color launch color dialog
@@ -256,70 +266,83 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// activity life-cycle
-    protected void onPause() {
-		Log.v(TAG, "onPause");     	
-    	// perform light weight cleanup, release resources, save draft data
-		mSketchViewModel.saveSketchSettings();
-//		// save ShapeModel shape list
-//		mShapeModel.save(temp);
-		
-        super.onPause();
-    }
-
     protected void onStart() {
     	// always called so complements onStop as well as invoked with onCreate
         super.onStart();
 		// say hello
-		Log.v(TAG, "onStart");     	
+        setSketchViewModelSaved(false);
+		Log.v(TAG, "onStart");
     }
     protected void onRestart() {
         super.onRestart();
 		// say hello
-		Log.v(TAG, "onRestart");     	
+        setSketchViewModelSaved(false);
+		Log.v(TAG, "onRestart");
     }
     protected void onResume() {
     	// initialize resources released during OnPause
         super.onResume();
 		// say hello
-		Log.v(TAG, "onResume");     	
+        setSketchViewModelSaved(false);
+		Log.v(TAG, "onResume");
+    }
+
+    protected void onPause() {
+        Log.v(TAG, "onPause");
+        // perform light weight cleanup, release resources, save draft data
+        if(!isSketchViewModelSaved()) saveSketchViewModel();
+//        mSketchViewModel.saveSketchSettings();
+//		// save ShapeModel shape list
+//		mShapeModel.save(temp);
+
+        super.onPause();
     }
 
     protected void onStop() {
-    	// perform heavy duty cleanup, DB writes, persist auto-save data
+        Log.v(TAG, "onStop");
+        // perform heavy duty cleanup, DB writes, persist auto-save data
+        if(!isSketchViewModelSaved()) saveSketchViewModel();
         super.onStop();  // ...always call super class first
-		// say hello
-		Log.v(TAG, "onStop");     
     }
     protected void onDestroy() {
+        Log.v(TAG, "onDestroy");
+        if(!isSketchViewModelSaved()) saveSketchViewModel();
         super.onDestroy();
-		// say hello
-		Log.v(TAG, "onDestroy");     	
     }
-	///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    private Boolean isSketchViewModelSaved() { return mSketchViewModelSaved; }
+    private Boolean setSketchViewModelSaved(Boolean saved) { mSketchViewModelSaved = saved; return mSketchViewModelSaved;}
+    private void saveSketchViewModel() {
+        // perform light weight cleanup, release resources, save draft data
+        mSketchViewModel.saveSketchSettings();
+	    this.mSketchViewModelSaved = true;
+	}
+    ///////////////////////////////////////////////////////////////////////////
     // getters:
 	public static SketchActivity getSketchActivity() { return mSketchActivity; }
 
     public void setContext(Context context) { mContext = context; }
     public Context getContext() { return mContext; }
 
-    // provide access to sketch settings
-    public SketchViewModel getSketchViewModel() { return mSketchViewModel; }
-    // provide access to touch view
-	public SketchView getTouchView() { return mSketchView; }
-    // provide access to shape manager
 
-    public ShapeModel getShapeManager() { return mShapeModel; }
+    //    // provide access to sketch settings
+//    public SketchViewModel getSketchViewModel() { return mSketchViewModel; }
+//    // provide access to touch view
+//	public SketchView getTouchView() { return mSketchView; }
+//    // provide access to shape manager
+
+//    public ShapeModel getShapeManager() { return mShapeModel; }
 //    // canvas dimensions
 //    public int getCanvasWidth() { return mCanvasWidth; }
 //    public void setCanvasWidth(int dim) { mCanvasWidth = dim; }
 //    public int getCanvasHeight() { return mCanvasHeight; }
 //    public void setCanvasHeight(int dim) { mCanvasHeight = dim; }
 
-    ///////////////////////////////////////////////////////////////////////////
-    public void updatePaint() {
-        mShapeModel.updatePaint();
-        mSketchView.invalidate();
-    }
+//    ///////////////////////////////////////////////////////////////////////////
+//    public void updatePaint() {
+//        mShapeModel.updatePaint();
+//        mSketchView.invalidate();
+//    }
 	///////////////////////////////////////////////////////////////////////////
 	// action menu handling
 	//
@@ -425,13 +448,13 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
             mSketchViewModel.checkMenuSelections(mPopupMenuResId, popupMenu.getMenu());
         }
 
-		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-	   
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				int focus;
-				// file menu
-				if (mPopupMenuResId == R.menu.sketch_file_menu) {
+//		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+//
+//			@Override
+//			public boolean onMenuItemClick(MenuItem item) {
+//				int focus;
+//				// file menu
+//				if (mPopupMenuResId == R.menu.sketch_file_menu) {
 //					switch (item.getItemId()) {
 //					case R.id.action_sketch_file_new:
 //						Log.v(TAG, "onMenuItemClick file new.");
@@ -466,71 +489,71 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 //						Log.v(TAG, "onMenuItemClick save sketch.");
 //						break;
 //					}
-				}
-				// erase menu
-				else if (mPopupMenuResId == R.menu.sketch_erase_menu) {
-					switch (item.getItemId()) {
-					case R.id.action_sketch_erase_backdrop:
-						Log.v(TAG, "onMenuItemClick erase backdrop.");
-						// if 1st shape is image, assume backdrop & clear
-	        			if (mShapeModel.isShapeType(ShapeType.IMAGE, ShapeModel.BACKDROP_IMAGE_INX)) {
-	        				mShapeModel.clearShape(ShapeModel.BACKDROP_IMAGE_INX);
-	        			}
-	        			else {
-	     	        		Toast.makeText(mContext, R.string.sketch_no_backdrop_toast, Toast.LENGTH_LONG).show();
-	        			}
-	        			break;
-					case R.id.action_sketch_erase_overlay:
-						Log.v(TAG, "onMenuItemClick erase overlay.");
-						// if focus is image, revert to rect
-	        			focus = mShapeModel.getShapeListFocus();
-	        			if (mShapeModel.isShapeType(ShapeType.IMAGE, focus)) {
-	        				mShapeModel.revertShapeToRect(focus);
-	        			}
-	        			else {
-	     	        		Toast.makeText(mContext, R.string.sketch_no_overlay_toast, Toast.LENGTH_LONG).show();
-	        			}
-						break;
-					case R.id.action_sketch_erase_select:
-						Log.v(TAG, "onMenuItemClick erase selected shape.");
-						// if shape is selected, clear focus shape
-	        			focus = mShapeModel.getShapeListFocus();
-	        			if (focus != ShapeModel.NOFOCUS) {
-	        				mShapeModel.clearShape(focus);
-	        			}
-	        			else {
-	     	        		Toast.makeText(mContext, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();
-	        			}
-						break;
-					case R.id.action_sketch_erase_last:
-						Log.v(TAG, "onMenuItemClick erase last shape.");
-						// clear last shape
-						int lastInx = mShapeModel.getShapeList().size()-1;
-						if (!mShapeModel.clearShape(lastInx)) {
-	     	        		Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
-						}
-						break;
-					case R.id.action_sketch_erase_all:
-						Log.v(TAG, "onMenuItemClick erase all.");
-						// clear sketch canvas
-//						mTouchView.clearView();
-						mShapeModel.initShapeList();
-						break;
-					}
-				}
+//				}
+//				// erase menu
+//				else if (mPopupMenuResId == R.menu.sketch_erase_menu) {
+//					switch (item.getItemId()) {
+//					case R.id.action_sketch_erase_backdrop:
+//						Log.v(TAG, "onMenuItemClick erase backdrop.");
+//						// if 1st shape is image, assume backdrop & clear
+//	        			if (mShapeModel.isShapeType(ShapeType.IMAGE, ShapeModel.BACKDROP_IMAGE_INX)) {
+//	        				mShapeModel.clearShape(ShapeModel.BACKDROP_IMAGE_INX);
+//	        			}
+//	        			else {
+//	     	        		Toast.makeText(mContext, R.string.sketch_no_backdrop_toast, Toast.LENGTH_LONG).show();
+//	        			}
+//	        			break;
+//					case R.id.action_sketch_erase_overlay:
+//						Log.v(TAG, "onMenuItemClick erase overlay.");
+//						// if focus is image, revert to rect
+//	        			focus = mShapeModel.getShapeListFocus();
+//	        			if (mShapeModel.isShapeType(ShapeType.IMAGE, focus)) {
+//	        				mShapeModel.revertShapeToRect(focus);
+//	        			}
+//	        			else {
+//	     	        		Toast.makeText(mContext, R.string.sketch_no_overlay_toast, Toast.LENGTH_LONG).show();
+//	        			}
+//						break;
+//					case R.id.action_sketch_erase_select:
+//						Log.v(TAG, "onMenuItemClick erase selected shape.");
+//						// if shape is selected, clear focus shape
+//	        			focus = mShapeModel.getShapeListFocus();
+//	        			if (focus != ShapeModel.NOFOCUS) {
+//	        				mShapeModel.clearShape(focus);
+//	        			}
+//	        			else {
+//	     	        		Toast.makeText(mContext, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();
+//	        			}
+//						break;
+//					case R.id.action_sketch_erase_last:
+//						Log.v(TAG, "onMenuItemClick erase last shape.");
+//						// clear last shape
+//						int lastInx = mShapeModel.getShapeList().size()-1;
+//						if (!mShapeModel.clearShape(lastInx)) {
+//	     	        		Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
+//						}
+//						break;
+//					case R.id.action_sketch_erase_all:
+//						Log.v(TAG, "onMenuItemClick erase all.");
+//						// clear sketch canvas
+////						mTouchView.clearView();
+//						mShapeModel.initShapeList();
+//						break;
+//					}
+//				}
 //				else if (mSketchViewModel.setMenuSelection(mPopupMenuResId, item)) {
 ////					mTouchView.updatePaint();
 //					mShapeModel.updatePaint();
 //				}
-                else {
-                    Log.e(TAG, "showPopupMenu.setOnMenuItemClickListener sees invalid menuResId.");
-                }
-				mSketchView.invalidate();
-				return true;
-			}
-		});
-	    
-		popupMenu.show();
+//                else {
+//                    Log.e(TAG, "showPopupMenu.setOnMenuItemClickListener sees invalid menuResId.");
+//                }
+//				mSketchView.invalidate();
+//				return true;
+//			}
+//		});
+//
+//		popupMenu.show();
 	}
 	//////////////////////////////////////////////////////////////////////////
     private void startGalleryActivity (int reqCode) {
@@ -654,6 +677,63 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         });
 
         alert.show();
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    private void launchColorPickerDialog() {
+//		int color = 0xFF008800;
+
+//        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+//        int initialValue = prefs.getInt(mKeyCustomColor, 0xFF000000);
+
+        int initialValue = mSketchViewModel.getCustomColor();
+        Log.d(TAG, "launchColorPickerDialog initial value:" + initialValue);
+
+        final ColorPickerDialog colorDialog = new ColorPickerDialog(getContext(), initialValue);
+
+        colorDialog.setAlphaSliderVisible(true);
+        colorDialog.setTitle("Pick your Color!");
+
+        colorDialog.setButton(DialogInterface.BUTTON_POSITIVE, getContext().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(getContext(), "Selected Color: " + colorToHexString(colorDialog.getColor()), Toast.LENGTH_LONG).show();
+                // capture custom color selection
+//                mColor = colorDialog.getColor();
+//                setCustomColor(mColor);
+                int color = colorDialog.getColor();
+                mSketchViewModel.setCustomColor(color);
+
+//                //Save the value in our preferences.
+//                SharedPreferences.Editor editor = prefs.edit();
+//                editor.putInt(mKeyCustomColor, colorDialog.getColor());
+//                editor.commit();
+////                // invoke parent to update the color of a shape with focus
+////				SketchActivity sketchActivity = (SketchActivity)getContext();
+////				sketchActivity.updatePaint();
+//                // refresh
+//                mShapeModel.updatePaint();
+//                mSketchView.invalidate();
+
+            }
+        });
+
+        colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Nothing to do here.
+            }
+        });
+
+        colorDialog.show();
+
+//		return color;
+
+    }
+
+    private String colorToHexString(int color) {
+        return String.format("#%06X", 0xFFFFFFFF & color);
     }
 }
 ///////////////////////////////////////////////////////////////////////////

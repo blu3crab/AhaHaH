@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -23,6 +24,8 @@ import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
 
+import java.util.List;
+
 public class SketchViewModel {
 	private static final String TAG = "SketchViewModel";
 
@@ -31,17 +34,26 @@ public class SketchViewModel {
 
 	///////////////////////////////////////////////////////////////////////////
 	// action types
-	public static final int ACTION_TYPE_UNKNOWN = -1;
+//	public static final int ACTION_TYPE_UNKNOWN = -1;
+//
+//	public static final int ACTION_TYPE_CAMERA = 0;
+//	public static final int ACTION_TYPE_GALLERY = 1;
+//
+//	public static final int ACTION_TYPE_FILE_NEW = 2;
+//	public static final int ACTION_TYPE_FILE_LOADBACKDROP = 3;
+//	public static final int ACTION_TYPE_FILE_LOADOVERLAY = 4;
+//	public static final int ACTION_TYPE_FILE_SAVE_SKETCH = 5;
 
-	public static final int ACTION_TYPE_CAMERA = 0;
-	public static final int ACTION_TYPE_GALLERY = 1;
+    public static final int ACTION_TYPE_UNKNOWN = -1;
 
-	public static final int ACTION_TYPE_FILE_NEW = 2;
-	public static final int ACTION_TYPE_FILE_LOADBACKDROP = 3;
-	public static final int ACTION_TYPE_FILE_LOADOVERLAY = 4;
-	public static final int ACTION_TYPE_FILE_SAVE_SKETCH = 5;
+    public static final int ACTION_TYPE_START_SHAPE = 0;
+    public static final int ACTION_TYPE_START_MOVE = 1;
+    public static final int ACTION_TYPE_REFINE_SHAPE = 2;
+    public static final int ACTION_TYPE_REFINE_MOVE = 3;
+    public static final int ACTION_TYPE_RESIZE_SHAPE = 4;
+    public static final int ACTION_TYPE_COMPLETE_SHAPE = 5;
 
-	public static final int SELECT_TYPE_UNKNOWN = -1;
+    public static final int SELECT_TYPE_UNKNOWN = -1;
 
 	public static final int SELECT_TYPE_SHAPE_FREE = 6;
 	public static final int SELECT_TYPE_SHAPE_LINE = 7;
@@ -81,7 +93,11 @@ public class SketchViewModel {
 	private ShapeModel mShapeModel = null;		// shape manager
 	private SketchView mSketchView = null;			// touch view
 
-	///////////////////////////////////////////////////////////////////////////
+    // focus
+    public static final int NOFOCUS = -1;
+    private int mShapeListFocus;
+
+    ///////////////////////////////////////////////////////////////////////////
 	// settings
 	// shapes
 	public enum ShapeType {
@@ -215,12 +231,12 @@ public class SketchViewModel {
 
 		//		mAlbumName = settings.getString(mKeyAlbum, NADA);
 		String albumName = PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY);
-		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) albumName = getContext().getString(R.string.default_project_name);
+		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) setAlbumName(getContext().getString(R.string.default_project_name));
 
 		mShape = ShapeType.values()[settings.getInt(mKeyShape, 0)];
 		mTool = Tool.values()[settings.getInt(mKeyTool, 0)];
 		mStyleSize = Style.values()[settings.getInt(mKeyStyleSize, 0)];
-		mStyleFill = Style.values()[settings.getInt(mKeyStyleFill, 0)];
+        mStyleFill = Style.values()[settings.getInt(mKeyStyleFill, 0)];
 		mColor = settings.getInt(mKeyColor, mPalette[Palette.NADA.ordinal()]);
 		mCustomColor = settings.getInt(mKeyCustomColor, mPalette[Palette.NADA.ordinal()]);
 		mFocusHold = settings.getBoolean(mKeyFocusHold, false);
@@ -230,7 +246,7 @@ public class SketchViewModel {
 				mTool == Tool.NADA ||
 				mStyleSize == Style.NADA ||
 				mStyleFill == Style.NADA ||
-				mStyleFocus == Style.NADA ||
+//				mStyleFocus == Style.NADA ||
 				mColor == mPalette[Palette.NADA.ordinal()] ) {
 			setDefaultSettings();
 		}
@@ -257,13 +273,17 @@ public class SketchViewModel {
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// getters/setters
-    // TODO: temp reference for direct view access to model
-    public ShapeModel getShapeModel() { return mShapeModel; }
-
 	private Context getContext() { return mContext; }
 	private void setContext(Context context) { this.mContext = context; }
 
-	// canvas dimensions
+    // TODO: temp reference for direct view access to model
+    public ShapeModel getShapeModel() { return mShapeModel; }
+
+    public Boolean initShapeList() { return mShapeModel.initShapeList(); }
+    public List<ShapeObject> getShapeList () { return mShapeModel.getShapeList(); }
+    public Boolean updatePaint() { return mShapeModel.updatePaint(); }
+
+    // canvas dimensions
 	public int getCanvasWidth() { return mCanvasWidth; }
 	public void setCanvasWidth(int dim) { mCanvasWidth = dim; }
 	public int getCanvasHeight() { return mCanvasHeight; }
@@ -319,8 +339,20 @@ public class SketchViewModel {
 		}
 	}
 	public int getColor() { return mColor; }
+    public int setColor(int color) { mColor = color; return mColor; }
 	public int getCustomColor() { return mCustomColor; }
-	public void setCustomColor(int color) { mCustomColor = color; }
+	public void setCustomColor(int color) {
+	    mCustomColor = color;
+	    setColor(mCustomColor);
+        //Save the value in our preferences.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(mKeyCustomColor, mCustomColor);
+        editor.commit();
+        // refresh
+        mShapeModel.updatePaint();
+        mSketchView.invalidate();
+    }
 	
 	public boolean getFocusHold() { return mFocusHold; }
 	private void setFocusHold(boolean focusHold) { mFocusHold = focusHold; }
@@ -333,7 +365,8 @@ public class SketchViewModel {
 		return false;
 	}
 	public Boolean isRectFocus() {
-		int focus = mShapeModel.getShapeListFocus();
+//        int focus = mShapeModel.getShapeListFocus();
+        int focus = getShapeListFocus();
 		if (mShapeModel.isShapeType(ShapeType.RECT, focus)) return true;
 		return false;
 	}
@@ -365,6 +398,7 @@ public class SketchViewModel {
 		Log.v(TAG,"");
 		if (action < 0) return false;
 
+		int preSelectionColor = mColor;
 		// service action
 		switch (action) {
 			case SELECT_TYPE_SHAPE_FREE:
@@ -431,11 +465,11 @@ public class SketchViewModel {
             case SELECT_TYPE_COLOR_WHITE:
                 mColor = mPalette[Palette.WHITE.ordinal()];
                 return true;
-            case SELECT_TYPE_COLOR_CUSTOM:
-                // launch ColorPickerDialog
-//				mColor = 0xFF888888;
-                launchColorPickerDialog();
-                return true;
+//            case SELECT_TYPE_COLOR_CUSTOM:
+//                // launch ColorPickerDialog
+////				mColor = 0xFF888888;
+//                launchColorPickerDialog();
+//                return true;
             case SELECT_TYPE_TOOL_PEN:
                 mTool = Tool.PEN;
                 return true;
@@ -452,8 +486,9 @@ public class SketchViewModel {
 				Log.e(TAG, "Ooops! setSelection finds unknown item " + action);
 				return false;
 		}
-		// TODO: upadte & invalidate on selection?
-		mShapeModel.updatePaint();
+		// update paint if color changed
+		if (preSelectionColor != mColor) mShapeModel.updatePaint();
+		// invalidate to refresh after any selection
 		mSketchView.invalidate();
 
 		return true;
@@ -477,7 +512,8 @@ public class SketchViewModel {
 	///////////////////////////////////////////////////////////////////////////////
 	public Boolean actionFileLoadOverlay(String imagePath) {
 		// if rect selected, set image to selected rect shape
-		int focus = mShapeModel.getShapeListFocus();
+//        int focus = mShapeModel.getShapeListFocus();
+        int focus = getShapeListFocus();
 		Log.v(TAG, "actionFileLoadOverlay focus shape inx: " + focus);
 		if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
 			// set image as OVERLAY (focus)
@@ -512,7 +548,8 @@ public class SketchViewModel {
     public Boolean actionEraseOverlay() {
         Log.v(TAG, "actionEraseOverlay...");
         // if focus is image, revert to rect
-        int focus = mShapeModel.getShapeListFocus();
+//        int focus = mShapeModel.getShapeListFocus();
+        int focus = getShapeListFocus();
         if (mShapeModel.isShapeType(ShapeType.IMAGE, focus)) {
             mShapeModel.revertShapeToRect(focus);
         }
@@ -525,9 +562,12 @@ public class SketchViewModel {
     public Boolean actionEraseSelection() {
         Log.v(TAG, "actionEraseSelection...");
         // if shape is selected, clear focus shape
-        int focus = mShapeModel.getShapeListFocus();
-        if (focus != ShapeModel.NOFOCUS) {
+//        int focus = mShapeModel.getShapeListFocus();
+//        if (focus != ShapeModel.NOFOCUS) {
+        int focus = getShapeListFocus();
+        if (focus != NOFOCUS) {
             mShapeModel.clearShape(focus);
+            mSketchView.invalidate();
         }
         else {
             Toast.makeText(mContext, R.string.sketch_no_selection_toast, Toast.LENGTH_LONG).show();
@@ -539,8 +579,11 @@ public class SketchViewModel {
         Log.v(TAG, "actionEraseLastShape...");
 			// clear last shape
 			int lastInx = mShapeModel.getShapeList().size()-1;
-			if (!mShapeModel.clearShape(lastInx)) {
-				Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
+			if (mShapeModel.clearShape(lastInx)) {
+                mSketchView.invalidate();
+            }
+            else {
+                Toast.makeText(mContext, R.string.sketch_empty_list_toast, Toast.LENGTH_LONG).show();
 			}
         return true;
     }
@@ -549,6 +592,36 @@ public class SketchViewModel {
         Log.v(TAG, "actionEraseAll...");
         // clear sketch canvas
         mShapeModel.initShapeList();
+        mSketchView.invalidate();
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+    public Boolean actionViewTouch(int actionType, float touchX, float touchY, float scaleFactor) {
+        Log.v(TAG, "actionViewTouch actionType " + actionType + ", X/Y " + touchX + "/" + touchY);
+        // action type
+        switch (actionType) {
+            case ACTION_TYPE_START_SHAPE:
+                mShapeModel.startShape(touchX, touchY);
+                break;
+            case ACTION_TYPE_START_MOVE:
+                mShapeModel.startMove(touchX, touchY);
+                break;
+            case ACTION_TYPE_REFINE_SHAPE:
+                mShapeModel.refineShape(touchX, touchY);
+                break;
+            case ACTION_TYPE_REFINE_MOVE:
+                mShapeModel.refineMove(touchX, touchY);
+                break;
+            case ACTION_TYPE_RESIZE_SHAPE:
+                mShapeModel.resizeShape(scaleFactor);
+                break;
+            case ACTION_TYPE_COMPLETE_SHAPE:
+                mShapeModel.completeShape(touchX, touchY);
+                break;
+            default:
+                Log.e(TAG,"Ooops! unknown action type! " + actionType);
+        }
+//        mShapeModel.initShapeList();
         return true;
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -859,81 +932,85 @@ public class SketchViewModel {
 			break;
 		}
 	}
-	///////////////////////////////////////////////////////////////////////////////
-	private void launchColorPickerDialog() {
-//		int color = 0xFF008800;
-
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        int initialValue = prefs.getInt(mKeyCustomColor, 0xFF000000);
-        
-        Log.d("mColorPicker", "initial value:" + initialValue);
-                        
-        final ColorPickerDialog colorDialog = new ColorPickerDialog(getContext(), initialValue);
-        
-        colorDialog.setAlphaSliderVisible(true);
-        colorDialog.setTitle("Pick your Color!");
-        
-        colorDialog.setButton(DialogInterface.BUTTON_POSITIVE, getContext().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(getContext(), "Selected Color: " + colorToHexString(colorDialog.getColor()), Toast.LENGTH_LONG).show();
-                // capture custom color selection
-                mColor = colorDialog.getColor();
-                setCustomColor(mColor);
-                        
-                //Save the value in our preferences.
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(mKeyCustomColor, colorDialog.getColor());
-                editor.commit();
-                // invoke parent to update the color of a shape with focus
-				SketchActivity sketchActivity = (SketchActivity)getContext();
-				sketchActivity.updatePaint();
-            }
-        });
-        
-        colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-                
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                        //Nothing to do here.
-                }
-        });
-        
-        colorDialog.show();
-        
-//		return color;
-
-	}
-		
-	private String colorToHexString(int color) {
-	        return String.format("#%06X", 0xFFFFFFFF & color);
-	}
-	///////////////////////////////////////////////////////////////////////////////
-	// map menu items to action code
-	public int mapItemToAction(String itemname) {
-
-		if (itemname.equals(getContext().getString(R.string.action_camera))) {
-			return ACTION_TYPE_CAMERA;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_gallery))) {
-			return ACTION_TYPE_GALLERY;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_new))) {
-			return ACTION_TYPE_FILE_NEW;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadbackdrop))) {
-			return ACTION_TYPE_FILE_LOADBACKDROP;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadoverlay))) {
-			return ACTION_TYPE_FILE_LOADOVERLAY;
-		}
-		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
-			return ACTION_TYPE_FILE_SAVE_SKETCH;
-		}
-        Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
-        return ACTION_TYPE_UNKNOWN;
-	}
+//	///////////////////////////////////////////////////////////////////////////////
+//	private void launchColorPickerDialog() {
+////		int color = 0xFF008800;
+//
+//        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+//        int initialValue = prefs.getInt(mKeyCustomColor, 0xFF000000);
+//
+//        Log.d("mColorPicker", "initial value:" + initialValue);
+//
+//        final ColorPickerDialog colorDialog = new ColorPickerDialog(getContext(), initialValue);
+//
+//        colorDialog.setAlphaSliderVisible(true);
+//        colorDialog.setTitle("Pick your Color!");
+//
+//        colorDialog.setButton(DialogInterface.BUTTON_POSITIVE, getContext().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+//
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                Toast.makeText(getContext(), "Selected Color: " + colorToHexString(colorDialog.getColor()), Toast.LENGTH_LONG).show();
+//                // capture custom color selection
+//                mColor = colorDialog.getColor();
+//                setCustomColor(mColor);
+//
+//                //Save the value in our preferences.
+//                SharedPreferences.Editor editor = prefs.edit();
+//                editor.putInt(mKeyCustomColor, colorDialog.getColor());
+//                editor.commit();
+////                // invoke parent to update the color of a shape with focus
+////				SketchActivity sketchActivity = (SketchActivity)getContext();
+////				sketchActivity.updatePaint();
+//				// refresh
+//                mShapeModel.updatePaint();
+//                mSketchView.invalidate();
+//
+//            }
+//        });
+//
+//        colorDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+//
+//                @Override
+//                public void onClick(DialogInterface dialog, int which) {
+//                        //Nothing to do here.
+//                }
+//        });
+//
+//        colorDialog.show();
+//
+////		return color;
+//
+//	}
+//
+//	private String colorToHexString(int color) {
+//	        return String.format("#%06X", 0xFFFFFFFF & color);
+//	}
+//	///////////////////////////////////////////////////////////////////////////////
+//	// map menu items to action code
+//	public int mapItemToAction(String itemname) {
+//
+//		if (itemname.equals(getContext().getString(R.string.action_camera))) {
+//			return ACTION_TYPE_CAMERA;
+//		}
+//		else if (itemname.equals(getContext().getString(R.string.action_gallery))) {
+//			return ACTION_TYPE_GALLERY;
+//		}
+//		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_new))) {
+//			return ACTION_TYPE_FILE_NEW;
+//		}
+//		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadbackdrop))) {
+//			return ACTION_TYPE_FILE_LOADBACKDROP;
+//		}
+//		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadoverlay))) {
+//			return ACTION_TYPE_FILE_LOADOVERLAY;
+//		}
+//		else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
+//			return ACTION_TYPE_FILE_SAVE_SKETCH;
+//		}
+//        Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
+//        return ACTION_TYPE_UNKNOWN;
+//	}
     ///////////////////////////////////////////////////////////////////////////////
     // map menu items to action code
     public int mapItemToSelection(String itemname) {
@@ -1001,6 +1078,9 @@ public class SketchViewModel {
         else if (itemname.equals(getContext().getString(R.string.action_sketch_color_white))) {
             return SELECT_TYPE_COLOR_WHITE;
         }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_color_custom))) {
+            return SELECT_TYPE_COLOR_CUSTOM;
+        }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_tool_pen))) {
             return SELECT_TYPE_TOOL_PEN;
         }
@@ -1017,4 +1097,71 @@ public class SketchViewModel {
         return SELECT_TYPE_UNKNOWN;
 
     }
+    ////////////////////////////////////////////////////////////////////////////
+    // focus
+    public int clearShapeListFocus() {
+        // set focus to value
+        return setShapeListFocus(NOFOCUS);
+    }
+    public int setShapeListFocus(int i) {
+        mShapeListFocus = NOFOCUS;
+        if (i >= 0 && i < mShapeModel.getShapeList().size()) {
+            // set draw object
+            mShapeModel.setShapeObject(mShapeModel.getShapeList().get(i));
+            // set focus to value
+            mShapeListFocus = i;
+        }
+        return mShapeListFocus;
+    }
+    public int setShapeListFocus(float x, float y) {
+        // focus detection - test if x,y is within draw element bounding rect
+        int size = mShapeModel.getShapeList().size();
+        for (int i = size-1; i > 0; i--) {
+            mShapeModel.setShapeObject(mShapeModel.getShapeList().get(i));
+            RectF rect = mShapeModel.getShapeObject().getBound();
+            if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                return setShapeListFocus(i);
+            }
+        }
+        return setShapeListFocus(mShapeModel.CANVAS_SHAPELIST_INX);
+    }
+    public int getShapeListFocus() {
+        // return focus
+        return mShapeListFocus;
+    }
+    public int setNextShapeListFocus() {
+        // test if draw list contains shapes (in addition to background)
+        if (mShapeModel.getShapeList().size() < 1) {
+            Log.e(TAG, "setNextShapeListFocus empty shape list - no BG_RECT!");
+            return NOFOCUS;
+        }
+        // set focus to next element
+        if (mShapeListFocus < mShapeModel.getShapeList().size() - 1) {
+            ++mShapeListFocus;
+        }
+        else {
+//            mShapeListFocus = 1;
+            mShapeListFocus = 0;
+        }
+        // set draw object
+        mShapeModel.setShapeObject(mShapeModel.getShapeList().get(mShapeListFocus));
+        return mShapeListFocus;
+    }
+    public int setPrevShapeListFocus() {
+        if (mShapeModel.getShapeList().size() < 1) {
+            Log.e(TAG, "setPrevShapeListFocus empty shape list - no BG_RECT!");
+            return NOFOCUS;
+        }
+        // set focus to previous element
+        if (mShapeListFocus > 1) {
+            --mShapeListFocus;
+        }
+        else {
+            mShapeListFocus = mShapeModel.getShapeList().size() - 1;
+        }
+        // set draw object
+        mShapeModel.setShapeObject(mShapeModel.getShapeList().get(mShapeListFocus));
+        return mShapeListFocus;
+    }
+    ////////////////////////////////////////////////////////////////////////////
 }
