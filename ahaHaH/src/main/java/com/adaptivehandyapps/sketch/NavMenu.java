@@ -26,9 +26,7 @@ import android.view.SubMenu;
 
 import com.adaptivehandyapps.ahahah.R;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -119,13 +117,6 @@ public class NavMenu {
     ///////////////////////////////////////////////////////////////////////////
     // add nav sub menu
     private SubMenu addSubMenu(NavigationView navigationView, String title, int iconId, List<String> monikerList) {
-//        // extract moniker list
-//        String title = getContext().getString(R.string.action_sketch_file);
-//        int iconId = android.R.drawable.ic_menu_gallery;
-//        List<String> monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.File));
-
-//        // determine display order from settings
-//        monikerList = orderList(monikerList);
         // add submenu from moniker list plus a "new" item
         Menu menu = navigationView.getMenu();
         SubMenu subMenu = menu.addSubMenu(title);
@@ -136,40 +127,8 @@ public class NavMenu {
             subMenuItem.setIcon(iconId);
 //            Log.d(TAG, "addSubMenu submenu item:" + subMenuItem.getItemId() + ", itemname: " + subMenuItem.toString());
         }
-//        subMenuItem = subMenu.add("New " + title);
-//        subMenuItem.setIcon(iconId);
-//        Log.d(TAG, "addSubMenu submenu item:" + subMenuItem.getItemId() + ", itemname: " + subMenuItem.toString());
         return subMenu;
     }
-//    ///////////////////////////////////////////////////////////////////////////
-//    private List<String> orderList(List<String> originalList) {
-//        List<String> orderedList = new ArrayList<>(originalList);
-//        // determine display order from settings
-//        String order = PrefsUtils.getPrefsOrder(getContext());
-////        Log.d(TAG, "orderList settings display order " + order);
-//        if (order.equals(getContext().getString(R.string.pref_order_date_ascending))) {
-//            // no change (oldest to newest)
-////            Log.d(TAG, "orderList " + orderedList);
-//            return orderedList;
-//        }
-//        else if (order.equals(getContext().getString(R.string.pref_order_date_descending))) {
-//            // reverse order (newest to oldest)
-//            Collections.reverse(orderedList);
-////            Log.d(TAG, "orderList " + orderedList);
-//        }
-//        else if (order.equals(getContext().getString(R.string.pref_order_alpha_ascending))) {
-//            // alpha order
-//            Collections.sort(orderedList);
-////            Log.d(TAG, "orderList " + orderedList);
-//        }
-//        else if (order.equals(getContext().getString(R.string.pref_order_alpha_descending))) {
-//            // reverse alpha order
-//            Collections.sort(orderedList);
-//            Collections.reverse(orderedList);
-////            Log.d(TAG, "orderList " + orderedList);
-//        }
-//        return orderedList;
-//    }
     ///////////////////////////////////////////////////////////////////////////
 
 }

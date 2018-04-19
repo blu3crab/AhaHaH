@@ -33,7 +33,8 @@
     <string name="action_sketch_file_loadbackdrop">Load Backdrop Image</string>
     <string name="action_sketch_file_loadoverlay">Load Overlay Image</string>
     <string name="action_sketch_file_savesketch">Save Sketch Image</string>
-        
+    <string name="action_sketch_file_share">Share Sketch Image</string>
+
     <string name="action_sketch_shape_free">Free Form</string>
     <string name="action_sketch_shape_line">Line</string>
     <string name="action_sketch_shape_rect">Rectangle</string>

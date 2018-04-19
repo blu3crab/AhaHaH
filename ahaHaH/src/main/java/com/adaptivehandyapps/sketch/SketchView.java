@@ -31,10 +31,7 @@ public class SketchView extends View implements
 	private static final String TAG = "SketchView";
 	private static final float CANVAS_NAVEDGE_PAD = 0.025f;
 
-//	private Context mContext;
-//	private SketchActivity mParentActivity;
 	private SketchViewModel mSketchViewModel;
-//	private ShapeModel mShapeModel;
 
 	// current touch position
 	private Paint mPaintCurrent;
@@ -73,16 +70,8 @@ public class SketchView extends View implements
     // constructor
 	public SketchView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		// obtain sketch settings
-//		mParentActivity = SketchActivity.getSketchActivity();
-//		mSketchViewModel = mParentActivity.getSketchViewModel();
-//		mShapeModel = mParentActivity.getShapeManager();
-//		mParentActivity = (SketchActivity)context;
+		// obtain sketch view model
 		mSketchViewModel = SketchViewModel.getInstance(getContext(), this);
-//        mShapeModel = mSketchViewModel.getShapeModel();
-
-		// instantiate shape list
-//		mShapeList = mShapeModel.getShapeList();
 
 		// pre-allocate draw/layout objects
 		mCanvas = new Canvas();
@@ -152,8 +141,6 @@ public class SketchView extends View implements
 		mCanvasWidth = MeasureSpec.getSize(widthMeasureSpec);
 		mCanvasHeight = MeasureSpec.getSize(heightMeasureSpec);
 		mCanvasNavEdge = (float)mCanvasWidth * CANVAS_NAVEDGE_PAD;
-//		mParentActivity.setCanvasWidth(mCanvasWidth);
-//		mParentActivity.setCanvasHeight(mCanvasHeight);
 		mSketchViewModel.setCanvasWidth(mCanvasWidth);
 		mSketchViewModel.setCanvasHeight(mCanvasHeight);
 		Log.v(TAG, "onMeasure canvas W/H/pad: " + mCanvasWidth + "/" + mCanvasHeight + "/" + mCanvasNavEdge);
@@ -198,8 +185,6 @@ public class SketchView extends View implements
 //			Log.d(TAG,"OnDraw: bound " + mShapeObject.getBound());
 		}
 		// draw visual indicator of focus
-//		mFocus = mShapeModel.getShapeListFocus();
-//		if (mFocus != ShapeModel.NOFOCUS) {
 		mFocus = mSketchViewModel.getShapeListFocus();
 		if (mFocus != SketchViewModel.NOFOCUS) {
 			mShapeObject = shapeList.get(mFocus);
@@ -259,12 +244,6 @@ public class SketchView extends View implements
 				canvas.drawCircle(circle[0], circle[1], circle[2], paint);
 				break;
 			case IMAGE:
-				// TODO: set image bounding rect using canvas width/height?
-//			    int canvasWidth = canvas.getWidth();
-//			    int canvasHeight = canvas.getHeight();
-//				Log.v(TAG, "drawShape canvas w/h: " + canvasWidth + "/" + canvasHeight);
-//				Log.v(TAG, "image bound: " + shapeObject.getBound());
-
 				Bitmap bitmap = (Bitmap)shapeObject.getObject();
 				canvas.drawBitmap(bitmap, null, shapeObject.getBound(), null);
 				break;
@@ -277,22 +256,6 @@ public class SketchView extends View implements
 			return false;
 		}
 		return true;
-	}
-	///////////////////////////////////////////////////////////////////////////
-    // clear view
-	public boolean clearView() {
-		mSketchViewModel.initShapeList();
-		invalidate();
-		return true;
-	}
-	///////////////////////////////////////////////////////////////////////////
-    // update paint
-	public boolean updatePaint() {
-		if (mSketchViewModel.updatePaint()) {
-			invalidate();
-			return true;
-		}
-		return false;
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// gesture detectors
@@ -328,11 +291,9 @@ public class SketchView extends View implements
 		        // if no gestures detected, start shape or move
 				if (!mGestureDetected) {
 					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
-//						mShapeModel.startShape(mTouchX, mTouchY);
 						mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_SHAPE, mTouchX, mTouchY, mScaleFactor);
 					}
 					else {
-//						mShapeModel.startMove(mTouchX, mTouchY);
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_MOVE, mTouchX, mTouchY, mScaleFactor);
 					}
 				}
@@ -341,11 +302,9 @@ public class SketchView extends View implements
 		        // if no gestures detected, refine shape or move
 				if (!mGestureDetected) {
 					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
-//						mShapeModel.refineShape(mTouchX, mTouchY);
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_SHAPE, mTouchX, mTouchY, mScaleFactor);
 					}
 					else {
-//						mShapeModel.refineMove(mTouchX, mTouchY);
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
 					}
 				}
@@ -354,11 +313,9 @@ public class SketchView extends View implements
 		        // if no gestures detected, complete shape or move
 				if (!mGestureDetected) {
 					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
-//						mShapeModel.completeShape(mTouchX, mTouchY);
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_COMPLETE_SHAPE, mTouchX, mTouchY, mScaleFactor);
 					}
 					else {
-//						mShapeModel.refineMove(mTouchX, mTouchY);
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
 					}
 				}
@@ -381,7 +338,6 @@ public class SketchView extends View implements
 			// enable pinch-zoom if shape has focus
 			if (mSketchViewModel.getShapeListFocus() != SketchViewModel.NOFOCUS) {
 				// resize based on scale factor
-//				mShapeModel.resizeShape(mScaleFactor);
                 mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_RESIZE_SHAPE, -1.0f, -1.0f, mScaleFactor);
 
 				switch(maskedAction) {
@@ -532,7 +488,7 @@ public class SketchView extends View implements
 			return true;
 		}
 	}
-
+    ///////////////////////////////////////////////////////////////////////////
 	private static String actionToString(int action) {
 	    switch (action) {
 	                
@@ -552,4 +508,5 @@ public class SketchView extends View implements
 	    }
 	    return "other";
 	}
+    ///////////////////////////////////////////////////////////////////////////
 }

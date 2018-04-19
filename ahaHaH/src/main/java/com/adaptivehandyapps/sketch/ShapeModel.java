@@ -12,7 +12,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,24 +23,19 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.EditText;
 
 import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
-import com.adaptivehandyapps.util.AhaDisplayMetrics;
 
 public class ShapeModel {
 
 	private static final String TAG = "ShapeModel";
 
-	// parent activity for sketch setting 
-//	private SketchActivity mParentActivity;
     // context
     private Context mContext;
     // view model
 	private SketchViewModel mSketchViewModel;
-
 
 	// working
 	private ShapeObject mShapeObject;	// working shape list object
@@ -69,15 +63,8 @@ public class ShapeModel {
 	private float mDY;
 	
 	public static final int CANVAS_SHAPELIST_INX = 0;
-//	public static final int NOFOCUS = -1;
-//	private int mShapeListFocus;
 	private List<ShapeObject> mShapeList = new ArrayList<ShapeObject>();
-//    String mBgRectName = "BG_RECT";
     String mBgRectName = "Canvas";
-    private ShapeObject shapeObject;
-
-//	private BigInteger startTime;
-//	private BigInteger doneTime;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     private static volatile ShapeModel instance;
@@ -92,17 +79,13 @@ public class ShapeModel {
                 }
             }
         }
-
         return instance;
     }
 	////////////////////////////////////////////////////////////////////////////
 	// constructor
 	public ShapeModel(Context context, SketchViewModel sketchViewModel) {
         setContext(context);
-		// obtain sketch settings
-//		mParentActivity = SketchActivity.getSketchActivity();
-//		mSketchViewModel = mParentActivity.getSketchViewModel();
-//        mSketchViewModel = SketchViewModel.getInstance(context);
+		// obtain sketch view model
         mSketchViewModel = sketchViewModel;
 		initShapeList();
 	}
@@ -132,7 +115,6 @@ public class ShapeModel {
 		mShapeList.add(shapeObject);
 
 		// set draw list index to unselected
-//		mShapeListFocus = clearShapeListFocus();
 		mSketchViewModel.clearShapeListFocus();
 		return true;
     }
@@ -247,7 +229,6 @@ public class ShapeModel {
 			Log.e(TAG, "clearShape OutOfBounds...");
 			return false;
 		}
-//		mShapeListFocus = clearShapeListFocus();
 		mSketchViewModel.clearShapeListFocus();
 		return true;
 	}
@@ -274,71 +255,6 @@ public class ShapeModel {
 		}
 		return false;
 	}
-//	////////////////////////////////////////////////////////////////////////////
-//	// focus
-//	public int clearShapeListFocus() {
-//		// set focus to value
-//		return mShapeListFocus = NOFOCUS;
-//	}
-//	public int setShapeListFocus(int i) {
-//		mShapeListFocus = NOFOCUS;
-//		if (i >= 0 && i < mShapeList.size()) {
-//			// set draw object
-//			mShapeObject = mShapeList.get(i);
-//			// set focus to value
-//			mShapeListFocus = i;
-//		}
-//		return mShapeListFocus;
-//	}
-//	public int setShapeListFocus(float x, float y) {
-//		// focus detection - test if x,y is within draw element bounding rect
-//		for (int size = mShapeList.size(), i = size-1; i > 0; i--) {
-//			mShapeObject = mShapeList.get(i);
-//			mRect = mShapeObject.getBound();
-//			if (x >= mRect.left && x <= mRect.right && y >= mRect.top && y <= mRect.bottom) {
-//				return setShapeListFocus(i);
-//			}
-//		}
-//		return setShapeListFocus(CANVAS_SHAPELIST_INX);
-//	}
-//	public int getShapeListFocus() {
-//		// return focus
-//		return mShapeListFocus;
-//	}
-//	public int setNextShapeListFocus() {
-//		// test if draw list contains shapes (in addition to background)
-//		if (mShapeList.size() < 1) {
-//            Log.e(TAG, "setNextShapeListFocus empty shape list - no BG_RECT!");
-//			return NOFOCUS;
-//		}
-//		// set focus to next element
-//		if (mShapeListFocus < mShapeList.size() - 1) {
-//			++mShapeListFocus;
-//		}
-//		else {
-////            mShapeListFocus = 1;
-//            mShapeListFocus = 0;
-//		}
-//		// set draw object
-//		mShapeObject = mShapeList.get(mShapeListFocus);
-//		return mShapeListFocus;
-//	}
-//	public int setPrevShapeListFocus() {
-//		if (mShapeList.size() < 1) {
-//            Log.e(TAG, "setPrevShapeListFocus empty shape list - no BG_RECT!");
-//			return NOFOCUS;
-//		}
-//		// set focus to previous element
-//		if (mShapeListFocus > 1) {
-//			--mShapeListFocus;
-//		}
-//		else {
-//			mShapeListFocus = mShapeList.size() - 1;
-//		}
-//		// set draw object
-//		mShapeObject = mShapeList.get(mShapeListFocus);
-//		return mShapeListFocus;
-//	}
 	////////////////////////////////////////////////////////////////////////////
 	// set image type shape: BACKDROP or OVERLAY
 	public ShapeObject setImageShape(String imagePath, int shapeListInx) {
