@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
+import com.adaptivehandyapps.util.PrefsUtils;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
 
@@ -57,7 +58,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         String toastText = AhaDisplayMetrics.toString(this);
         if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
-		// set sketch activity reference
+        Log.d(TAG, PrefsUtils.toString(this));
+
+        // set sketch activity reference
 		mSketchActivity = this;
         setContext(this);
 		// set view layout
@@ -211,7 +214,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     private Boolean setSketchViewModelSaved(Boolean saved) { mSketchViewModelSaved = saved; return mSketchViewModelSaved;}
     private void saveSketchViewModel() {
         // perform light weight cleanup, release resources, save draft data
-        mSketchViewModel.saveSketchSettings();
+        mSketchViewModel.saveSketchModel();
 	    this.mSketchViewModelSaved = true;
 	}
 	///////////////////////////////////////////////////////////////////////////

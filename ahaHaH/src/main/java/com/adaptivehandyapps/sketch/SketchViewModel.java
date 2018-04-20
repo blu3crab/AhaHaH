@@ -90,24 +90,28 @@ public class SketchViewModel {
 		public int value;
 		ShapeType (int value) {this.value = value;}
 	}
-	private ShapeType mShape = ShapeType.NADA;
+//	private ShapeType mShape = ShapeType.NADA;
 
 	// tools
 	public enum Tool {
 		NADA, PEN, BRUSH, SPRAY, BUCKET
 	}
-	private Tool mTool = Tool.NADA;	
+//	private Tool mTool = Tool.NADA;
 
-	// styles
-	public enum Style {
-		NADA, SMALL, MEDIUM, LARGE, FILL, STROKE, STROKEFILL, FOCUS
-	}
-	private Style mStyleSize = Style.NADA;
-	private final float mSizeSmall = 2.0f;
-	private final float mSizeMedium = 4.0f;
-	private final float mSizeLarge = 6.0f;
-	private Style mStyleFill = Style.NADA;
-	private Style mStyleFocus = Style.NADA;
+//    // styles
+//    public enum Style {
+//        NADA, FILL, STROKE, STROKEFILL
+//    }
+//    // styles
+//    public enum Size {
+//        NADA, SMALL, MEDIUM, LARGE
+//    }
+//	private Style mStyleSize = Style.NADA;
+	private final static float SIZE_SMALL = 2.0f;
+	private final static float SIZE_MEDIUM = 4.0f;
+	private final static float SIZE_LARGE = 6.0f;
+//	private Style mStyleFill = Style.NADA;
+//	private Style mStyleFocus = Style.NADA;
 
 	// colors
 	public enum Palette {
@@ -124,24 +128,33 @@ public class SketchViewModel {
 			0xFFFF00FF,
 			0xFFFFFFFF,
 			0xFF999999 };
-	private int mColor = mPalette[Palette.NADA.ordinal()];
-	private int mCustomColor = mPalette[Palette.NADA.ordinal()];
+//	private int mColor = mPalette[Palette.NADA.ordinal()];
+//	private int mCustomColor = mPalette[Palette.NADA.ordinal()];
 	// hold focus switch
-	private boolean mFocusHold = false;
+//	private boolean mFocusHold = false;
 
 	///////////////////////////////////////////////////////////////////////////
 	// save/restore settings
 	private int MODE_PRIVATE = 0;
 	public static final String PREFS_NAME = "SketchSettingsFile";
-	private String mKeyShape = "Shape";
-	private String mKeyTool = "Tool";
-	private String mKeyStyleSize = "StyleSize";
-	private String mKeyStyleFill = "StyleFill";
-	private String mKeyColor = "Color";
-	private String mKeyCustomColor = "CustomColor";
-	private String mKeyFocusHold = "FocusHold";
+//    public static final String SKETCH_SHAPE_KEY = "SketchShape";
 
-	// canvas dimensions
+//    private String SKETCH_SHAPE_KEY = "Shape";
+//	private String SKETCH_TOOL_KEY = "Tool";
+//	private String SKETCH_STYLE_SIZE_KEY = "StyleSize";
+//	private String SKETCH_STYLE_FILL_KEY = "StyleFill";
+//	private String SKETCH_COLOR_KEY = "Color";
+//	private String SKETCH_CUSTOM_COLOR_KEY = "CustomColor";
+//	private String mKeyFocusHold = "FocusHold";
+
+    private int SKETCH_SHAPE_DEFAULT = ShapeType.FREE.ordinal();
+    private int SKETCH_TOOL_DEFAULT = Tool.PEN.ordinal();
+    private float SKETCH_SIZE_DEFAULT = SIZE_MEDIUM;
+    private int SKETCH_STYLE_DEFAULT = Paint.Style.FILL_AND_STROKE.ordinal();
+    private int SKETCH_COLOR_DEFAULT = mPalette[Palette.RED.ordinal()];
+    private int SKETCH_CUSTOM_COLOR_DEFAULT = mPalette[Palette.NADA.ordinal()];
+
+    // canvas dimensions
 	private int mCanvasWidth = -1;
 	private int mCanvasHeight = -1;
 
@@ -168,7 +181,9 @@ public class SketchViewModel {
 			throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
 		}
 
-		setContext(context);
+        Log.d(TAG, PrefsUtils.toString(context));
+
+        setContext(context);
 		// set canvas dimensions to display dimensions until touch view canvas created
 		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(getContext());
 		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(getContext());
@@ -178,24 +193,24 @@ public class SketchViewModel {
 		mShapeModel = ShapeModel.getInstance(getContext(), this);
 
 		// restore settings
-		restoreSketchSettings();
+		restoreSketchModel();
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// save sketch settings
-	public void saveSketchSettings() {
-		SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-	    SharedPreferences.Editor editor = settings.edit();
-
-	    editor.putInt(mKeyShape, mShape.ordinal());
-	    editor.putInt(mKeyTool, mTool.ordinal());
-	    editor.putInt(mKeyStyleSize, mStyleSize.ordinal());
-	    editor.putInt(mKeyStyleFill, mStyleFill.ordinal());
-	    editor.putInt(mKeyColor, mColor);
-	    editor.putInt(mKeyCustomColor, mCustomColor);
-	    editor.putBoolean(mKeyFocusHold, mFocusHold);
-
-	    // commit the edits!
-	    editor.commit();
+	public void saveSketchModel() {
+//		SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+//	    SharedPreferences.Editor editor = settings.edit();
+//
+//	    editor.putInt(SKETCH_SHAPE_KEY, mShape.ordinal());
+//	    editor.putInt(SKETCH_TOOL_KEY, mTool.ordinal());
+//	    editor.putInt(SKETCH_STYLE_SIZE_KEY, mStyleSize.ordinal());
+//	    editor.putInt(SKETCH_STYLE_FILL_KEY, mStyleFill.ordinal());
+//	    editor.putInt(SKETCH_COLOR_KEY, mColor);
+//	    editor.putInt(SKETCH_CUSTOM_COLOR_KEY, mCustomColor);
+////	    editor.putBoolean(mKeyFocusHold, mFocusHold);
+//
+//	    // commit the edits!
+//	    editor.commit();
 
 		// save ShapeModel shape list
 		mShapeModel.save(TEMP_FILE);
@@ -203,50 +218,53 @@ public class SketchViewModel {
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// restore sketch settings
-	public void restoreSketchSettings() {
-		SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-		String albumName = PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY);
-		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) setAlbumName(getContext().getString(R.string.default_project_name));
-
-		mShape = ShapeType.values()[settings.getInt(mKeyShape, 0)];
-		mTool = Tool.values()[settings.getInt(mKeyTool, 0)];
-		mStyleSize = Style.values()[settings.getInt(mKeyStyleSize, 0)];
-        mStyleFill = Style.values()[settings.getInt(mKeyStyleFill, 0)];
-		mColor = settings.getInt(mKeyColor, mPalette[Palette.NADA.ordinal()]);
-		mCustomColor = settings.getInt(mKeyCustomColor, mPalette[Palette.NADA.ordinal()]);
-		mFocusHold = settings.getBoolean(mKeyFocusHold, false);
-
-		// if no settings, set defaults
-		if (mShape == ShapeType.NADA ||
-				mTool == Tool.NADA ||
-				mStyleSize == Style.NADA ||
-				mStyleFill == Style.NADA ||
-//				mStyleFocus == Style.NADA ||
-				mColor == mPalette[Palette.NADA.ordinal()] ) {
-			setDefaultSettings();
-		}
+	public void restoreSketchModel() {
+//		SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+//
+//        String albumNameDefault = getContext().getString(R.string.default_project_name);
+//        setAlbumName(PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY, albumNameDefault));
+////        String albumName = PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY, getContext().getString(R.string.default_project_name));
+////        setAlbumName(albumName);
+////		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) setAlbumName(getContext().getString(R.string.default_project_name));
+//
+//		mShape = ShapeType.values()[settings.getInt(SKETCH_SHAPE_KEY, 0)];
+//		mTool = Tool.values()[settings.getInt(SKETCH_TOOL_KEY, 0)];
+//		mStyleSize = Style.values()[settings.getInt(SKETCH_STYLE_SIZE_KEY, 0)];
+//        mStyleFill = Style.values()[settings.getInt(SKETCH_STYLE_FILL_KEY, 0)];
+//		mColor = settings.getInt(SKETCH_COLOR_KEY, mPalette[Palette.NADA.ordinal()]);
+//		mCustomColor = settings.getInt(SKETCH_CUSTOM_COLOR_KEY, mPalette[Palette.NADA.ordinal()]);
+////		mFocusHold = settings.getBoolean(mKeyFocusHold, false);
+//
+//		// if no settings, set defaults
+//		if (mShape == ShapeType.NADA ||
+//				mTool == Tool.NADA ||
+//				mStyleSize == Style.NADA ||
+//				mStyleFill == Style.NADA ||
+////				mStyleFocus == Style.NADA ||
+//				mColor == mPalette[Palette.NADA.ordinal()] ) {
+//			setDefaultSettings();
+//		}
 		// load ShapeModel shape list
 		mShapeModel.load(TEMP_FILE);
 		Log.v(TAG, "restoreSketchSettings loading mShapeModel " + TEMP_FILE);
 
 	}
 
-	///////////////////////////////////////////////////////////////////////////
-	// set default sketch settings
-	public void setDefaultSettings() {
-		mShape = ShapeType.FREE;
-		mTool = Tool.PEN;
-		mStyleSize = Style.SMALL;
-		mStyleFill = Style.STROKE;
-		mStyleFocus = Style.FOCUS;
-		mColor = mPalette[Palette.RED.ordinal()];
-		mCustomColor = mPalette[Palette.NADA.ordinal()];
-		mFocusHold = false;
-		setAlbumName(PrefsUtils.DEFAULT_STRING_NADA);
-
-		return;
-	}
+//	///////////////////////////////////////////////////////////////////////////
+//	// set default sketch settings
+//	public void setDefaultSettings() {
+//		mShape = ShapeType.FREE;
+//		mTool = Tool.PEN;
+//		mStyleSize = Style.SMALL;
+//		mStyleFill = Style.STROKE;
+//		mStyleFocus = Style.FOCUS;
+//		mColor = mPalette[Palette.RED.ordinal()];
+//		mCustomColor = mPalette[Palette.NADA.ordinal()];
+////		mFocusHold = false;
+//		setAlbumName(PrefsUtils.DEFAULT_STRING_NADA);
+//
+//		return;
+//	}
 	///////////////////////////////////////////////////////////////////////////
 	// getters/setters
 	private Context getContext() { return mContext; }
@@ -262,58 +280,107 @@ public class SketchViewModel {
 	public int getCanvasHeight() { return mCanvasHeight; }
 	public void setCanvasHeight(int dim) { mCanvasHeight = dim; }
 
-	public String getAlbumName() { return PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY); }
+	public String getAlbumName() {
+        String albumNameDefault = getContext().getString(R.string.default_project_name);
+	    return PrefsUtils.getPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY, albumNameDefault);
+	}
 	public Boolean setAlbumName(String albumName)
 	{
-		if (!getAlbumName().equals(albumName)) {
-			mShapeModel.delete(TEMP_FILE);
-			Log.v(TAG, "setAlbumName deletes " + TEMP_FILE);
-		}
+//		if (!getAlbumName().equals(albumName)) {
+//			mShapeModel.delete(TEMP_FILE);
+//			Log.v(TAG, "setAlbumName deletes " + TEMP_FILE);
+//		}
 		PrefsUtils.setPrefs(getContext(), PrefsUtils.ALBUMNAME_KEY, albumName);
 		return true;
 	}
-	public ShapeType getShape() { return mShape; }
-	public Tool getTool() { return mTool; }
-	public float getSize() { 
-		if (mStyleSize == Style.SMALL) {
-			return mSizeSmall;
-		}
-		else if (mStyleSize == Style.MEDIUM) {
-			return mSizeMedium;
-		}
-		else {
-			return mSizeLarge;	
-		}
+	public ShapeType getShape() {
+//	    return mShape;
+	    return ShapeType.values() [PrefsUtils.getPrefs(getContext(), PrefsUtils.SKETCH_SHAPE_KEY, SKETCH_SHAPE_DEFAULT)];
 	}
-	public Paint.Style getStyle() { 
-		if (mStyleFill == SketchViewModel.Style.STROKE) {
-			return Paint.Style.STROKE;
-		}
-		else if (mStyleFill == SketchViewModel.Style.FILL) {
-			return Paint.Style.FILL;
-		}
-		else {
-			return Paint.Style.FILL_AND_STROKE;
-		}
+    public ShapeType setShape(ShapeType shapeType) {
+        PrefsUtils.setPrefs(getContext(), PrefsUtils.SKETCH_SHAPE_KEY, shapeType.ordinal());
+        return shapeType;
+    }
+
+	public Tool getTool() {
+//	    return mTool;
+        return Tool.values() [PrefsUtils.getPrefs(getContext(), PrefsUtils.SKETCH_TOOL_KEY, SKETCH_TOOL_DEFAULT)];
 	}
-	public int getColor() { return mColor; }
-    public int setColor(int color) { mColor = color; return mColor; }
-	public int getCustomColor() { return mCustomColor; }
-	public void setCustomColor(int color) {
-	    mCustomColor = color;
-	    setColor(mCustomColor);
-        //Save the value in our preferences.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(mKeyCustomColor, mCustomColor);
-        editor.commit();
+    public Tool setTool(Tool tool) {
+        PrefsUtils.setPrefs(getContext(), PrefsUtils.SKETCH_TOOL_KEY, tool.ordinal());
+        return tool;
+    }
+
+	public float getSize() {
+	    return PrefsUtils.getPrefs(getContext(), PrefsUtils.SKETCH_SIZE_KEY, SKETCH_SIZE_DEFAULT);
+
+//		if (mStyleSize == Style.SMALL) {
+//			return SIZE_SMALL;
+//		}
+//		else if (mStyleSize == Style.MEDIUM) {
+//			return SIZE_MEDIUM;
+//		}
+//		else {
+//			return SIZE_LARGE;
+//		}
+	}
+    public float setSize(float size) {
+        PrefsUtils.setPrefs(getContext(), PrefsUtils.SKETCH_SIZE_KEY, size);
+        return size;
+    }
+
+    public Paint.Style getStyle() {
+        return Paint.Style.values()[PrefsUtils.getPrefs(getContext(), PrefsUtils.SKETCH_STYLE_KEY, SKETCH_STYLE_DEFAULT)];
+//		if (mStyleFill == SketchViewModel.Style.STROKE) {
+//			return Paint.Style.STROKE;
+//		}
+//		else if (mStyleFill == SketchViewModel.Style.FILL) {
+//			return Paint.Style.FILL;
+//		}
+//		else {
+//			return Paint.Style.FILL_AND_STROKE;
+//		}
+	}
+    public Paint.Style setStyle(Paint.Style style) {
+        PrefsUtils.setPrefs(getContext(), PrefsUtils.SKETCH_STYLE_KEY, style.ordinal());
+        return style;
+    }
+
+	public int getColor() {
+        return PrefsUtils.getPrefs(getContext(), PrefsUtils.SKETCH_COLOR_KEY, SKETCH_COLOR_DEFAULT);
+//	    return mColor;
+	}
+    public int setColor(int color) {
+        PrefsUtils.setPrefs(getContext(), PrefsUtils.SKETCH_COLOR_KEY, color);
+//	    mColor = color;
         // refresh
         mShapeModel.updatePaint();
         mSketchView.invalidate();
+        return color;
+	}
+	public int getCustomColor() {
+        return PrefsUtils.getPrefs(getContext(), PrefsUtils.SKETCH_CUSTOM_COLOR_KEY, SKETCH_CUSTOM_COLOR_DEFAULT);
+//	    return mCustomColor;
+	}
+
+	public int setCustomColor(int color) {
+        PrefsUtils.setPrefs(getContext(), PrefsUtils.SKETCH_CUSTOM_COLOR_KEY, color);
+        setColor(color);
+//	    mCustomColor = color;
+//	    setColor(mCustomColor);
+//        //Save the value in our preferences.
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+//        SharedPreferences.Editor editor = prefs.edit();
+//        editor.putInt(SKETCH_CUSTOM_COLOR_KEY, mCustomColor);
+//        editor.commit();
+//        // refresh
+//        mShapeModel.updatePaint();
+//        mSketchView.invalidate();
+        return color;
     }
 	
-	public boolean getFocusHold() { return mFocusHold; }
-	private void setFocusHold(boolean focusHold) { mFocusHold = focusHold; }
+//	public boolean getFocusHold() { return mFocusHold; }
+//	private void setFocusHold(boolean focusHold) { mFocusHold = focusHold; }
 
 	///////////////////////////////////////////////////////////////////////////
 	// helpers
@@ -335,91 +402,92 @@ public class SketchViewModel {
 		Log.v(TAG,"");
 		if (action < 0) return false;
 
-		int preSelectionColor = mColor;
+//		int preSelectionColor = getColor();
 		// service action
 		switch (action) {
 			case SELECT_TYPE_SHAPE_FREE:
-				mShape = ShapeType.FREE;
+//                mShape = ShapeType.FREE;
+                setShape(ShapeType.FREE);
 				break;
 			case SELECT_TYPE_SHAPE_LINE:
-				mShape = ShapeType.LINE;
+                setShape(ShapeType.LINE);
 				break;
 			case SELECT_TYPE_SHAPE_RECT:
-				mShape = ShapeType.RECT;
+                setShape(ShapeType.RECT);
 				break;
 			case SELECT_TYPE_SHAPE_LABEL:
-				mShape = ShapeType.LABEL;
+                setShape(ShapeType.LABEL);
 				break;
 			case SELECT_TYPE_SHAPE_CIRCLE:
-				mShape = ShapeType.CIRCLE;
+                setShape(ShapeType.CIRCLE);
 				break;
 			case SELECT_TYPE_SHAPE_OVAL:
-				mShape = ShapeType.OVAL;
+                setShape(ShapeType.OVAL);
 				break;
             case SELECT_TYPE_STYLE_SMALL:
-                mStyleSize = Style.SMALL;
+                setSize(SIZE_SMALL);
                 return true;
             case SELECT_TYPE_STYLE_MEDIUM:
-                mStyleSize = Style.MEDIUM;
+                setSize(SIZE_MEDIUM);
                 return true;
             case SELECT_TYPE_STYLE_LARGE:
-                mStyleSize = Style.LARGE;
+                setSize(SIZE_LARGE);
                 return true;
             case SELECT_TYPE_STYLE_FILL:
-                mStyleFill = Style.FILL;
+                setStyle(Paint.Style.FILL);
                 return true;
             case SELECT_TYPE_STYLE_STROKE:
-                mStyleFill = Style.STROKE;
+                setStyle(Paint.Style.STROKE);
                 return true;
             case SELECT_TYPE_STYLE_STROKE_FILL:
-                mStyleFill = Style.STROKEFILL;
+                setStyle(Paint.Style.FILL_AND_STROKE);
                 return true;
-            case SELECT_TYPE_STYLE_HOLD_FOCUS:
-                mStyleFocus = Style.FOCUS;
-                setFocusHold(!getFocusHold());
-                return true;
+//            case SELECT_TYPE_STYLE_HOLD_FOCUS:
+//                mStyleFocus = Style.FOCUS;
+//                setFocusHold(!getFocusHold());
+//                return true;
             case SELECT_TYPE_COLOR_BLACK:
-                mColor = mPalette[Palette.BLACK.ordinal()];
+                setColor(mPalette[Palette.BLACK.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_BLUE:
-                mColor = mPalette[Palette.BLUE.ordinal()];
+                setColor(mPalette[Palette.BLUE.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_GREEN:
-                mColor = mPalette[Palette.GREEN.ordinal()];
+                setColor(mPalette[Palette.GREEN.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_YELLOW:
-                mColor = mPalette[Palette.YELLOW.ordinal()];
+                setColor(mPalette[Palette.YELLOW.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_ORANGE:
-                mColor = mPalette[Palette.ORANGE.ordinal()];
+                setColor(mPalette[Palette.ORANGE.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_RED:
-                mColor = mPalette[Palette.RED.ordinal()];
+                setColor(mPalette[Palette.RED.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_VIOLET:
-                mColor = mPalette[Palette.VIOLET.ordinal()];
+                setColor(mPalette[Palette.VIOLET.ordinal()]);
                 return true;
             case SELECT_TYPE_COLOR_WHITE:
-                mColor = mPalette[Palette.WHITE.ordinal()];
+                setColor(mPalette[Palette.WHITE.ordinal()]);
                 return true;
             case SELECT_TYPE_TOOL_PEN:
-                mTool = Tool.PEN;
+                setTool(Tool.PEN);
                 return true;
             case SELECT_TYPE_TOOL_BRUSH:
-                mTool = Tool.BRUSH;
+                setTool(Tool.BRUSH);
                 return true;
             case SELECT_TYPE_TOOL_SPRAY:
-                mTool = Tool.SPRAY;
+                setTool(Tool.SPRAY);
                 return true;
             case SELECT_TYPE_TOOL_BUCKET:
-                mTool = Tool.BUCKET;
+                setTool(Tool.BUCKET);
                 return true;
 			default:
 				Log.e(TAG, "Ooops! setSelection finds unknown item " + action);
 				return false;
 		}
-		// update paint if color changed
-		if (preSelectionColor != mColor) mShapeModel.updatePaint();
+//		// update paint if color changed
+//		if (preSelectionColor != getColor()) mShapeModel.updatePaint();
 		// invalidate to refresh after any selection
 		mSketchView.invalidate();
 
@@ -557,7 +625,9 @@ public class SketchViewModel {
 
 		String imageName = "nada";
 		try {
-			String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY);
+//            String albumNameDefault = getContext().getString(R.string.default_project_name);
+//			String albumName = PrefsUtils.getPrefs(mContext, PrefsUtils.ALBUMNAME_KEY, albumNameDefault);
+            String albumName = getAlbumName();
 			// timestamp an image name & create the file
 			imageName = ImageAlbumStorage.timestampImageName();
 			Log.v(TAG, "saveSketch timestampImageName: "+ imageName);
@@ -618,9 +688,9 @@ public class SketchViewModel {
         else if (itemname.equals(getContext().getString(R.string.action_sketch_style_strokefill))) {
             return SELECT_TYPE_STYLE_STROKE_FILL;
         }
-        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_focus))) {
-            return SELECT_TYPE_STYLE_HOLD_FOCUS;
-        }
+//        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_focus))) {
+//            return SELECT_TYPE_STYLE_HOLD_FOCUS;
+//        }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_color_black))) {
             return SELECT_TYPE_COLOR_BLACK;
         }

@@ -88,6 +88,8 @@ public class AhaHahActivity extends Activity {
 
         setContentView(R.layout.activity_ahahah);
 
+        Log.d(TAG, PrefsUtils.toString(this));
+
 //		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
 //		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
 
@@ -449,7 +451,7 @@ public class AhaHahActivity extends Activity {
     private Boolean setupSplashView() {
         ImageView splashView = (ImageView) findViewById(R.id.imageViewSplash);
         ImageView thumbView = (ImageView) findViewById(R.id.imageViewThumb);
-        String imagePath = PrefsUtils.getPrefs(this, PrefsUtils.IMAGEPATH_KEY);
+        String imagePath = PrefsUtils.getPrefs(this, PrefsUtils.IMAGEPATH_KEY, PrefsUtils.DEFAULT_STRING_NADA);
         // if image path & target views defined
         if (!imagePath.equals(PrefsUtils.DEFAULT_STRING_NADA) && splashView != null && thumbView != null) {
             // ensure file still exists

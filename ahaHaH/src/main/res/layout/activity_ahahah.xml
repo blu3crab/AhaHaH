@@ -7,8 +7,9 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".AhaHahActivity" >
+    tools:context="com.adaptivehandyapps.activity.AhaHahActivity" >
 
+    <!-- splash -->
     <ImageView
         android:id="@+id/imageViewSplash"
         android:layout_marginLeft="8dp"
@@ -26,28 +27,7 @@
         android:layout_marginBottom="48dp"
         android:contentDescription="@string/thumb_description"
         android:src="@drawable/sharkstooth128x72" />
-<!--
-    <TextView style="@style/SplashLayout"
-        android:id="@+id/textViewNickname"
-        android:text="@string/author_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/imageViewThumb"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#FFFF00"
-        android:textStyle="bold|italic" />
 
-    <TextView style="@style/SplashLayout"
-        android:id="@+id/textViewAppName"
-        android:text="@string/app_name_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/textViewNickname"
-        android:layout_marginLeft="48dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#FFFF00"
-        android:textStyle="bold" />
--->
     <Button style="@style/SplashLayout"
         android:id="@+id/buttonSketch"
         android:onClick="startSketchActivity"
@@ -58,6 +38,5 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:textColor="#FFFF00" />
-
 
 </RelativeLayout>

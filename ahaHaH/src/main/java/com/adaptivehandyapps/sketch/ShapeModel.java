@@ -495,16 +495,15 @@ public class ShapeModel {
             return false;
         }
 
-        // if focus hold set
-		if (mSketchViewModel.getFocusHold()) {
+//        // if focus hold set
+//		if (mSketchViewModel.getFocusHold()) {
 			// set focus to new shape
 			mSketchViewModel.setShapeListFocus (mShapeList.size()-1);
-		}
-		else {
-			// clear focus
-//			mShapeListFocus = NOFOCUS;
-			mSketchViewModel.clearShapeListFocus();
-        }
+//		}
+//		else {
+//			// clear focus
+//			mSketchViewModel.clearShapeListFocus();
+//        }
 		Log.v(TAG, "completeShape focus: " + mSketchViewModel.getShapeListFocus());
 		
 		if (mShapeType == ShapeType.LABEL) {

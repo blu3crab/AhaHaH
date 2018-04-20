@@ -28,7 +28,6 @@
         <item>@string/action_sketch_style_fill</item>
         <item>@string/action_sketch_style_stroke</item>
         <item>@string/action_sketch_style_strokefill</item>
-        <item>@string/action_sketch_style_focus</item>
     </string-array>
 
     <!-- Colors -->
