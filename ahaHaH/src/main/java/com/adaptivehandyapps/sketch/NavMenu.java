@@ -41,6 +41,7 @@ public class NavMenu {
     public NavMenu(Context context, NavigationView navigationView) {
         setContext(context);
         mNavigationView = navigationView;
+        // build static nav menu groups
         build(mNavigationView);
     }
 
@@ -51,6 +52,46 @@ public class NavMenu {
     }
     public void setContext(Context context) { this.mContext = context; }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // build nav menu
+    public Boolean buildShapeList(NavigationView navigationView, SketchViewModel sketchViewModel) {
+        // dereference menu & clear any contents
+        Menu menu = navigationView.getMenu();
+        String title = "Sketch Shape List";
+        SubMenu subMenu = menu.addSubMenu(title);
+        subMenu.clear();
+        MenuItem subMenuItem;
+        MenuItem focusSubMenuItem = null;
+        int groupId = -1;
+        int iconId = -1;
+        List <ShapeObject> shapeList = sketchViewModel.getShapeList();
+        if (shapeList.size() > 0) {
+            int focusShapeInx = sketchViewModel.getShapeListFocus();
+            int scanInx = 0;
+            for (ShapeObject shapeObject : shapeList) {
+                subMenuItem = subMenu.add(shapeObject.getName());
+                if (focusShapeInx == scanInx) focusSubMenuItem = subMenuItem;
+                iconId = mapShapeToIcon(shapeObject);
+                subMenuItem.setIcon(iconId);
+                groupId = subMenuItem.getGroupId();
+                Log.d(TAG, "addSubMenu submenu item:" + subMenuItem.getItemId() + ", itemname: " + subMenuItem.toString() + ", group id " + groupId);
+                ++scanInx;
+            }
+            // identify selected menu item
+            // checkable, exclusive
+            subMenu.setGroupCheckable(groupId, true, true);
+            if (focusSubMenuItem != null) focusSubMenuItem.setChecked(true);
+        }
+        return true;
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    private int mapShapeToIcon(ShapeObject shapeObject) {
+        int iconId = R.drawable.ic_bubble_chart_black_48dp;
+//        if (shapeObject.getShapeType() == SketchViewModel.ShapeType.FREE) {
+//            iconId = R.
+//        }
+        return iconId;
+    }
     ///////////////////////////////////////////////////////////////////////////
     // build nav menu
     public Boolean build(NavigationView navigationView) {
@@ -122,11 +163,16 @@ public class NavMenu {
         SubMenu subMenu = menu.addSubMenu(title);
         subMenu.clear();
         MenuItem subMenuItem;
+        int groupId = -1;
         for (String moniker : monikerList) {
             subMenuItem = subMenu.add(moniker);
             subMenuItem.setIcon(iconId);
-//            Log.d(TAG, "addSubMenu submenu item:" + subMenuItem.getItemId() + ", itemname: " + subMenuItem.toString());
+            groupId = subMenuItem.getGroupId();
+            Log.d(TAG, "addSubMenu submenu item:" + subMenuItem.getItemId() + ", itemname: " + subMenuItem.toString() + ", group id " + groupId);
         }
+        // identify selected menu item
+        // checkable, exclusive
+        subMenu.setGroupCheckable(groupId, true, true);
         return subMenu;
     }
     ///////////////////////////////////////////////////////////////////////////

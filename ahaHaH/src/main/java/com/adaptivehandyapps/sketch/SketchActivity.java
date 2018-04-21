@@ -58,7 +58,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         String toastText = AhaDisplayMetrics.toString(this);
         if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
-        Log.d(TAG, PrefsUtils.toString(this));
+        Log.d(TAG, SketchViewModel.prefsToString(this));
 
         // set sketch activity reference
 		mSketchActivity = this;
@@ -69,6 +69,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		// setup drawer
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerLayout.openDrawer(GravityCompat.START);
+//		mDrawerLayout.addDrawerListener();
 
 		// setup navigation view
 		mNavigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -82,6 +83,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
         // get (instantiate) view model and model
         mSketchViewModel = SketchViewModel.getInstance(getContext(), mSketchView);
+        // build shape list
+        mNavMenu.buildShapeList(mNavigationView, mSketchViewModel);
+
+        // indicate view model not saved
         setSketchViewModelSaved(false);
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +100,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         // for static menu items, extract id & compare to resource
         int id = item.getItemId();
 		Log.d(TAG, "onNavigationItemSelected itemname: " + itemname + ", id:" + id);
+
+		// identify selected menu item
+		item.setChecked(true);
 
         if (itemname.equals(getContext().getString(R.string.action_sketch_file_new))) {
             Log.v(TAG, "onNavigationItemSelected file new.");

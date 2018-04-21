@@ -28,23 +28,7 @@ public class PrefsUtils {
 	public final static int DEFAULT_INTEGER = 0;
 	public final static float DEFAULT_FLOAT = 0.0f;
 	public final static boolean DEFAULT_BOOLEAN = false;
-	///////////////////////////////////////////////////////////////////////////
-	public static void setDefaults(Context context) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		prefs.edit().putString(ALBUMNAME_KEY, DEFAULT_STRING_NADA);
-		prefs.edit().putString(IMAGEPATH_KEY, DEFAULT_STRING_NADA);
 
-		return;
-	}
-	///////////////////////////////////////////////////////////////////////////
-	public static String toString(Context context) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		return TAG + "-->" + "\n" +
-				ALBUMNAME_KEY + ": " +
-				prefs.getString(ALBUMNAME_KEY, DEFAULT_STRING_NADA)  + "\n" +
-				IMAGEPATH_KEY + ": " +
-				prefs.getString(IMAGEPATH_KEY, DEFAULT_STRING_NADA)  + "\n";
-	}
 	///////////////////////////////////////////////////////////////////////////
 	// getters
 	public static String getPrefs(Context context, String key, String defaultValue) {
@@ -53,9 +37,6 @@ public class PrefsUtils {
 	}
 	public static int getPrefs(Context context, String key, int defaultValue) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//		String v = prefs.getString(key, "nada");
-//		int value = prefs.getInt(key, defaultValue);
-//		return value;
 		return prefs.getInt(key, defaultValue);
 	}
 	public static float getPrefs(Context context, String key, float defaultValue) {
@@ -66,22 +47,6 @@ public class PrefsUtils {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return prefs.getBoolean(key, defaultValue);
 	}
-//	public static String getPrefs(Context context, String key) {
-//		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//		return prefs.getString(key, DEFAULT_STRING_NADA);
-//	}
-//	public static Integer getIntPrefs(Context context, String key) {
-//		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//		return prefs.getInt(key, DEFAULT_INTEGER);
-//	}
-//	public static Float getFloatPrefs(Context context, String key) {
-//		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//		return prefs.getFloat(key, DEFAULT_FLOAT);
-//	}
-//	public static Boolean getBooleanPrefs(Context context, String key) {
-//		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//		return prefs.getBoolean(key, DEFAULT_BOOLEAN);
-//	}
 	///////////////////////////////////////////////////////////////////////////
 	// setters
 	public static void setPrefs(Context context, String key, String value) {

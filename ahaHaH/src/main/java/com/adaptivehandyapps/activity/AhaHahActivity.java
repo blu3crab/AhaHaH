@@ -40,6 +40,7 @@ import android.widget.Toast;
 import com.adaptivehandyapps.ahahah.BuildConfig;
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.sketch.SketchActivity;
+import com.adaptivehandyapps.sketch.SketchViewModel;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
@@ -49,22 +50,17 @@ public class AhaHahActivity extends Activity {
 	private static final String TAG = "AhaHahActivity";
 //	// toast display metrics at startup
 //    private static final Boolean TOAST_DISPLAY_METRICS = true;
-    // capture photo path by launching camera activity for result
-    private static final Boolean CAPTURE_PHOTO_PATH = true;
 
 	// permission request codes
 	public final static int PERMISSIONS_REQUEST = 125;
+
+    // capture photo path by launching camera activity for result
+    private static final Boolean CAPTURE_PHOTO_PATH = true;
 	// activity request codes
 	private static final int ACTION_TAKE_PHOTO = 2;
 
-//	private static AhaHahActivity mParentActivity;
-
     ////////////////////////////////////////////////////////////////////////
     // setters/getters
-//    public static AhaHahActivity getAhaHahActivity() {
-//    	return mParentActivity;
-//    }
-
     String mPhotoCapturePath;
     public String getPhotoCapturePath() { return mPhotoCapturePath; }
     public void setPhotoCapturePath(String photoCapturePath) { this.mPhotoCapturePath = photoCapturePath; }
@@ -88,139 +84,80 @@ public class AhaHahActivity extends Activity {
 
         setContentView(R.layout.activity_ahahah);
 
-        Log.d(TAG, PrefsUtils.toString(this));
+        Log.d(TAG, SketchViewModel.prefsToString(this));
 
-//		ImageView v = (ImageView) findViewById(R.id.imageViewSplash);
-//		v.layout(0, 0, AhaDisplayMetrics.getDisplayWidth(this), AhaDisplayMetrics.getDisplayHeight(this));
-
-//		mParentActivity = this;
-
-//		// restore project folder setting or set default if nada
-//        String albumName = PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY);
-//		if (albumName.equals(PrefsUtils.DEFAULT_STRING_NADA)) albumName = getString(R.string.default_project_name);
-//		// instantiate image album storage class with default project folder
-//		setProjectFolder(albumName);
-//		Log.v(TAG, "onCreate set project folder: " + albumName);
+        // on initial installation, remnant settings may persist...if so reset project dir & last sketch
+		String albumNameDefault = this.getString(R.string.default_project_name);
+		if (PrefsUtils.getPrefs(this, PrefsUtils.ALBUMNAME_KEY, albumNameDefault).equals(PrefsUtils.DEFAULT_STRING_NADA)) {
+			PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, albumNameDefault);
+			PrefsUtils.setPrefs(this, PrefsUtils.IMAGEPATH_KEY, PrefsUtils.DEFAULT_STRING_NADA);
+			Log.d(TAG, SketchViewModel.prefsToString(this));
+		}
 
 //		// launch sketch activity
 //        this.startSketchActivity(getCurrentFocus());
 
         return true;
 	}
+	///////////////////////////////////////////////////////////////////////////////
+	private Boolean setupSplashView() {
+		ImageView splashView = (ImageView) findViewById(R.id.imageViewSplash);
+		ImageView thumbView = (ImageView) findViewById(R.id.imageViewThumb);
+		String imagePath = PrefsUtils.getPrefs(this, PrefsUtils.IMAGEPATH_KEY, PrefsUtils.DEFAULT_STRING_NADA);
+		// if image path & target views defined
+		if (!imagePath.equals(PrefsUtils.DEFAULT_STRING_NADA) && splashView != null && thumbView != null) {
+			// ensure file still exists
+			File file = new File(imagePath);
+			if (!file.exists()) return false;
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.ahahah_menu, menu);
+			// get device dimensions
+			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(this);
+			int targetDeviceW = displayMetrics.widthPixels;
+			int targetDeviceH = displayMetrics.heightPixels;
+			Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
+
+			int scaleFactor = 1;
+			// get size of photo
+			BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+			bmOptions.inJustDecodeBounds = true;
+			BitmapFactory.decodeFile(imagePath, bmOptions);
+			//////////////////////////FIT////////////////////////
+			int photoW = bmOptions.outWidth;
+			int photoH = bmOptions.outHeight;
+			Log.v(TAG, "setupView: photo W/H: " + photoW + "/" + photoH);
+			// round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
+			scaleFactor = Math.min(photoW / targetDeviceW, photoH / targetDeviceH) + 1;
+			Log.v(TAG, "setupView: FIT scale factor: " + scaleFactor);
+			// set bitmap options to scale the image decode target
+			bmOptions.inJustDecodeBounds = false;
+			bmOptions.inSampleSize = scaleFactor;
+			bmOptions.inPurgeable = true;
+
+			// decode the JPEG into the bitmap
+			Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+			// associate bitmap with view
+			splashView.setImageBitmap(bitmap);
+			splashView.setVisibility(View.VISIBLE);
+
+			//////////////////////////THUMB///////////////
+			// set bitmap options to scale the image decode target
+			scaleFactor = Math.min(photoW / (photoW / 10), photoH / (photoH / 10));
+			Log.v(TAG, "setupView: THUMB scale factor: " + scaleFactor);
+
+			bmOptions.inJustDecodeBounds = false;
+			bmOptions.inSampleSize = scaleFactor;
+			bmOptions.inPurgeable = true;
+
+			// decode the JPEG into the bitmap
+			bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+
+			// associate bitmap with view
+			thumbView.setImageBitmap(bitmap);
+			thumbView.setVisibility(View.VISIBLE);
+		}
 		return true;
 	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_gallery:
-			this.startGalleryActivity(getCurrentFocus());
-			return true;
-		case R.id.action_camera:
-			this.startCameraActivity(getCurrentFocus());
-			return true;
-		case R.id.action_sketch:
-			this.startSketchActivity(getCurrentFocus());
-			return true;
-		case R.id.action_projects:
-			// find view & kickoff popup menu 
-			View view = findViewById(R.id.action_projects);
-			if (view != null) viewClickListener.onClick(view);
-			Toast.makeText(this, R.string.projects_hint, Toast.LENGTH_SHORT).show();
-			return true;
-//		case R.id.action_settings:
-//			Toast.makeText(this, R.string.start_activity_toast, Toast.LENGTH_SHORT).show();
-//			return true;
 
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
-    private View.OnClickListener viewClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            showPopupMenu(v);
-        }
-    };
-
-	private void showPopupMenu(View v) {
-		final String NEW_PROJECT = "<new>";
-		
-		PopupMenu popupMenu = new PopupMenu(this, v);
-
-		// obtain list of existing folders
-		List<String> folderList = new ArrayList<String>();
-		folderList = ImageAlbumStorage.getProjectFolders(getString(R.string.album_folder_name));
-
-        // dynamically add existing folders to menu
-		for (String folder: folderList) {
-			popupMenu.getMenu().add(folder);
-			Log.v(TAG, "folder: " + folder);			
-		}
-		// add "new" selection at end of menu
-		popupMenu.getMenu().add(NEW_PROJECT);
-		// inflate menu & listen for clicks
-	    popupMenu.getMenuInflater().inflate(R.menu.projects_menu, popupMenu.getMenu());
-
-		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-	   
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-//				String itemValue = item.toString();
-//				Log.v(TAG, "itemValue: " + itemValue);			
-	    		String projectFolder = item.toString();
-	    		if (projectFolder != null) {
-	    			Log.v(TAG, "project folder: " + projectFolder);
-	    			if (projectFolder.equals(NEW_PROJECT)) {
-	    				// set name of new project
-	    				setNewProjectFolder();
-	    			}
-	    			else {
-		    			// instantiate image album storage class with selected project folder
-	    				setProjectFolder(projectFolder);
-		    			Log.v(TAG, "onMenuItemClick project folder: " + projectFolder);
-	    			}
-	    		}
-				return true;
-			}
-		});
-	    
-		popupMenu.show();
-	}
-	
-	private void setNewProjectFolder() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-		alert.setTitle("New Project");
-		alert.setMessage("Please enter your new project name:");
-
-		// Set an EditText view to get user input 
-		final EditText input = new EditText(this);
-		alert.setView(input);
-
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String projectFolder = input.getText().toString();
-				// instantiate image album storage class with selected project folder
-				setProjectFolder(projectFolder);
-				Log.v(TAG, "setNewProjectFolder project folder: " + projectFolder);
-			}
-		});
-
-		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				// Canceled.
-				Log.v(TAG, "setNewProjectFolder CANCELLED ");
-			}
-		});
-
-		alert.show();
-	}
 	// orientation fixed to LANDSCAPE in AndroidManifest.xml
 //	public void onConfigurationChanged(Configuration newConfig) {
 //	    super.onConfigurationChanged(newConfig);
@@ -273,92 +210,92 @@ public class AhaHahActivity extends Activity {
 		Log.v(TAG, "onDestroy");     	
     }
 
-	///////////////////////////////////////////////////////////////////////////////
-	// camera activity
-	public void startCameraActivity (View view) {
-		// create intent & start activity
-		if (isIntentAvailable(this, MediaStore.ACTION_IMAGE_CAPTURE)) {
-            // camera is available, launch camera intent
-		    // NO GO! allow repeated photo snaps
-            Log.v(TAG, "camera available...");
-            if (!CAPTURE_PHOTO_PATH) {
-                // no album targeted, launch vanilla camera intent
-                Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivity(intentTakePhoto);
-            }
-            else {
-                // dispatch camera intent after specifying path for capture
-                String photoCapturePath = dispatchTakePhotoIntent();
-                setPhotoCapturePath(photoCapturePath);
-            }
-			Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
-		} else {
-			Log.v(TAG, "camera NOT available...");
-			Toast.makeText(this, "camera NOT available...", Toast.LENGTH_SHORT).show();
-		}
-
-		Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
-	}
-
-	// establish if camera intent is available
-	public static boolean isIntentAvailable (Context context, String action) {
-		final PackageManager packageManager = context.getPackageManager();
-		final Intent intent = new Intent(action);
-		List<ResolveInfo> list =
-				packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-		return list.size() > 0;
-	}
-
-	private String dispatchTakePhotoIntent () {
-		Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-		try {
-			// timestamp an image name & create the file
-			String imageName = ImageAlbumStorage.timestampImageName();
-			Log.v(TAG, "timestampImageName: "+ imageName);
-			// create file in camera dir
-			File photo = ImageAlbumStorage.createImageFile(null, imageName);
-			if (photo == null) return PrefsUtils.DEFAULT_STRING_NADA;
-			String currentPhotoPath = photo.getAbsolutePath();
-			Log.v(TAG, "createImageFile: "+ currentPhotoPath);
-			// put file handle in take photo intent extras
-			Uri imageUri = FileProvider.getUriForFile(this,
-					BuildConfig.APPLICATION_ID + ".provider", photo);
-			intentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-
-			// start camera for result of photo
-			startActivityForResult(intentTakePhoto, ACTION_TAKE_PHOTO);
-			return currentPhotoPath;
-
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-            return PrefsUtils.DEFAULT_STRING_NADA;
-		}
-	}
-	// take photo result - capture resulting image
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		Log.v(TAG, "onActivityResult: request code " + requestCode + ", result code " + resultCode);
-		if (resultCode == RESULT_OK ) {
-			if (requestCode == ACTION_TAKE_PHOTO) {
-				// TODO: unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
-				String path = getPhotoCapturePath();
-				Log.v(TAG, "onActivityResult getPhotoCapturePath " + path);
-			}
-		} else {
-			Log.e(TAG, "onActivityResult NOT OK! request code " + requestCode + ", result code " + resultCode);
-		}
-	}
-	///////////////////////////////////////////////////////////////////////////////
-	// gallery activity (view not select)
-	public void startGalleryActivity (View view) {
-		// create intent & start activity
-		Intent intent = new Intent();
-		intent.setAction(android.content.Intent.ACTION_VIEW);
-		intent.setType("image/*");
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		startActivity(intent);
-		Toast.makeText(this, "Viewing gallery - touch back when finished.", Toast.LENGTH_LONG).show();
-	}
+//	///////////////////////////////////////////////////////////////////////////////
+//	// camera activity
+//	public void startCameraActivity (View view) {
+//		// create intent & start activity
+//		if (isIntentAvailable(this, MediaStore.ACTION_IMAGE_CAPTURE)) {
+//            // camera is available, launch camera intent
+//		    // NO GO! allow repeated photo snaps
+//            Log.v(TAG, "camera available...");
+//            if (!CAPTURE_PHOTO_PATH) {
+//                // no album targeted, launch vanilla camera intent
+//                Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                startActivity(intentTakePhoto);
+//            }
+//            else {
+//                // dispatch camera intent after specifying path for capture
+//                String photoCapturePath = dispatchTakePhotoIntent();
+//                setPhotoCapturePath(photoCapturePath);
+//            }
+//			Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
+//		} else {
+//			Log.v(TAG, "camera NOT available...");
+//			Toast.makeText(this, "camera NOT available...", Toast.LENGTH_SHORT).show();
+//		}
+//
+//		Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
+//	}
+//
+//	// establish if camera intent is available
+//	public static boolean isIntentAvailable (Context context, String action) {
+//		final PackageManager packageManager = context.getPackageManager();
+//		final Intent intent = new Intent(action);
+//		List<ResolveInfo> list =
+//				packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+//		return list.size() > 0;
+//	}
+//
+//	private String dispatchTakePhotoIntent () {
+//		Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//		try {
+//			// timestamp an image name & create the file
+//			String imageName = ImageAlbumStorage.timestampImageName();
+//			Log.v(TAG, "timestampImageName: "+ imageName);
+//			// create file in camera dir
+//			File photo = ImageAlbumStorage.createImageFile(null, imageName);
+//			if (photo == null) return PrefsUtils.DEFAULT_STRING_NADA;
+//			String currentPhotoPath = photo.getAbsolutePath();
+//			Log.v(TAG, "createImageFile: "+ currentPhotoPath);
+//			// put file handle in take photo intent extras
+//			Uri imageUri = FileProvider.getUriForFile(this,
+//					BuildConfig.APPLICATION_ID + ".provider", photo);
+//			intentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+//
+//			// start camera for result of photo
+//			startActivityForResult(intentTakePhoto, ACTION_TAKE_PHOTO);
+//			return currentPhotoPath;
+//
+//		} catch (IOException e) {
+//			Log.e(TAG, e.getMessage());
+//            return PrefsUtils.DEFAULT_STRING_NADA;
+//		}
+//	}
+//	// take photo result - capture resulting image
+//	@Override
+//	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+//		Log.v(TAG, "onActivityResult: request code " + requestCode + ", result code " + resultCode);
+//		if (resultCode == RESULT_OK ) {
+//			if (requestCode == ACTION_TAKE_PHOTO) {
+//				// TODO: unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
+//				String path = getPhotoCapturePath();
+//				Log.v(TAG, "onActivityResult getPhotoCapturePath " + path);
+//			}
+//		} else {
+//			Log.e(TAG, "onActivityResult NOT OK! request code " + requestCode + ", result code " + resultCode);
+//		}
+//	}
+//	///////////////////////////////////////////////////////////////////////////////
+//	// gallery activity (view not select)
+//	public void startGalleryActivity (View view) {
+//		// create intent & start activity
+//		Intent intent = new Intent();
+//		intent.setAction(android.content.Intent.ACTION_VIEW);
+//		intent.setType("image/*");
+//		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//		startActivity(intent);
+//		Toast.makeText(this, "Viewing gallery - touch back when finished.", Toast.LENGTH_LONG).show();
+//	}
 	///////////////////////////////////////////////////////////////////////////////
 	// sketch activity
 	public void startSketchActivity (View view) {
@@ -437,73 +374,5 @@ public class AhaHahActivity extends Activity {
 			}
 		}
 	}
-	///////////////////////////////////////////////////////////////////////////////
-	private void setProjectFolder(String projectFolder) {
-		PrefsUtils.setPrefs(this, PrefsUtils.ALBUMNAME_KEY, projectFolder);
-		Log.v(TAG, "setProjectFolder: " + projectFolder);
-
-		if (!ImageAlbumStorage.isMediaMounted()) {
-			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
-			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
-			Toast.makeText(this, "External storage not mounted R/W. Please insert your SIM card", Toast.LENGTH_LONG).show();
-		}
-	}
-    private Boolean setupSplashView() {
-        ImageView splashView = (ImageView) findViewById(R.id.imageViewSplash);
-        ImageView thumbView = (ImageView) findViewById(R.id.imageViewThumb);
-        String imagePath = PrefsUtils.getPrefs(this, PrefsUtils.IMAGEPATH_KEY, PrefsUtils.DEFAULT_STRING_NADA);
-        // if image path & target views defined
-        if (!imagePath.equals(PrefsUtils.DEFAULT_STRING_NADA) && splashView != null && thumbView != null) {
-            // ensure file still exists
-            File file = new File(imagePath);
-            if (!file.exists()) return false;
-
-            // get device dimensions
-            DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(this);
-            int targetDeviceW = displayMetrics.widthPixels;
-            int targetDeviceH = displayMetrics.heightPixels;
-            Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
-
-            int scaleFactor = 1;
-            // get size of photo
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(imagePath, bmOptions);
-            //////////////////////////FIT////////////////////////
-            int photoW = bmOptions.outWidth;
-            int photoH = bmOptions.outHeight;
-            Log.v(TAG, "setupView: photo W/H: " + photoW + "/" + photoH);
-            // round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
-            scaleFactor = Math.min(photoW / targetDeviceW, photoH / targetDeviceH) + 1;
-            Log.v(TAG, "setupView: FIT scale factor: " + scaleFactor);
-            // set bitmap options to scale the image decode target
-            bmOptions.inJustDecodeBounds = false;
-            bmOptions.inSampleSize = scaleFactor;
-            bmOptions.inPurgeable = true;
-
-            // decode the JPEG into the bitmap
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
-            // associate bitmap with view
-            splashView.setImageBitmap(bitmap);
-            splashView.setVisibility(View.VISIBLE);
-
-            //////////////////////////THUMB///////////////
-            // set bitmap options to scale the image decode target
-            scaleFactor = Math.min(photoW / (photoW / 10), photoH / (photoH / 10));
-            Log.v(TAG, "setupView: THUMB scale factor: " + scaleFactor);
-
-            bmOptions.inJustDecodeBounds = false;
-            bmOptions.inSampleSize = scaleFactor;
-            bmOptions.inPurgeable = true;
-
-            // decode the JPEG into the bitmap
-            bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
-
-            // associate bitmap with view
-            thumbView.setImageBitmap(bitmap);
-            thumbView.setVisibility(View.VISIBLE);
-        }
-        return true;
-    }
 	///////////////////////////////////////////////////////////////////////////////
 }

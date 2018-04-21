@@ -26,7 +26,7 @@
     <string name="action_sketch_shape">Shapes</string>
     <string name="action_sketch_style">Styles</string>
     <string name="action_sketch_color">Colors</string>
-    <string name="action_sketch_erase">Undo</string>
+    <string name="action_sketch_erase">Erase</string>
     <string name="action_sketch_tool">Tools</string>
     
     <string name="action_sketch_file_new">New Sketch</string>
@@ -60,11 +60,11 @@
     <string name="action_sketch_color_white">white</string>
     <string name="action_sketch_color_custom">custom</string>
     
-    <string name="action_sketch_erase_backdrop">Undo Backdrop Image</string>
-    <string name="action_sketch_erase_overlay">Undo Overlay Image</string>
-    <string name="action_sketch_erase_select">Undo Selected Shape</string>
-    <string name="action_sketch_erase_last">Undo Last Shape</string>
-    <string name="action_sketch_erase_all">Undo All</string>
+    <string name="action_sketch_erase_backdrop">Erase Backdrop Image</string>
+    <string name="action_sketch_erase_overlay">Erase Overlay Image</string>
+    <string name="action_sketch_erase_select">Erase Selected Shape</string>
+    <string name="action_sketch_erase_last">Erase Last Shape</string>
+    <string name="action_sketch_erase_all">Erase All</string>
 
     <string name="action_sketch_tool_pen">Pen</string>
     <string name="action_sketch_tool_brush">Brush</string>
