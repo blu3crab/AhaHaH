@@ -57,8 +57,12 @@ public class NavMenu {
     public Boolean buildShapeList(NavigationView navigationView, SketchViewModel sketchViewModel) {
         // dereference menu & clear any contents
         Menu menu = navigationView.getMenu();
-        String title = "Sketch Shape List";
-        SubMenu subMenu = menu.addSubMenu(title);
+        menu.clear();
+        build(navigationView);
+        // build shape list
+        SubMenu subMenu;
+        String title = "Focus";
+        subMenu = menu.addSubMenu(title);
         subMenu.clear();
         MenuItem subMenuItem;
         MenuItem focusSubMenuItem = null;
@@ -87,9 +91,24 @@ public class NavMenu {
     ///////////////////////////////////////////////////////////////////////////
     private int mapShapeToIcon(ShapeObject shapeObject) {
         int iconId = R.drawable.ic_bubble_chart_black_48dp;
-//        if (shapeObject.getShapeType() == SketchViewModel.ShapeType.FREE) {
-//            iconId = R.
-//        }
+        if (shapeObject.getShapeType() == SketchViewModel.ShapeType.FREE) {
+            iconId = R.drawable.ic_gesture_black_48dp;
+        }
+        else if (shapeObject.getShapeType() == SketchViewModel.ShapeType.LINE) {
+            iconId = R.drawable.ic_show_chart_black_48dp;
+        }
+        else if (shapeObject.getShapeType() == SketchViewModel.ShapeType.RECT) {
+            iconId = R.drawable.ic_crop_7_5_black_48dp;
+        }
+        else if (shapeObject.getShapeType() == SketchViewModel.ShapeType.LABEL) {
+            iconId = R.drawable.ic_format_size_black_48dp;
+        }
+        else if (shapeObject.getShapeType() == SketchViewModel.ShapeType.CIRCLE) {
+            iconId = R.drawable.ic_brightness_1_black_48dp;
+        }
+        else if (shapeObject.getShapeType() == SketchViewModel.ShapeType.OVAL) {
+            iconId = R.drawable.ic_remove_red_eye_black_48dp;
+        }
         return iconId;
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -147,11 +166,11 @@ public class NavMenu {
         iconId = R.drawable.ic_format_color_fill_black_48dp;
         monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Colors));
         addSubMenu(navigationView, title, iconId, monikerList);
-        // add tools submenu
-        title = getContext().getString(R.string.action_sketch_tool);
-        iconId = R.drawable.ic_format_paint_black_48dp;
-        monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Tools));
-        addSubMenu(navigationView, title, iconId, monikerList);
+//        // add tools submenu
+//        title = getContext().getString(R.string.action_sketch_tool);
+//        iconId = R.drawable.ic_format_paint_black_48dp;
+//        monikerList = Arrays.asList(getContext().getResources().getStringArray(R.array.Tools));
+//        addSubMenu(navigationView, title, iconId, monikerList);
 
         return true;
     }

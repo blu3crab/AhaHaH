@@ -19,6 +19,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
@@ -69,8 +70,37 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		// setup drawer
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerLayout.openDrawer(GravityCompat.START);
-//		mDrawerLayout.addDrawerListener();
+        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
 
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                // drawer's position changes...
+                Log.d(TAG, "onDrawerSlide offset " + slideOffset);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                // drawer has settled in a completely open state & is interactive at this point...
+                Log.d(TAG, "onDrawerOpened...buildShapeList...");
+                mNavMenu.buildShapeList(mNavigationView, mSketchViewModel);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                // drawer has settled in a completely closed state...
+                Log.d(TAG, "onDrawerClosed...");
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                // drawer motion state changes with new state one of STATE_IDLE, STATE_DRAGGING or STATE_SETTLING.
+                String stateText = PrefsUtils.DEFAULT_STRING_NADA;
+                if (newState == DrawerLayout.STATE_IDLE) stateText = "STATE_IDLE";
+                else if (newState == DrawerLayout.STATE_DRAGGING) stateText = "STATE_DRAGGING";
+                else if (newState == DrawerLayout.STATE_SETTLING) stateText = "STATE_SETTLING";
+                Log.d(TAG, "onDrawerStateChanged newState " + stateText);
+            }
+        });
 		// setup navigation view
 		mNavigationView = (NavigationView) findViewById(R.id.nav_view);
 		mNavigationView.setNavigationItemSelectedListener(this);
@@ -118,13 +148,13 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadoverlay))) {
             Log.v(TAG, "onNavigationItemSelected load overlay image.");
-            // ensure rect is focus
-            if (mSketchViewModel.isRectFocus()) {
+//            // ensure rect is focus
+//            if (mSketchViewModel.isRectFocus()) {
                 // start gallery to select image OVERLAY (focus)
                 launchGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
-            } else {
-                Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
-            }
+//            } else {
+//                Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
+//            }
         }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
             Log.v(TAG, "onNavigationItemSelected save sketch.");

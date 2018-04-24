@@ -83,9 +83,12 @@ public class SketchViewModel {
 		NADA, PEN, BRUSH, SPRAY, BUCKET
 	}
 	// size
-	private final static float SIZE_SMALL = 2.0f;
-	private final static float SIZE_MEDIUM = 4.0f;
-	private final static float SIZE_LARGE = 6.0f;
+//    private final static float SIZE_SMALL = 2.0f;
+//    private final static float SIZE_MEDIUM = 4.0f;
+//    private final static float SIZE_LARGE = 6.0f;
+    private final static float SIZE_SMALL = 4.0f;
+    private final static float SIZE_MEDIUM = 8.0f;
+    private final static float SIZE_LARGE = 12.0f;
 
 	// colors
 	public enum PaletteEnum {
@@ -295,8 +298,19 @@ public class SketchViewModel {
 	public Boolean setSelection(String itemname) {
 		// map item to action & indicate failure if invalid
 		int action = mapItemToSelection(itemname);
-		Log.v(TAG,"");
-		if (action < 0) return false;
+		Log.v(TAG,"setSelection finds action " + action + " for itemname " + itemname);
+
+		// if no action defined
+		if (action < 0) {
+            // attempt to set shape list focus
+            if (setShapeListFocus(itemname) < 0) {
+                Log.e(TAG, "Ooops! setSelection finds unknown item " + itemname + " or action " + action);
+                return false;
+            }
+            // invalidate to refresh after any selection
+            mSketchView.invalidate();
+            return true;
+        }
 
 		// service action
 		switch (action) {
@@ -373,8 +387,8 @@ public class SketchViewModel {
                 setTool(Tool.BUCKET);
                 return true;
 			default:
-				Log.e(TAG, "Ooops! setSelection finds unknown item " + action);
-				return false;
+                Log.e(TAG, "Ooops! setSelection finds unknown action " + action);
+                return false;
 		}
 		// invalidate to refresh after any selection
 		mSketchView.invalidate();
@@ -393,22 +407,24 @@ public class SketchViewModel {
 	///////////////////////////////////////////////////////////////////////////////
 	public Boolean actionFileLoadBackdrop(String imagePath) {
 		// set backdrop image
-		mShapeModel.setImageShape(imagePath, 0);
+		mShapeModel.setImageBackdrop(imagePath);
 		mSketchView.invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////
 	public Boolean actionFileLoadOverlay(String imagePath) {
-		// if rect selected, set image to selected rect shape
-        int focus = getShapeListFocus();
-		Log.v(TAG, "actionFileLoadOverlay focus shape inx: " + focus);
-		if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
-			// set image as OVERLAY (focus)
-			mShapeModel.setImageShape(imagePath, focus);
-		}
-		else {
-			Log.e(TAG, "actionFileLoadOverlay OVERLAY failure - focus (" + focus + ") is not RECT. ");
-		}
+	    // set overlay image
+        mShapeModel.setImageOverlay(imagePath);
+//		// if rect selected, set image to selected rect shape
+//        int focus = getShapeListFocus();
+//		Log.v(TAG, "actionFileLoadOverlay focus shape inx: " + focus);
+//		if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
+//			// set image as OVERLAY (focus)
+//			mShapeModel.setImageOverlay(imagePath, focus);
+//		}
+//		else {
+//			Log.e(TAG, "actionFileLoadOverlay OVERLAY failure - focus (" + focus + ") is not RECT. ");
+//		}
 		mSketchView.invalidate();
 		return true;
 	}
@@ -501,7 +517,6 @@ public class SketchViewModel {
                 break;
             case ACTION_TYPE_COMPLETE_SHAPE:
                 mShapeModel.completeShape(touchX, touchY);
-                // TODO: trigger nav menu build for new shape
                 break;
             default:
                 Log.e(TAG,"Ooops! unknown action type! " + actionType);
@@ -613,12 +628,16 @@ public class SketchViewModel {
         else if (itemname.equals(getContext().getString(R.string.action_sketch_tool_bucket))) {
             return SELECT_TYPE_TOOL_BUCKET;
         }
-        Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
+//        Log.e(TAG, "Ooops!  mapItemToAction finds unknown item " + itemname);
         return SELECT_TYPE_UNKNOWN;
 
     }
     ////////////////////////////////////////////////////////////////////////////
     // focus
+    public int getShapeListFocus() {
+        // return focus
+        return mShapeListFocus;
+    }
     public int clearShapeListFocus() {
         // set focus to value
         return setShapeListFocus(NOFOCUS);
@@ -627,8 +646,10 @@ public class SketchViewModel {
         mShapeListFocus = NOFOCUS;
         if (i >= 0 && i < mShapeModel.getShapeList().size()) {
             // set draw object
+            // TODO: ShapeModel should set current shape based on focus
             mShapeModel.setShapeObject(mShapeModel.getShapeList().get(i));
             // set focus to value
+            Log.d(TAG, "setShapeListFocus sets focus to index " + i);
             mShapeListFocus = i;
         }
         return mShapeListFocus;
@@ -637,17 +658,25 @@ public class SketchViewModel {
         // focus detection - test if x,y is within draw element bounding rect
         int size = mShapeModel.getShapeList().size();
         for (int i = size-1; i > 0; i--) {
-            mShapeModel.setShapeObject(mShapeModel.getShapeList().get(i));
-            RectF rect = mShapeModel.getShapeObject().getBound();
+            ShapeObject shapeObject = mShapeModel.getShapeList().get(i);
+            RectF rect = shapeObject.getBound();
             if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                Log.d(TAG, "setShapeListFocus sets focus at X/Y " + x + "/" + y);
                 return setShapeListFocus(i);
             }
         }
         return setShapeListFocus(mShapeModel.CANVAS_SHAPELIST_INX);
     }
-    public int getShapeListFocus() {
-        // return focus
-        return mShapeListFocus;
+    public int setShapeListFocus(String shapeName) {
+        // focus detection - test if shape name is in list, if so, set focus
+        int size = mShapeModel.getShapeList().size();
+        for (int i = size-1; i > 0; i--) {
+            if (mShapeModel.getShapeList().get(i).getName().equals(shapeName)) {
+                Log.d(TAG, "setShapeListFocus set focus to " + shapeName);
+                return setShapeListFocus(i);
+            }
+        }
+        return setShapeListFocus(mShapeModel.CANVAS_SHAPELIST_INX);
     }
     public int setNextShapeListFocus() {
         // test if draw list contains shapes (in addition to background)

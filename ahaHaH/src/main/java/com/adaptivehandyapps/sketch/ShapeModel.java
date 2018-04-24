@@ -255,94 +255,161 @@ public class ShapeModel {
 		}
 		return false;
 	}
-	////////////////////////////////////////////////////////////////////////////
-	// set image type shape: BACKDROP or OVERLAY
-	public ShapeObject setImageShape(String imagePath, int shapeListInx) {
-		ShapeObject shapeObject = null;
-		Paint paint = new Paint();
-		Log.v(TAG, "setImageShape setting shape inx: " + shapeListInx + " to image path: " + imagePath);
-		// set image type & path
-		if (shapeListInx <= 0) {
-			// BACKDROP - if position zero then create shape & insert as 1st element
-			shapeObject = new ShapeObject();
-			shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
-			shapeObject.setName(imagePath);
-			shapeObject.setPaint(paint);
-			Log.v(TAG, "BACKDROP image path: " + imagePath);
+    ////////////////////////////////////////////////////////////////////////////
+    // set image type shape: BACKDROP
+    public ShapeObject setImageBackdrop(String imagePath) {
+        // BACKDROP - create shape & insert as 1st element
+        Log.v(TAG, "setImageBackdrop BACKDROP image path " + imagePath);
+        // set image type & path
+        ShapeObject shapeObject = new ShapeObject();
+        shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
+        shapeObject.setName(imagePath);
+        Paint paint = new Paint();
+        shapeObject.setPaint(paint);
 
-			// TODO: get device dimensions or canvas dimensions?
+        // TODO: get device dimensions or canvas dimensions?
 //			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(getContext());
 //			int targetDeviceW = displayMetrics.widthPixels;
 //			int targetDeviceH = displayMetrics.heightPixels;
-			int targetDeviceW = mSketchViewModel.getCanvasWidth();
-			int targetDeviceH = mSketchViewModel.getCanvasHeight();
-			Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
+        int targetDeviceW = mSketchViewModel.getCanvasWidth();
+        int targetDeviceH = mSketchViewModel.getCanvasHeight();
+        Log.v(TAG, "setImageBackdrop target device W/H: " + targetDeviceW + "/" + targetDeviceH);
 
-			// get size of photo
-			BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-			bmOptions.inJustDecodeBounds = true;
-			BitmapFactory.decodeFile(imagePath, bmOptions);
-			int imageW = bmOptions.outWidth;
-			int imageH = bmOptions.outHeight;
-			Log.v(TAG, "photo W/H: " + imageW + "/" + imageH);
-			// round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
-			int scaleFactor = Math.min(imageW/targetDeviceW, imageH/targetDeviceH)+1;
-			Log.v(TAG, "setupView: FIT scale factor: " + scaleFactor);
-			// set bitmap options to scale the image decode target
-			bmOptions.inJustDecodeBounds = false;
-			bmOptions.inSampleSize = scaleFactor;
-			bmOptions.inPurgeable = true;
+        // get size of photo
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imagePath, bmOptions);
+        int imageW = bmOptions.outWidth;
+        int imageH = bmOptions.outHeight;
+        Log.v(TAG, "setImageBackdrop photo W/H: " + imageW + "/" + imageH);
+        // round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
+        int scaleFactor = Math.min(imageW/targetDeviceW, imageH/targetDeviceH)+1;
+        Log.v(TAG, "setImageBackdrop scale factor: " + scaleFactor);
+        // set bitmap options to scale the image decode target
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        bmOptions.inPurgeable = true;
 
-			// set bitmap
-			Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
-			shapeObject.setObject(bitmap);
+        // set bitmap
+        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+        shapeObject.setObject(bitmap);
 
-			// set focus to screen center
-			PointF focus = new PointF(
-					(float)targetDeviceW/2,
-					(float)targetDeviceH/2);
-			shapeObject.setFocus(focus);
-			Log.v(TAG, "focus: " + shapeObject.getFocus());
-			// set bounds based on canvas size around focus
-			RectF rect = new RectF();
-			rect.bottom = focus.y + (float)targetDeviceH/2;
-			rect.left = focus.x - (float)targetDeviceW/2;
-			rect.top = focus.y - (float)targetDeviceH/2;
-			rect.right = focus.x + (float)targetDeviceW/2;
-			shapeObject.setBound(rect);
-			Log.v(TAG, "bound: " + shapeObject.getBound());
+        // set focus to screen center
+        PointF focus = new PointF(
+                (float)targetDeviceW/2,
+                (float)targetDeviceH/2);
+        shapeObject.setFocus(focus);
+        Log.v(TAG, "focus: " + shapeObject.getFocus());
+        // set bounds based on canvas size around focus
+        RectF rect = new RectF();
+        rect.bottom = focus.y + (float)targetDeviceH/2;
+        rect.left = focus.x - (float)targetDeviceW/2;
+        rect.top = focus.y - (float)targetDeviceH/2;
+        rect.right = focus.x + (float)targetDeviceW/2;
+        shapeObject.setBound(rect);
+        Log.v(TAG, "bound: " + shapeObject.getBound());
 
-			// check if backdrop image already present
-			ShapeObject testShapeObject = null;
-			if (mShapeList.size()>1) {
-				testShapeObject = mShapeList.get(1);
-				if (testShapeObject.getShapeType() == ShapeType.IMAGE) {
-					// remove current backdrop
-					mShapeList.remove(1);
-				}
-			}
-			// insert into shape list
-			mShapeList.add(1, shapeObject);
-		}
-		else {
-			// OVERLAY - if position non-zero then get object from list
-			shapeObject = mShapeList.get(shapeListInx);
-			if (shapeObject != null &&
-					shapeObject.getShapeType() == SketchViewModel.ShapeType.RECT) {
-				shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
-				shapeObject.setName(imagePath);
-				Log.v(TAG, "OVERLAY image path: " + imagePath);
-				// set bitmap
-				Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
-				shapeObject.setObject(bitmap); 
-			}
-			else {
-				Log.e(TAG, "setImageShape OVERLAY failure: invalid shape or shape type at inx: " + shapeListInx);
-				return null;
-			}
-		}
-		return shapeObject;
-	}
+        // check if backdrop image already present
+        ShapeObject testShapeObject = null;
+        if (mShapeList.size() > 1) {
+            testShapeObject = mShapeList.get(1);
+            if (testShapeObject.getShapeType() == ShapeType.IMAGE) {
+                // remove current backdrop
+                mShapeList.remove(1);
+            }
+        }
+        // insert into shape list
+        mShapeList.add(1, shapeObject);
+        return shapeObject;
+    }
+    ////////////////////////////////////////////////////////////////////////////
+    // set image type shape: OVERLAY
+    public ShapeObject setImageOverlay(String imagePath) {
+        // OVERLAY - if focus on rect then get object from list else create default rect preserving aspect ratio
+        Log.v(TAG, "setImageOverlay OVERLAY image path " + imagePath);
+        ShapeObject shapeObject;
+        int focus = mSketchViewModel.getShapeListFocus();
+        if (focus <= 0) {
+            // create rect with overlay image preserving aspect ratio
+            mPaint = new Paint();
+            mPaint.setAntiAlias(true);
+            mPaint.setStrokeWidth(mSketchViewModel.getSize());
+            mPaint.setColor(mSketchViewModel.getColor());
+            mPaint.setStyle(mSketchViewModel.getStyle());
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
+            // get device center
+            int targetDeviceW = mSketchViewModel.getCanvasWidth();
+            int targetDeviceH = mSketchViewModel.getCanvasHeight();
+            Log.v(TAG, "setImageOverlay target device W/H: " + targetDeviceW + "/" + targetDeviceH);
+            // get size of photo
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(imagePath, bmOptions);
+            int imageW = bmOptions.outWidth;
+            int imageH = bmOptions.outHeight;
+            Log.v(TAG, "setImageOverlay photo W/H: " + imageW + "/" + imageH);
+            // center on device
+            mCenter = new PointF(
+                    (float)targetDeviceW/2,
+                    (float)targetDeviceH/2);
+            // set rect around center
+            mRect = new RectF();
+            float ratio = (float) imageH / (float) imageW;
+            float sizeH = (float)(targetDeviceH/4);
+            float sizeW = sizeH * ratio;
+            float left = mCenter.x - sizeW;
+            float top = mCenter.y - sizeH;
+            float right = mCenter.x + sizeW;
+            float bottom = mCenter.y + sizeH;
+            mRect.set(left, top, right, bottom);
+            Log.v(TAG,"setImageOverlay rect " + mRect.toString());
+//            if (imageW > imageH) {
+//                // if landscape
+//                float ratio = (float) imageH / (float) imageW;
+//                float left = mCenter.x - (targetDeviceW/2);
+//                float top = mCenter.y - ((float) imageH * ratio);
+//                float right = mCenter.x + (targetDeviceW/2);
+//                float bottom = mCenter.y + ((float) imageH * ratio);
+//                mRect.set(left, top, right, bottom);
+//            }
+//            else {
+//                // portrait
+//                float ratio = (float) imageW / (float) imageH;
+//                float left = mCenter.x - ((float) imageW * ratio);
+//                float top = mCenter.y - (targetDeviceH/2);
+//                float right = mCenter.x + ((float) imageW * ratio);
+//                float bottom = mCenter.y + (targetDeviceH/2);
+//                mRect.set(left, top, right, bottom);
+//            }
+            shapeObject = new ShapeObject();
+            shapeObject.setFocus(mCenter);
+            shapeObject.setBound(mRect);
+            shapeObject.setPaint(mPaint);
+            shapeObject.setObject(mRect);
+
+            shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
+            shapeObject.setName(imagePath);
+            // set bitmap
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
+            shapeObject.setObject(bitmap);
+            // insert into shape list
+            mShapeList.add(shapeObject);
+        }
+        else {
+            shapeObject = mShapeList.get(focus);
+            if (shapeObject != null &&
+                    shapeObject.getShapeType() == SketchViewModel.ShapeType.RECT) {
+                Log.v(TAG, "setImageOverlay assign overlay to RECT shape inx " + focus);
+                shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
+                shapeObject.setName(imagePath);
+                // set bitmap
+                Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
+                shapeObject.setObject(bitmap);
+            }
+
+        }
+        return shapeObject;
+    }
 	////////////////////////////////////////////////////////////////////////////
 	// start shape - create draw object capturing initial touch, paint settings
 	public boolean startShape(float x, float y) {
