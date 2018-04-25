@@ -189,6 +189,18 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
             Log.v(TAG, "onNavigationItemSelected custom color.");
             launchColorPickerDialog();
         }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_focus_clear))) {
+            Log.v(TAG, "onNavigationItemSelected clear focus.");
+            mSketchViewModel.clearShapeListFocus();
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_focus_next))) {
+            Log.v(TAG, "onNavigationItemSelected focus next.");
+            mSketchViewModel.setNextShapeListFocus();
+        }
+        else if (itemname.equals(getContext().getString(R.string.action_sketch_focus_prev))) {
+            Log.v(TAG, "onNavigationItemSelected focus prev.");
+            mSketchViewModel.setPrevShapeListFocus();
+        }
         else {
             Log.v(TAG, "onNavigationItemSelected setSelection " + itemname);
             // TODO: if custom color launch color dialog
@@ -196,9 +208,9 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
                 Log.e(TAG, "Ooops!  onNavigationItemSelected finds unknown menu item " + itemname);
             }
         }
-        // TODO: close drawer flag?  if not close, invalidate
 		// close drawer
 		mDrawerLayout.closeDrawer(GravityCompat.START);
+        mSketchView.invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////
@@ -252,6 +264,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     private Boolean setSketchViewModelSaved(Boolean saved) { mSketchViewModelSaved = saved; return mSketchViewModelSaved;}
     private void saveSketchViewModel() {
         // perform light weight cleanup, release resources, save draft data
+        Log.d(TAG, "saveSketchViewModel saving model...");
         mSketchViewModel.saveSketchModel();
 	    this.mSketchViewModelSaved = true;
 	}

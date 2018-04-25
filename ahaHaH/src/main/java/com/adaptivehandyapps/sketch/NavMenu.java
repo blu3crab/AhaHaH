@@ -59,15 +59,25 @@ public class NavMenu {
         Menu menu = navigationView.getMenu();
         menu.clear();
         build(navigationView);
-        // build shape list
+        // add submenu & clear
         SubMenu subMenu;
         String title = "Focus";
         subMenu = menu.addSubMenu(title);
         subMenu.clear();
+        // assign helpers
         MenuItem subMenuItem;
         MenuItem focusSubMenuItem = null;
         int groupId = -1;
         int iconId = -1;
+        // set static focus actions
+        subMenuItem = subMenu.add(getContext().getString(R.string.action_sketch_focus_clear));
+        subMenuItem.setIcon(R.drawable.ic_flare_black_48dp);
+        subMenuItem = subMenu.add(getContext().getString(R.string.action_sketch_focus_next));
+        subMenuItem.setIcon(R.drawable.ic_redo_black_48dp);
+        subMenuItem = subMenu.add(getContext().getString(R.string.action_sketch_focus_prev));
+        subMenuItem.setIcon(R.drawable.ic_undo_black_48dp);
+
+        // build shape list
         List <ShapeObject> shapeList = sketchViewModel.getShapeList();
         if (shapeList.size() > 0) {
             int focusShapeInx = sketchViewModel.getShapeListFocus();

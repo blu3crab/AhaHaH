@@ -141,6 +141,7 @@ public class ShapeModel {
 		} catch (Exception e) {
 //			Log.e(TAG, "serialize exception: " + e.getCause().toString() + " - " + e.getMessage());
 			Log.e(TAG, "serialize exception: " + e.getMessage());
+			return false;
 		}
         // snap completion time
 	    long doneTime = System.currentTimeMillis();
@@ -329,7 +330,9 @@ public class ShapeModel {
         Log.v(TAG, "setImageOverlay OVERLAY image path " + imagePath);
         ShapeObject shapeObject;
         int focus = mSketchViewModel.getShapeListFocus();
-        if (focus <= 0) {
+        // if no focus or focus is not rectangle
+        if (focus <= 0 ||
+               (mShapeList.get(focus) != null && mShapeList.get(focus).getShapeType() != SketchViewModel.ShapeType.RECT)) {
             // create rect with overlay image preserving aspect ratio
             mPaint = new Paint();
             mPaint.setAntiAlias(true);
@@ -408,6 +411,8 @@ public class ShapeModel {
             }
 
         }
+        // set focus to overlay to allow easy re-positioning
+        mSketchViewModel.setShapeListFocus(shapeObject.getName());
         return shapeObject;
     }
 	////////////////////////////////////////////////////////////////////////////
@@ -726,7 +731,7 @@ public class ShapeModel {
 			break;
 		case RECT:
 		case LABEL:
-		case OVAL:
+        case OVAL:
 			mRect = (RectF)mShapeObject.getObject();
 			mRect.left += deltaX;
 			mRect.top += deltaY;
@@ -745,6 +750,16 @@ public class ShapeModel {
 			mShapeObject.getFocus().x = circle[0];
 			mShapeObject.getFocus().y = circle[1];
 			break;
+		case IMAGE:
+            mRect = (RectF)mShapeObject.getBound();
+            mRect.left += deltaX;
+            mRect.top += deltaY;
+            mRect.right += deltaX;
+            mRect.bottom += deltaY;
+            mShapeObject.setBound(mRect);
+            mShapeObject.getFocus().x = mRect.left + ((mRect.right-mRect.left)/2);
+            mShapeObject.getFocus().y = mRect.top + ((mRect.bottom-mRect.top)/2);
+
 		default:
 			Log.e(TAG, "refineMove invalid shape: " + mShapeObject.getShapeType());
 			break;

@@ -48,8 +48,12 @@
     <string name="action_sketch_style_fill">Fill</string>
     <string name="action_sketch_style_stroke">Stroke</string>
     <string name="action_sketch_style_strokefill">Stroke Fill</string>
+
     <!--string name="action_sketch_style_focus">Hold Focus</string-->
-    
+    <string name="action_sketch_focus_clear">Clear Focus</string>
+    <string name="action_sketch_focus_next">Focus Next Shape</string>
+    <string name="action_sketch_focus_prev">Focus Prev Shape</string>
+
     <string name="action_sketch_color_black">black</string>
     <string name="action_sketch_color_blue">blue</string>
     <string name="action_sketch_color_green">green</string>
