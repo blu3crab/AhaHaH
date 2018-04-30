@@ -9,8 +9,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -25,6 +28,9 @@ import android.widget.Toast;
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.util.AhaDisplayMetrics;
 import com.adaptivehandyapps.util.PrefsUtils;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
 
@@ -50,13 +56,26 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     private Boolean mSketchViewModelSaved = false;      // model saved flag
 	private SketchView mSketchView = null;			    // sketch view
 
-	///////////////////////////////////////////////////////////////////////////
+//    private int mOrientation;
+//    public int getOrientation() { return mOrientation; }
+//    public void setOrientation(int orientation) { this.mOrientation = orientation; }
+
+    ///////////////////////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.v(TAG,"onCreate...");
 		super.onCreate(savedInstanceState);
+
+//		setOrientation(getRequestedOrientation());
+//		String orientationText = getString(R.string.orientation_landscape);
+//		if (getOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) orientationText = getString(R.string.orientation_portrait);
+
+//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        String orientationText = getOrientationText(getRequestedOrientation());
+
         // seed screen resolution
-        String toastText = AhaDisplayMetrics.toString(this);
+        String toastText = orientationText + " with " + AhaDisplayMetrics.toString(this);
         if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
         Log.d(TAG, SketchViewModel.prefsToString(this));
@@ -120,7 +139,13 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         setSketchViewModelSaved(false);
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////
-
+    private String getOrientationText(int orientation) {
+        String orientationText = getString(R.string.orientation_landscape);
+        if (orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+            orientationText = getString(R.string.orientation_portrait);
+        return orientationText;
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
@@ -254,6 +279,18 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         if(!isSketchViewModelSaved()) saveSketchViewModel();
         super.onDestroy();
     }
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+
+	    Log.v(TAG, "onConfigurationChanged");
+
+	    // Checks the orientation of the screen
+	    if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+	        Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+	    } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+	        Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+	    }
+	}
     ///////////////////////////////////////////////////////////////////////////
     // getters/setters
     public void setContext(Context context) { mContext = context; }
@@ -283,25 +320,65 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
 		if (resultCode == RESULT_OK) {
 			Log.v(TAG, "onActivityResult result OK: " + " for reqCode: " + requestCode);
+            String imagePath = PrefsUtils.DEFAULT_STRING_NADA;
+            Bitmap bitmap = null;
 			if (null != data) {
 				Uri imageUri = data.getData();
-				// get image path
-				String imagePath = getRealPathFromURI(this, imageUri);
-				Log.v(TAG, "onActivityResult image path: " + imagePath);
-				switch (requestCode) {
-					case REQUEST_CODE_SELECT_BACKDROP:
+				imagePath = imageUri.toString();
+                Log.v(TAG, "onActivityResult image URI " + imageUri + "\n" + "imagePath " + imagePath);
+                if (imageUri.toString().startsWith("content://com.google.android.apps.photos")) {
+                    try {
+                        InputStream is = this.getContentResolver().openInputStream(imageUri);
+                        if (is != null) {
+                            // decode bitmap
+                            bitmap = BitmapFactory.decodeStream(is);
+                        }
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        Log.e(TAG, "Ooops! onActivityResult cannot find " + imageUri.toString());
+                        Toast.makeText(getContext(), R.string.sketch_empty_image_path_toast, Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else {
+                    // get image path
+                    imagePath = getRealPathFromURI(this, imageUri);
+                    Log.v(TAG, "onActivityResult image path " + imagePath);
+                    // decode bitmap
+                    bitmap = BitmapFactory.decodeFile(imagePath, null);
+                }
+                switch (requestCode) {
+                    case REQUEST_CODE_SELECT_BACKDROP:
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
-						// set image as backdrop (0th indicates insert BACKDROP)
-                        mSketchViewModel.actionFileLoadBackdrop(imagePath);
-						break;
-					case REQUEST_CODE_SELECT_OVERLAY:
+
+                        // determine target orientation of backdrop
+                        int targetOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                        if (bitmap.getHeight() > bitmap.getWidth()) targetOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
+                        // get current orientation
+                        int currentOrientation = getRequestedOrientation();
+                        Log.v(TAG, "onActivityResult current vs target orientation " +
+                                getOrientationText(currentOrientation) + " vs " + getOrientationText(targetOrientation));
+
+                        // if target backdrop is not current orientation
+                        if (currentOrientation != targetOrientation) {
+                            // TODO: confirm & clear sketch on orientation change
+                            // set orientation to target
+                            setRequestedOrientation(targetOrientation);
+                            Log.v(TAG, "onActivityResult set target orientation to " + getOrientationText(targetOrientation));
+                        }
+//                        mSketchView.invalidate();
+
+                        // set image as backdrop (0th indicates insert BACKDROP)
+                        mSketchViewModel.actionFileLoadBackdrop(imagePath, bitmap);
+                        break;
+                    case REQUEST_CODE_SELECT_OVERLAY:
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY ");
-                        mSketchViewModel.actionFileLoadOverlay(imagePath);
-						break;
-					default:
-						Log.e(TAG, "GalleryActivity unknown request code: " + requestCode);
-						break;
-				}
+                        mSketchViewModel.actionFileLoadOverlay(imagePath, bitmap);
+                        break;
+                    default:
+                        Log.e(TAG, "GalleryActivity unknown request code: " + requestCode);
+                        break;
+                }
 			}
 			else {
 				Log.e(TAG, "GalleryActivity NULL data...");

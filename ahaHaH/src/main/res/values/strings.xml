@@ -2,7 +2,7 @@
 <resources>
 
     <!-- titles --> 
-    <string name="app_name_text">MarkIt!</string>
+    <string name="app_name_text">mARkIt!</string>
     <string name="author_name">"Adaptive Handy Apps"</string>
     <string name="title_activity_camera">CameraActivity</string>
     <string name="title_activity_gallery">GalleryActivity</string>
@@ -14,29 +14,19 @@
     <string name="splash_description">Image Splash</string>  
     <string name="thumb_description">Image Thumbnail</string>  
     <string name="detail_description">Image Detail</string>  
+
     <!-- album storage directories -->
     <string name="album_folder_name">"AhaProjects"</string>
     <string name="default_project_name">"HandyProject"</string>
-    <string name="thumb_subdir">"thumb"</string>
-    <string name="fit_subdir">"fit"</string>
-    <string name="full_subdir">"full"</string>
-    
+
     <!-- toasts -->
-    <string name="start_activity_toast">Activity started.</string>
-    <string name="sketch_shape_toast">Choose a shape.</string>
-    <string name="sketch_style_toast">Choose a drawing style.</string>
-    <string name="sketch_color_toast">Choose a color.</string>
-    <string name="sketch_overlay_toast">Select or create a rectangle to contain the OVERLAY.</string>
     <string name="sketch_no_backdrop_toast">There is no BACKDROP to erase.</string>
     <string name="sketch_no_overlay_toast">Select OVERLAY to erase.</string>
     <string name="sketch_no_selection_toast">There is no SELECTION to erase.</string>
     <string name="sketch_empty_list_toast">There is NOTHING to erase.</string>
+    <string name="sketch_empty_image_path_toast">Ooops!  Unable to fetch selected image.</string>
 
-    <string name="share_not_available_toast">Share Projects is not available in this version.</string>
-    <string name="no_network_connection_toast">No network connection found.</string>
-    <string name="clear_cache_complete_toast">Caches have been cleared</string>
-    
-    <!-- message & fragments -->
-    <string name="no">"No "</string>
-    
+    <string name="orientation_landscape">"Landscape"</string>
+    <string name="orientation_portrait">"Portrait"</string>
+
 </resources>

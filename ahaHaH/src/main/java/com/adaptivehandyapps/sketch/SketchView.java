@@ -245,7 +245,12 @@ public class SketchView extends View implements
 				break;
 			case IMAGE:
 				Bitmap bitmap = (Bitmap)shapeObject.getObject();
-				canvas.drawBitmap(bitmap, null, shapeObject.getBound(), null);
+				if (canvas != null && bitmap != null) canvas.drawBitmap(bitmap, null, shapeObject.getBound(), null);
+				else {
+                    if (canvas == null) Log.e(TAG, "Ooops!  drawShape canvas NULL...");
+                    else if (bitmap == null) Log.e(TAG, "Ooops!  drawShape bitmap NULL...");
+                    return false;
+                }
 				break;
 			default:  
 				Log.e(TAG, "drawShape invalid shape: " + shapeObject.getShapeType());

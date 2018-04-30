@@ -25,7 +25,9 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
 
 public class ShapeModel {
@@ -258,7 +260,7 @@ public class ShapeModel {
 	}
     ////////////////////////////////////////////////////////////////////////////
     // set image type shape: BACKDROP
-    public ShapeObject setImageBackdrop(String imagePath) {
+    public ShapeObject setImageBackdrop(String imagePath, Bitmap bitmap) {
         // BACKDROP - create shape & insert as 1st element
         Log.v(TAG, "setImageBackdrop BACKDROP image path " + imagePath);
         // set image type & path
@@ -276,23 +278,23 @@ public class ShapeModel {
         int targetDeviceH = mSketchViewModel.getCanvasHeight();
         Log.v(TAG, "setImageBackdrop target device W/H: " + targetDeviceW + "/" + targetDeviceH);
 
-        // get size of photo
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(imagePath, bmOptions);
-        int imageW = bmOptions.outWidth;
-        int imageH = bmOptions.outHeight;
-        Log.v(TAG, "setImageBackdrop photo W/H: " + imageW + "/" + imageH);
-        // round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
-        int scaleFactor = Math.min(imageW/targetDeviceW, imageH/targetDeviceH)+1;
-        Log.v(TAG, "setImageBackdrop scale factor: " + scaleFactor);
-        // set bitmap options to scale the image decode target
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-        bmOptions.inPurgeable = true;
-
-        // set bitmap
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
+//        // get size of photo
+//        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+//        bmOptions.inJustDecodeBounds = true;
+//        BitmapFactory.decodeFile(imagePath, bmOptions);
+//        int imageW = bmOptions.outWidth;
+//        int imageH = bmOptions.outHeight;
+//        Log.v(TAG, "setImageBackdrop photo W/H: " + imageW + "/" + imageH);
+//        // round up since int math truncates remainder resulting scale factor 1 (FIT = FULL)
+//        int scaleFactor = Math.min(imageW/targetDeviceW, imageH/targetDeviceH)+1;
+//        Log.v(TAG, "setImageBackdrop scale factor: " + scaleFactor);
+//        // set bitmap options to scale the image decode target
+//        bmOptions.inJustDecodeBounds = false;
+//        bmOptions.inSampleSize = scaleFactor;
+//        bmOptions.inPurgeable = true;
+//
+//        // set bitmap
+//        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
         shapeObject.setObject(bitmap);
 
         // set focus to screen center
@@ -325,7 +327,7 @@ public class ShapeModel {
     }
     ////////////////////////////////////////////////////////////////////////////
     // set image type shape: OVERLAY
-    public ShapeObject setImageOverlay(String imagePath) {
+    public ShapeObject setImageOverlay(String imagePath, Bitmap bitmap) {
         // OVERLAY - if focus on rect then get object from list else create default rect preserving aspect ratio
         Log.v(TAG, "setImageOverlay OVERLAY image path " + imagePath);
         ShapeObject shapeObject;
@@ -344,12 +346,14 @@ public class ShapeModel {
             int targetDeviceW = mSketchViewModel.getCanvasWidth();
             int targetDeviceH = mSketchViewModel.getCanvasHeight();
             Log.v(TAG, "setImageOverlay target device W/H: " + targetDeviceW + "/" + targetDeviceH);
-            // get size of photo
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(imagePath, bmOptions);
-            int imageW = bmOptions.outWidth;
-            int imageH = bmOptions.outHeight;
+//            // get size of photo
+//            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+//            bmOptions.inJustDecodeBounds = true;
+//            BitmapFactory.decodeFile(imagePath, bmOptions);
+//            int imageW = bmOptions.outWidth;
+//            int imageH = bmOptions.outHeight;
+            int imageW = bitmap.getWidth();
+            int imageH = bitmap.getHeight();
             Log.v(TAG, "setImageOverlay photo W/H: " + imageW + "/" + imageH);
             // center on device
             mCenter = new PointF(
@@ -357,7 +361,8 @@ public class ShapeModel {
                     (float)targetDeviceH/2);
             // set rect around center
             mRect = new RectF();
-            float ratio = (float) imageH / (float) imageW;
+//            float ratio = (float) imageH / (float) imageW;
+            float ratio = (float) imageW / (float) imageH;
             float sizeH = (float)(targetDeviceH/4);
             float sizeW = sizeH * ratio;
             float left = mCenter.x - sizeW;
@@ -393,7 +398,7 @@ public class ShapeModel {
             shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
             shapeObject.setName(imagePath);
             // set bitmap
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
+//            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
             shapeObject.setObject(bitmap);
             // insert into shape list
             mShapeList.add(shapeObject);
@@ -406,7 +411,7 @@ public class ShapeModel {
                 shapeObject.setShapeType(SketchViewModel.ShapeType.IMAGE);
                 shapeObject.setName(imagePath);
                 // set bitmap
-                Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
+//                Bitmap bitmap = BitmapFactory.decodeFile(imagePath, null);
                 shapeObject.setObject(bitmap);
             }
 
@@ -526,7 +531,8 @@ public class ShapeModel {
 			break;
 		case RECT:
 		case LABEL:
-		case OVAL:
+        case OVAL:
+        case IMAGE:
 			// size rect around center based on x,y
 			sizeRect(mRect, mCenter, x, y);
 			Log.v(TAG, "refineShape rect LTRB: " + mRect.left + ", " + mRect.top + ", " + mRect.right + ", " + mRect.bottom);
@@ -759,7 +765,7 @@ public class ShapeModel {
             mShapeObject.setBound(mRect);
             mShapeObject.getFocus().x = mRect.left + ((mRect.right-mRect.left)/2);
             mShapeObject.getFocus().y = mRect.top + ((mRect.bottom-mRect.top)/2);
-
+            break;
 		default:
 			Log.e(TAG, "refineMove invalid shape: " + mShapeObject.getShapeType());
 			break;

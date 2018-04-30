@@ -190,6 +190,7 @@ public class ShapeObject implements java.io.Serializable{
 					File f = new File(name);
 					if (f.exists()) {
 						// generate bitmap
+						// TODO: decode
 						Bitmap bitmap = BitmapFactory.decodeFile(name, null);
 						object = bitmap; 
 					}

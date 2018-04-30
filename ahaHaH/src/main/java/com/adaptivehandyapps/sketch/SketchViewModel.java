@@ -405,26 +405,21 @@ public class SketchViewModel {
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////
-	public Boolean actionFileLoadBackdrop(String imagePath) {
-		// set backdrop image
-		mShapeModel.setImageBackdrop(imagePath);
+	public Boolean actionFileLoadBackdrop(String imagePath, Bitmap bitmap) {
+        if (imagePath == null) {
+            Log.e(TAG, "Ooops! actionFileLoadBackdrop finds imagePath NULL...");
+            Toast.makeText(getContext(), R.string.sketch_empty_image_path_toast, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        // set backdrop image
+		mShapeModel.setImageBackdrop(imagePath, bitmap);
 		mSketchView.invalidate();
 		return true;
 	}
 	///////////////////////////////////////////////////////////////////////////////
-	public Boolean actionFileLoadOverlay(String imagePath) {
+	public Boolean actionFileLoadOverlay(String imagePath, Bitmap bitmap) {
 	    // set overlay image
-        mShapeModel.setImageOverlay(imagePath);
-//		// if rect selected, set image to selected rect shape
-//        int focus = getShapeListFocus();
-//		Log.v(TAG, "actionFileLoadOverlay focus shape inx: " + focus);
-//		if (mShapeModel.isShapeType(ShapeType.RECT, focus)) {
-//			// set image as OVERLAY (focus)
-//			mShapeModel.setImageOverlay(imagePath, focus);
-//		}
-//		else {
-//			Log.e(TAG, "actionFileLoadOverlay OVERLAY failure - focus (" + focus + ") is not RECT. ");
-//		}
+        mShapeModel.setImageOverlay(imagePath, bitmap);
 		mSketchView.invalidate();
 		return true;
 	}
