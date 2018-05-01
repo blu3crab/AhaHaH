@@ -26,13 +26,16 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
-import com.adaptivehandyapps.util.AhaDisplayMetrics;
+import com.adaptivehandyapps.util.DisplayUtils;
 import com.adaptivehandyapps.util.PrefsUtils;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
+
+import static android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
 public class SketchActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener {
 	// sketch activity
@@ -56,26 +59,16 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     private Boolean mSketchViewModelSaved = false;      // model saved flag
 	private SketchView mSketchView = null;			    // sketch view
 
-//    private int mOrientation;
-//    public int getOrientation() { return mOrientation; }
-//    public void setOrientation(int orientation) { this.mOrientation = orientation; }
-
     ///////////////////////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.v(TAG,"onCreate...");
 		super.onCreate(savedInstanceState);
 
-//		setOrientation(getRequestedOrientation());
-//		String orientationText = getString(R.string.orientation_landscape);
-//		if (getOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) orientationText = getString(R.string.orientation_portrait);
-
-//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-        String orientationText = getOrientationText(getRequestedOrientation());
+        String orientationText = DisplayUtils.getOrientationText(this, getRequestedOrientation());
 
         // seed screen resolution
-        String toastText = orientationText + " with " + AhaDisplayMetrics.toString(this);
+        String toastText = orientationText + " with " + DisplayUtils.metricsToString(this);
         if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
         Log.d(TAG, SketchViewModel.prefsToString(this));
@@ -137,13 +130,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
         // indicate view model not saved
         setSketchViewModelSaved(false);
-	}
-	///////////////////////////////////////////////////////////////////////////////////////////
-    private String getOrientationText(int orientation) {
-        String orientationText = getString(R.string.orientation_landscape);
-        if (orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-            orientationText = getString(R.string.orientation_portrait);
-        return orientationText;
+
     }
     ///////////////////////////////////////////////////////////////////////////////////////////
 	@SuppressWarnings("StatementWithEmptyBody")
@@ -173,13 +160,8 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
         }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_file_loadoverlay))) {
             Log.v(TAG, "onNavigationItemSelected load overlay image.");
-//            // ensure rect is focus
-//            if (mSketchViewModel.isRectFocus()) {
-                // start gallery to select image OVERLAY (focus)
-                launchGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
-//            } else {
-//                Toast.makeText(mContext, R.string.sketch_overlay_toast, Toast.LENGTH_LONG).show();
-//            }
+            // start gallery to select image OVERLAY (focus)
+            launchGalleryActivity(REQUEST_CODE_SELECT_OVERLAY);
         }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_file_savesketch))) {
             Log.v(TAG, "onNavigationItemSelected save sketch.");
@@ -276,13 +258,16 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     }
     protected void onDestroy() {
         Log.v(TAG, "onDestroy");
-        if(!isSketchViewModelSaved()) saveSketchViewModel();
+        // TODO: not invoked!  AhaHahActivity gets signal...
+        // remove tempfile
+        mSketchViewModel.actionFileNew();
+//        if(!isSketchViewModelSaved()) saveSketchViewModel();
         super.onDestroy();
     }
 	public void onConfigurationChanged(Configuration newConfig) {
 	    super.onConfigurationChanged(newConfig);
 
-	    Log.v(TAG, "onConfigurationChanged");
+        Log.v(TAG, "onConfigurationChanged to " + DisplayUtils.getOrientationText(this, getRequestedOrientation()));
 
 	    // Checks the orientation of the screen
 	    if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -309,9 +294,15 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	// gallery activity
     private void launchGalleryActivity(int reqCode) {
     	// create intent & start activity 
+//        Intent.ACTION_OPEN_DOCUMENT,
 		Intent galleryIntent = new Intent(
 				Intent.ACTION_PICK,
 				android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		// TODO: export permissions so load of temp file on new session can access photo
+        // Permission Denial: opening provider com.google.android.apps.photos.contentprovider.impl.MediaContentProvider from ProcessRecord{d7ea5f8 11065:com.adaptivehandyapps.ahahah/u0a154} (pid=11065, uid=10154) that is not exported from UID 10081
+//        galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+//        galleryIntent.addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+//        galleryIntent.addFlags(FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
 		startActivityForResult(galleryIntent , reqCode );
 	}
 	@Override
@@ -320,60 +311,51 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 
 		if (resultCode == RESULT_OK) {
 			Log.v(TAG, "onActivityResult result OK: " + " for reqCode: " + requestCode);
-            String imagePath = PrefsUtils.DEFAULT_STRING_NADA;
+//            String imagePath = PrefsUtils.DEFAULT_STRING_NADA;
             Bitmap bitmap = null;
 			if (null != data) {
 				Uri imageUri = data.getData();
-				imagePath = imageUri.toString();
-                Log.v(TAG, "onActivityResult image URI " + imageUri + "\n" + "imagePath " + imagePath);
-                if (imageUri.toString().startsWith("content://com.google.android.apps.photos")) {
-                    try {
-                        InputStream is = this.getContentResolver().openInputStream(imageUri);
-                        if (is != null) {
-                            // decode bitmap
-                            bitmap = BitmapFactory.decodeStream(is);
-                        }
-                    } catch (FileNotFoundException e) {
-                        // TODO Auto-generated catch block
-                        Log.e(TAG, "Ooops! onActivityResult cannot find " + imageUri.toString());
-                        Toast.makeText(getContext(), R.string.sketch_empty_image_path_toast, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                else {
-                    // get image path
-                    imagePath = getRealPathFromURI(this, imageUri);
-                    Log.v(TAG, "onActivityResult image path " + imagePath);
-                    // decode bitmap
-                    bitmap = BitmapFactory.decodeFile(imagePath, null);
+//                final int takeFlags = data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION;
+//                getContentResolver().takePersistableUriPermission(imageUri, takeFlags);
+//                this.getContentResolver().takePersistableUriPermission(imageUri
+//                        , data.getFlags()
+//                                & ( Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                                + Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+//                        )
+//                );
+                bitmap = DisplayUtils.decodeToBitmap(this, imageUri);
+				if (bitmap == null) {
+				    Toast.makeText(this, R.string.sketch_empty_image_path_toast, Toast.LENGTH_SHORT).show();
+				    return;
                 }
                 switch (requestCode) {
                     case REQUEST_CODE_SELECT_BACKDROP:
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_BACKDROP ");
 
-                        // determine target orientation of backdrop
-                        int targetOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                        if (bitmap.getHeight() > bitmap.getWidth()) targetOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-
-                        // get current orientation
-                        int currentOrientation = getRequestedOrientation();
-                        Log.v(TAG, "onActivityResult current vs target orientation " +
-                                getOrientationText(currentOrientation) + " vs " + getOrientationText(targetOrientation));
-
-                        // if target backdrop is not current orientation
-                        if (currentOrientation != targetOrientation) {
-                            // TODO: confirm & clear sketch on orientation change
-                            // set orientation to target
-                            setRequestedOrientation(targetOrientation);
-                            Log.v(TAG, "onActivityResult set target orientation to " + getOrientationText(targetOrientation));
-                        }
-//                        mSketchView.invalidate();
+//                        // determine target orientation of backdrop
+//                        int targetOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+//                        if (bitmap.getHeight() > bitmap.getWidth()) targetOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+//
+//                        // get current orientation
+//                        int currentOrientation = getRequestedOrientation();
+//                        Log.v(TAG, "onActivityResult current vs target orientation " +
+//                                getOrientationText(currentOrientation) + " vs " + getOrientationText(targetOrientation));
+//
+//                        // if target backdrop is not current orientation
+//                        if (currentOrientation != targetOrientation) {
+//                            // TODO: confirm & clear sketch on orientation change
+//                            // set orientation to target
+//                            setRequestedOrientation(targetOrientation);
+//                            Log.v(TAG, "onActivityResult set target orientation to " + getOrientationText(targetOrientation));
+//                        }
+////                        mSketchView.invalidate();
 
                         // set image as backdrop (0th indicates insert BACKDROP)
-                        mSketchViewModel.actionFileLoadBackdrop(imagePath, bitmap);
+                        mSketchViewModel.actionFileLoadBackdrop(imageUri.toString(), bitmap);
                         break;
                     case REQUEST_CODE_SELECT_OVERLAY:
                         Log.v(TAG, "onActivityResult REQUEST_CODE_SELECT_OVERLAY ");
-                        mSketchViewModel.actionFileLoadOverlay(imagePath, bitmap);
+                        mSketchViewModel.actionFileLoadOverlay(imageUri.toString(), bitmap);
                         break;
                     default:
                         Log.e(TAG, "GalleryActivity unknown request code: " + requestCode);
@@ -386,20 +368,6 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 		}
 		else {
 			Log.e(TAG, "GalleryActivity FAILURE w/ result code: " + resultCode);
-		}
-	}
-	public String getRealPathFromURI(Context context, Uri contentUri) {
-		Cursor cursor = null;
-		try {
-			String[] proj = { MediaStore.Images.Media.DATA };
-			cursor = context.getContentResolver().query(contentUri,  proj, null, null, null);
-			int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			cursor.moveToFirst();
-			return cursor.getString(column_index);
-		} finally {
-			if (cursor != null) {
-				cursor.close();
-			}
 		}
 	}
     ///////////////////////////////////////////////////////////////////////////

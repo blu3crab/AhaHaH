@@ -139,14 +139,14 @@ public class NavMenu {
 //
 //        menuItem = menu.add(itemName);
 //        menuItem.setIcon(iconId);
-//        Log.d(TAG, "build add menu item:" + menuItem.getItemId() + ", itemname: " + menuItem.toString());
+//        Log.d(TAG, "build add menu item:" + menuItem.getItemId() + ", itemname: " + menuItem.metricsToString());
 //        // gallery
 //        iconId = android.R.drawable.ic_menu_gallery;
 //        itemName = getContext().getString(R.string.action_gallery);
 //
 //        menuItem = menu.add(itemName);
 //        menuItem.setIcon(iconId);
-//        Log.d(TAG, "build add menu item:" + menuItem.getItemId() + ", itemname: " + menuItem.toString());
+//        Log.d(TAG, "build add menu item:" + menuItem.getItemId() + ", itemname: " + menuItem.metricsToString());
 //
         String title;
         int iconId;

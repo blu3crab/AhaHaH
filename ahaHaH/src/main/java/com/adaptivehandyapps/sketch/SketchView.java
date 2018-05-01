@@ -268,7 +268,7 @@ public class SketchView extends View implements
     @Override 
     public boolean onTouchEvent(MotionEvent event){ 
         Log.d(TAG,"TouchEvent: ");
-//        Log.d(TAG,"TouchEvent: " + event.toString());
+//        Log.d(TAG,"TouchEvent: " + event.metricsToString());
         // gesture detector
         this.mDetector.onTouchEvent(event);
 		// pinch-zoom gesture detector
@@ -377,7 +377,7 @@ public class SketchView extends View implements
     @Override
     public boolean onDown(MotionEvent event) { 
         Log.d(TAG,"onDown: "); 
-//        Log.d(TAG,"onDown: " + event.toString()); 
+//        Log.d(TAG,"onDown: " + event.metricsToString());
 //		Toast.makeText(mParentActivity, "onDown", Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -386,7 +386,7 @@ public class SketchView extends View implements
     public boolean onFling(MotionEvent event1, MotionEvent event2, 
             float velocityX, float velocityY) {
         Log.d(TAG, "onFling: " + mSketchViewModel.getShapeListFocus());
-//        Log.d(TAG, "onFling: " + event1.toString()+event2.toString());
+//        Log.d(TAG, "onFling: " + event1.metricsToString()+event2.metricsToString());
 //		Toast.makeText(mParentActivity, "onFling", Toast.LENGTH_SHORT).show();
         if ( mSketchViewModel.getShapeListFocus() != SketchViewModel.NOFOCUS) {
             Toast.makeText(getContext(), "Double tap to clear focus.", Toast.LENGTH_SHORT).show();
@@ -422,7 +422,7 @@ public class SketchView extends View implements
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
             float distanceY) {
         Log.d(TAG, "onScroll: ");
-//        Log.d(TAG, "onScroll: " + e1.toString()+e2.toString());
+//        Log.d(TAG, "onScroll: " + e1.metricsToString()+e2.metricsToString());
 //		Toast.makeText(mParentActivity, "onScroll", Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -430,14 +430,14 @@ public class SketchView extends View implements
     @Override
     public void onShowPress(MotionEvent event) {
         Log.d(TAG, "onShowPress: ");
-//        Log.d(TAG, "onShowPress: " + event.toString());
+//        Log.d(TAG, "onShowPress: " + event.metricsToString());
 //		Toast.makeText(mParentActivity, "onShowPress", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
         Log.d(TAG, "onSingleTapUp: ");
-//        Log.d(TAG, "onSingleTapUp: " + event.toString());
+//        Log.d(TAG, "onSingleTapUp: " + event.metricsToString());
 //		Toast.makeText(mParentActivity, "onSingleTapUp", Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -445,7 +445,7 @@ public class SketchView extends View implements
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         Log.d(TAG, "onSingleTapConfirmed: ");
-//        Log.d(TAG, "onSingleTapConfirmed: " + event.toString());
+//        Log.d(TAG, "onSingleTapConfirmed: " + event.metricsToString());
         // set next shape as focus
         int focus = mSketchViewModel.setNextShapeListFocus();
         if ( focus != SketchViewModel.NOFOCUS) {
@@ -463,7 +463,7 @@ public class SketchView extends View implements
     @Override
     public boolean onDoubleTap(MotionEvent event) {
         Log.d(TAG, "onDoubleTap: ");
-//        Log.d(TAG, "onDoubleTap: " + event.toString());
+//        Log.d(TAG, "onDoubleTap: " + event.metricsToString());
         // clear focus
 		mSketchViewModel.clearShapeListFocus();
         Log.d(TAG, "onDoubleTap: draw list focus " + mSketchViewModel.getShapeListFocus());
@@ -477,7 +477,7 @@ public class SketchView extends View implements
     @Override
     public boolean onDoubleTapEvent(MotionEvent event) {
         Log.d(TAG, "onDoubleTapEvent: ");
-//        Log.d(TAG, "onDoubleTapEvent: " + event.toString());
+//        Log.d(TAG, "onDoubleTapEvent: " + event.metricsToString());
 //		Toast.makeText(mParentActivity, "onDoubleTapEvent", Toast.LENGTH_SHORT).show();
         return true;
     }

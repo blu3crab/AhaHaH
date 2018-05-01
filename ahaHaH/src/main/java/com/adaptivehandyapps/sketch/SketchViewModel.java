@@ -6,16 +6,14 @@ package com.adaptivehandyapps.sketch;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
-import com.adaptivehandyapps.util.AhaDisplayMetrics;
+import com.adaptivehandyapps.util.DisplayUtils;
 import com.adaptivehandyapps.util.ImageAlbumStorage;
 import com.adaptivehandyapps.util.PrefsUtils;
 
@@ -157,8 +155,8 @@ public class SketchViewModel {
 
         setContext(context);
 		// set canvas dimensions to display dimensions until touch view canvas created
-		mCanvasWidth = AhaDisplayMetrics.getDisplayWidth(getContext());
-		mCanvasHeight = AhaDisplayMetrics.getDisplayHeight(getContext());
+		mCanvasWidth = DisplayUtils.getDisplayWidth(getContext());
+		mCanvasHeight = DisplayUtils.getDisplayHeight(getContext());
 
 		// get references to view and model
         mSketchView = sketchView;
@@ -179,7 +177,8 @@ public class SketchViewModel {
 	public void restoreSketchModel() {
 		// load ShapeModel shape list
         Log.v(TAG, "restoreSketchSettings loading mShapeModel " + TEMP_FILE);
-		if (!mShapeModel.load(TEMP_FILE)) Log.e(TAG, "Save ShapeModel failure!");
+		if (!mShapeModel.load(getContext(), TEMP_FILE)) Log.e(TAG, "Restore ShapeModel failure!");
+		mSketchView.invalidate();
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// getters/setters

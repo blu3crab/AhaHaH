@@ -5,44 +5,32 @@
 package com.adaptivehandyapps.activity;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.adaptivehandyapps.ahahah.BuildConfig;
 import com.adaptivehandyapps.ahahah.R;
 import com.adaptivehandyapps.sketch.SketchActivity;
 import com.adaptivehandyapps.sketch.SketchViewModel;
-import com.adaptivehandyapps.util.AhaDisplayMetrics;
-import com.adaptivehandyapps.util.ImageAlbumStorage;
+import com.adaptivehandyapps.util.DisplayUtils;
 import com.adaptivehandyapps.util.PrefsUtils;
 
 public class AhaHahActivity extends Activity {
@@ -79,7 +67,7 @@ public class AhaHahActivity extends Activity {
 
 	private Boolean init() {
 //		// seed screen resolution
-//        String toastText = AhaDisplayMetrics.toString(this);
+//        String toastText = DisplayUtils.metricsToString(this);
 //        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
         setContentView(R.layout.activity_ahahah);
@@ -111,7 +99,7 @@ public class AhaHahActivity extends Activity {
 			if (!file.exists()) return false;
 
 			// get device dimensions
-			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(this);
+			DisplayMetrics displayMetrics = DisplayUtils.getDisplayMetrics(this);
 			int targetDeviceW = displayMetrics.widthPixels;
 			int targetDeviceH = displayMetrics.heightPixels;
 			Log.v(TAG, "target device W/H: " + targetDeviceW + "/" + targetDeviceH);
@@ -159,18 +147,18 @@ public class AhaHahActivity extends Activity {
 	}
 
 	// orientation fixed to LANDSCAPE in AndroidManifest.xml
-//	public void onConfigurationChanged(Configuration newConfig) {
-//	    super.onConfigurationChanged(newConfig);
-//
-//	    Log.v(TAG, "onConfigurationChanged");
-//	    
-//	    // Checks the orientation of the screen
-//	    if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//	        Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-//	    } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-//	        Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-//	    }
-//	}
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+
+	    Log.v(TAG, "onConfigurationChanged to " + DisplayUtils.getOrientationText(this, getRequestedOrientation()));
+
+	    // Checks the orientation of the screen
+	    if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+	        Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+	    } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+	        Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+	    }
+	}
 	
     protected void onStart() {
     	// always called so complements onStop as well as invoked with onCreate

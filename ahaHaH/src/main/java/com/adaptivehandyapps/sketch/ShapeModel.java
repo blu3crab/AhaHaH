@@ -141,7 +141,7 @@ public class ShapeModel {
 		    oos.close();
 			fos.close();
 		} catch (Exception e) {
-//			Log.e(TAG, "serialize exception: " + e.getCause().toString() + " - " + e.getMessage());
+//			Log.e(TAG, "serialize exception: " + e.getCause().metricsToString() + " - " + e.getMessage());
 			Log.e(TAG, "serialize exception: " + e.getMessage());
 			return false;
 		}
@@ -153,7 +153,7 @@ public class ShapeModel {
 	}
 	////////////////////////////////////////////////////////////////////////////
 	// load shape list
-	public boolean load (String filename) {
+	public boolean load (Context context, String filename) {
 		Log.v(TAG, "load shape list from " + filename);
 		// snap start time
 	    long startTime = System.currentTimeMillis();
@@ -169,7 +169,7 @@ public class ShapeModel {
         		boolean more = true;
         		while (more) {
         			ShapeObject mShapeObject = new ShapeObject();
-        			more = mShapeObject.deserialize(ois);
+        			more = mShapeObject.deserialize(context, ois);
         			if (more) {
 		    			Log.v(TAG, "deserialized " + mShapeObject.getShapeType());
 		        		mShapeList.add(mShapeObject);
@@ -271,7 +271,7 @@ public class ShapeModel {
         shapeObject.setPaint(paint);
 
         // TODO: get device dimensions or canvas dimensions?
-//			DisplayMetrics displayMetrics = AhaDisplayMetrics.getDisplayMetrics(getContext());
+//			DisplayMetrics displayMetrics = DisplayUtils.getDisplayMetrics(getContext());
 //			int targetDeviceW = displayMetrics.widthPixels;
 //			int targetDeviceH = displayMetrics.heightPixels;
         int targetDeviceW = mSketchViewModel.getCanvasWidth();

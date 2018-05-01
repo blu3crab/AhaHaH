@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Paint;
@@ -16,9 +17,11 @@ import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.util.Log;
 
 import com.adaptivehandyapps.sketch.SketchViewModel.ShapeType;
+import com.adaptivehandyapps.util.DisplayUtils;
 
 // shape list object
 public class ShapeObject implements java.io.Serializable{
@@ -119,7 +122,7 @@ public class ShapeObject implements java.io.Serializable{
 		return true;
 	}
 	
-	public boolean deserialize (ObjectInputStream ois) {
+	public boolean deserialize (Context context, ObjectInputStream ois) {
 		
 //		try {
 //            ObjectInputStream ois = new ObjectInputStream(fis);
@@ -187,20 +190,26 @@ public class ShapeObject implements java.io.Serializable{
 				break;
 			case IMAGE:
 				try {
-					File f = new File(name);
-					if (f.exists()) {
+//					File f = new File(name);
+//					if (f.exists()) {
 						// generate bitmap
-						// TODO: decode
-						Bitmap bitmap = BitmapFactory.decodeFile(name, null);
-						object = bitmap; 
-					}
-					else {
-						Log.e(TAG, "image file missing: " + name);
-						return false;
-					}
+						// TODO: decode Photos
+//						Bitmap bitmap = BitmapFactory.decodeFile(name, null);
+						Uri imageUri = Uri.parse(name);
+						Bitmap bitmap = DisplayUtils.decodeToBitmap(context, imageUri);
+						object = bitmap;
+						if (bitmap == null) {
+							Log.e(TAG, "deserialize unable to decode bitmap for " + name);
+							return false;
+						}
+//					}
+//					else {
+//						Log.e(TAG, "image file missing: " + name);
+//						return false;
+//					}
 				}
 				catch (Exception e) {
-					Log.e(TAG, "unable to decode: " + name);
+					Log.e(TAG, "deserialize unable to decode bitmap for " + name + " with exception " + e.getMessage());
 					return false;					
 				}
 				break;
