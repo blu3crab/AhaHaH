@@ -466,10 +466,14 @@ public class ShapeModel {
 			mCenter = new PointF (x, y);
 			// set rect around center
 			mRect = new RectF();
-			float left = x - mSketchViewModel.getSize();
-			float top = y - mSketchViewModel.getSize();
-			float right = x + mSketchViewModel.getSize();
-			float bottom = y + mSketchViewModel.getSize();
+            float left = x - mSketchViewModel.getSize();
+            float top = y - mSketchViewModel.getSize();
+            float right = x + mSketchViewModel.getSize();
+            float bottom = y + mSketchViewModel.getSize();
+//            float left = x - SIZE_TINY;
+//            float top = y - SIZE_TINY;
+//            float right = x + SIZE_TINY;
+//            float bottom = y + SIZE_TINY;
 			mRect.set(left, top, right, bottom);
 			mShapeObject.setFocus(mCenter);
 			mShapeObject.setBound(mRect);
@@ -497,6 +501,7 @@ public class ShapeModel {
 			return false;
 		}
 		mShapeList.add(mShapeObject);
+        mSketchViewModel.setShapeListFocus(mShapeObject.getName());
 		return true;
 	}
 	////////////////////////////////////////////////////////////////////////////
@@ -565,6 +570,9 @@ public class ShapeModel {
 		// refine shape to reflect final point
 		refineShape(x, y);
 		Log.v(TAG, "completeShape name:" + mShapeObject.getName());
+		Log.v(TAG, "completeShape size X, Y " +
+				(mShapeObject.getBound().right - mShapeObject.getBound().left) + ", " +
+				(mShapeObject.getBound().bottom - mShapeObject.getBound().top));
 
         if ((mShapeObject.getBound().right - mShapeObject.getBound().left) < SIZE_TINY &&
             (mShapeObject.getBound().bottom - mShapeObject.getBound().top) < SIZE_TINY ) {
@@ -584,43 +592,43 @@ public class ShapeModel {
 //        }
 		Log.v(TAG, "completeShape focus: " + mSketchViewModel.getShapeListFocus());
 		
-		if (mShapeType == ShapeType.LABEL) {
-			// present label text entry dialog
-			enterLabelText(mShapeObject);
-		}
+//		if (mShapeType == ShapeType.LABEL) {
+//			// present label text entry dialog
+//			enterLabelText(mShapeObject);
+//		}
 //		if (mShapeType == ShapeType.FREE) {
 //			getPathPoints(mPath);
 //		}
 		return true;
 	}
-	private void enterLabelText(final ShapeObject shapeObject) {
-		AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-
-		alert.setTitle("New Label");
-		alert.setMessage("Please enter your label:");
-
-		// Set an EditText view to get user input 
-		final EditText input = new EditText(getContext());
-		alert.setView(input);
-
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String labelText = input.getText().toString();
-				// set shape object name to label text
-				shapeObject.setName(labelText);
-				Log.v(TAG, "enterLabelText: " + shapeObject.getName());
-			}
-		});
-
-		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				// Canceled.
-				Log.v(TAG, "enterLabelText CANCELLED ");
-			}
-		});
-
-		alert.show();
-	}
+//	private void enterLabelText(final ShapeObject shapeObject) {
+//		AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+//
+//		alert.setTitle("New Label");
+//		alert.setMessage("Please enter your label:");
+//
+//		// Set an EditText view to get user input
+//		final EditText input = new EditText(getContext());
+//		alert.setView(input);
+//
+//		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+//			public void onClick(DialogInterface dialog, int whichButton) {
+//				String labelText = input.getText().toString();
+//				// set shape object name to label text
+//				shapeObject.setName(labelText);
+//				Log.v(TAG, "enterLabelText: " + shapeObject.getName());
+//			}
+//		});
+//
+//		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//			public void onClick(DialogInterface dialog, int whichButton) {
+//				// Canceled.
+//				Log.v(TAG, "enterLabelText CANCELLED ");
+//			}
+//		});
+//
+//		alert.show();
+//	}
 		
 //	private boolean getPathPoints(Path path) {
 //		PathMeasure pm = new PathMeasure(path, false);

@@ -27,7 +27,6 @@
         <item>@string/action_sketch_style_large</item>
         <item>@string/action_sketch_style_fill</item>
         <item>@string/action_sketch_style_stroke</item>
-        <item>@string/action_sketch_style_strokefill</item>
     </string-array>
 
     <!-- Colors -->
@@ -49,7 +48,6 @@
         <item>@string/action_sketch_erase_overlay</item>
         <item>@string/action_sketch_erase_select</item>
         <item>@string/action_sketch_erase_last</item>
-        <item>@string/action_sketch_erase_all</item>
     </string-array>
 
     <!-- Tools -->

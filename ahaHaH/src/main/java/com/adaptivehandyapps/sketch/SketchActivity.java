@@ -188,10 +188,10 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 			Log.v(TAG, "onNavigationItemSelected erase last shape.");
 			mSketchViewModel.actionEraseLastShape();
 		}
-        else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_all))) {
-            Log.v(TAG, "onNavigationItemSelected erase all.");
-            mSketchViewModel.actionEraseAll();
-        }
+//        else if (itemname.equals(getContext().getString(R.string.action_sketch_erase_all))) {
+//            Log.v(TAG, "onNavigationItemSelected erase all.");
+//            mSketchViewModel.actionEraseAll();
+//        }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_color_custom))) {
             Log.v(TAG, "onNavigationItemSelected custom color.");
             launchColorPickerDialog();

@@ -5,11 +5,14 @@
 package com.adaptivehandyapps.sketch;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.adaptivehandyapps.ahahah.R;
@@ -481,14 +484,14 @@ public class SketchViewModel {
 			}
         return true;
     }
-    ///////////////////////////////////////////////////////////////////////////////
-    public Boolean actionEraseAll() {
-        Log.v(TAG, "actionEraseAll...");
-        // clear sketch canvas
-        mShapeModel.initShapeList();
-        mSketchView.invalidate();
-        return true;
-    }
+//    ///////////////////////////////////////////////////////////////////////////////
+//    public Boolean actionEraseAll() {
+//        Log.v(TAG, "actionEraseAll...");
+//        // clear sketch canvas
+//        mShapeModel.initShapeList();
+//        mSketchView.invalidate();
+//        return true;
+//    }
     ///////////////////////////////////////////////////////////////////////////////
     public Boolean actionViewTouch(int actionType, float touchX, float touchY, float scaleFactor) {
         Log.v(TAG, "actionViewTouch actionType " + actionType + ", X/Y " + touchX + "/" + touchY);
@@ -510,7 +513,14 @@ public class SketchViewModel {
                 mShapeModel.resizeShape(scaleFactor);
                 break;
             case ACTION_TYPE_COMPLETE_SHAPE:
-                mShapeModel.completeShape(touchX, touchY);
+                if (mShapeModel.completeShape(touchX, touchY)) {
+                    int focusInx = getShapeListFocus();
+                    ShapeObject focusShape = getShapeList().get(focusInx);
+                    if (focusShape.getShapeType() == ShapeType.LABEL) {
+                        // present label text entry dialog
+                        enterLabelText(focusShape);
+                    }
+                }
                 break;
             default:
                 Log.e(TAG,"Ooops! unknown action type! " + actionType);
@@ -518,6 +528,34 @@ public class SketchViewModel {
         return true;
     }
     ///////////////////////////////////////////////////////////////////////////
+    private void enterLabelText(final ShapeObject shapeObject) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+
+        alert.setTitle("New Label");
+        alert.setMessage("Please enter your label:");
+
+        // Set an EditText view to get user input
+        final EditText input = new EditText(getContext());
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String labelText = input.getText().toString();
+                // set shape object name to label text
+                shapeObject.setName(labelText);
+                Log.v(TAG, "enterLabelText: " + shapeObject.getName());
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
+                Log.v(TAG, "enterLabelText CANCELLED ");
+            }
+        });
+
+        alert.show();
+    }
     ///////////////////////////////////////////////////////////////////////////
 	private String saveSketch (Bitmap bitmap) {
 
@@ -576,13 +614,14 @@ public class SketchViewModel {
         }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_style_fill))) {
             return SELECT_TYPE_STYLE_FILL;
+//            return SELECT_TYPE_STYLE_STROKE_FILL;
         }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_style_stroke))) {
             return SELECT_TYPE_STYLE_STROKE;
         }
-        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_strokefill))) {
-            return SELECT_TYPE_STYLE_STROKE_FILL;
-        }
+//        else if (itemname.equals(getContext().getString(R.string.action_sketch_style_strokefill))) {
+//            return SELECT_TYPE_STYLE_STROKE_FILL;
+//        }
         else if (itemname.equals(getContext().getString(R.string.action_sketch_color_black))) {
             return SELECT_TYPE_COLOR_BLACK;
         }
