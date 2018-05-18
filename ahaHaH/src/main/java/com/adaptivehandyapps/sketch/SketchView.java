@@ -282,7 +282,7 @@ public class SketchView extends View implements
 	    int maskedAction = event.getActionMasked();   
 	    Log.v(TAG, "onTouchEvent id: " + pointerId + ", action: " + actionToString(maskedAction) + ", index: " + pointerIndex );
 
-		if (event.getPointerCount() <= 1) {
+		if (event.getPointerCount() <= 1 && !mGestureDetected) {
 			// single touch event 
 			Log.v(TAG, "onTouchEvent single-touch x, y: " + event.getX(pointerIndex) + ", " + event.getY(pointerIndex));
 			
@@ -340,10 +340,10 @@ public class SketchView extends View implements
 			for (int size = event.getPointerCount(), i = 0; i < size; i++) {
 				Log.v(TAG, "onTouchEvent multi-touch loop (" + i + ") id, x, y: " + event.getPointerId(i) + ", " + event.getX(i) + ", " + event.getY(i));
 			}
+            // resize based on scale factor
+            mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_RESIZE_SHAPE, -1.0f, -1.0f, mScaleFactor);
 			// enable pinch-zoom if shape has focus
 			if (mSketchViewModel.getShapeListFocus() != SketchViewModel.NOFOCUS) {
-				// resize based on scale factor
-                mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_RESIZE_SHAPE, -1.0f, -1.0f, mScaleFactor);
 
 				switch(maskedAction) {
 				case MotionEvent.ACTION_DOWN:
@@ -364,6 +364,8 @@ public class SketchView extends View implements
 				}
 			}
 		}
+        // clear any gesture
+        mGestureDetected = false;
 		// schedule repaint
 		invalidate();
 
@@ -405,14 +407,27 @@ public class SketchView extends View implements
         // exclude starting touches at nav edge boundary
         if (event.getX() < getCanvasNavEdge()) return;
 
-        // set focus
-        int focus = mSketchViewModel.setShapeListFocus(event.getX(), event.getY());
-        if ( focus != SketchViewModel.NOFOCUS) {
-            List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
-            mShapeObject = shapeList.get(focus);
-        	Log.d(TAG, "onLongPress: shape focus " + mShapeObject.getName());
-			Toast.makeText(getContext(), "LongPress: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
-        }
+        // get focus
+		int focusInx = mSketchViewModel.getShapeListFocus();
+		if ( focusInx != SketchViewModel.NOFOCUS) {
+			ShapeObject focusShape = mSketchViewModel.getShapeList().get(focusInx);
+			Log.d(TAG, "onLongPress: shape focus " + mShapeObject.getName());
+			if (focusShape.getShapeType() == SketchViewModel.ShapeType.LABEL) {
+				// present label text entry dialog
+				mSketchViewModel.enterLabelText(focusShape);
+                mShapeObject = focusShape;
+			}
+		}
+		else {
+			// set focus
+			focusInx = mSketchViewModel.setShapeListFocus(event.getX(), event.getY());
+			if (focusInx != SketchViewModel.NOFOCUS) {
+				List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
+				mShapeObject = shapeList.get(focusInx);
+				Log.d(TAG, "onLongPress: shape focus " + mShapeObject.getName());
+				Toast.makeText(getContext(), "LongPress: Focus on " + mShapeObject.getName(), Toast.LENGTH_SHORT).show();
+			}
+		}
         mGestureDetected = true;
         // focus altered
         invalidate();

@@ -528,7 +528,7 @@ public class SketchViewModel {
         return true;
     }
     ///////////////////////////////////////////////////////////////////////////
-    private void enterLabelText(final ShapeObject shapeObject) {
+    public void enterLabelText(final ShapeObject shapeObject) {
         AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
 
         alert.setTitle("New Label");

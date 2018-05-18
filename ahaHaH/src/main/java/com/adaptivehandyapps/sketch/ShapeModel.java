@@ -501,7 +501,7 @@ public class ShapeModel {
 			return false;
 		}
 		mShapeList.add(mShapeObject);
-        mSketchViewModel.setShapeListFocus(mShapeObject.getName());
+//        mSketchViewModel.setShapeListFocus(mShapeObject.getName());
 		return true;
 	}
 	////////////////////////////////////////////////////////////////////////////
@@ -787,6 +787,7 @@ public class ShapeModel {
 	////////////////////////////////////////////////////////////////////////////
 	// resize shape
 	public boolean resizeShape(float scaleFactor) {
+        Log.v(TAG, "resizeShape scale factor (incoming) " + scaleFactor);
 		if (scaleFactor == 1) {
 			// if no scaling, return
 			return false;
@@ -805,7 +806,7 @@ public class ShapeModel {
 			}
 			scaleFactor *= REFACTOR;
 		}
-		Log.v(TAG, "resizeShape scale factor: " + scaleFactor);
+		Log.v(TAG, "resizeShape scale factor (adjusted) " + scaleFactor);
 			
 		switch (mShapeObject.getShapeType())
 		{
