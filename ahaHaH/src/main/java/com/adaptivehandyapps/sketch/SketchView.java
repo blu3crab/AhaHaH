@@ -38,6 +38,7 @@ public class SketchView extends View implements
 	private float mCurrentRadius;
 	private float mTouchX = 0.0f;
 	private float mTouchY = 0.0f;
+	private Integer mMoveTally = 0;
 	// zoom
 	private float mScaleFactor = 1.0f;
 	private ScaleGestureDetector mScaleGestureDetector;
@@ -293,40 +294,40 @@ public class SketchView extends View implements
 
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
-		        // if no gestures detected, start shape or move
-				if (!mGestureDetected) {
-					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
-						mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_SHAPE, mTouchX, mTouchY, mScaleFactor);
-					}
-					else {
-                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_MOVE, mTouchX, mTouchY, mScaleFactor);
-					}
-				}
+		        // start shape or move
+                if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
+                    mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_SHAPE, mTouchX, mTouchY, mScaleFactor);
+                }
+                else {
+                    mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_MOVE, mTouchX, mTouchY, mScaleFactor);
+                    mMoveTally = 0;
+                }
 				return true;
 			case MotionEvent.ACTION_MOVE:
-		        // if no gestures detected, refine shape or move
-				if (!mGestureDetected) {
-					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
-                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_SHAPE, mTouchX, mTouchY, mScaleFactor);
-					}
-					else {
+		        // refine shape or move
+                if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
+                    mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_SHAPE, mTouchX, mTouchY, mScaleFactor);
+                }
+                else {
+                    // move - ignore initial to avoid unwanted move on single touch
+                    ++mMoveTally;
+                    if (mMoveTally > 2) {
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
-					}
-				}
+                    }
+                }
 				break;
 			case MotionEvent.ACTION_UP:
-		        // if no gestures detected, complete shape or move
-				if (!mGestureDetected) {
-					if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
-                        mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_COMPLETE_SHAPE, mTouchX, mTouchY, mScaleFactor);
-					}
-					else {
+		        // complete shape or move
+                if (mSketchViewModel.getShapeListFocus() == SketchViewModel.NOFOCUS) {
+                    mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_COMPLETE_SHAPE, mTouchX, mTouchY, mScaleFactor);
+                }
+                else {
+                    if (mMoveTally > 2) {
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
-					}
-				}
-				// clear any gesture
-				mGestureDetected = false;
-				// clear current touch X,Y 
+                    }
+                    mMoveTally = 0;
+                }
+				// clear current touch X,Y
 				mTouchX = 0.0f;
 				mTouchY = 0.0f;
 				break;
@@ -334,16 +335,17 @@ public class SketchView extends View implements
 				return false;
 			}
 		}
-		else {
+		else if (!mGestureDetected){
 			// multi-touch
 			Log.v(TAG, "onTouchEvent multi-touch pointerIndex, x, y: " + pointerIndex + ", " + event.getX(pointerIndex) + ", " + event.getY(pointerIndex));
 			for (int size = event.getPointerCount(), i = 0; i < size; i++) {
 				Log.v(TAG, "onTouchEvent multi-touch loop (" + i + ") id, x, y: " + event.getPointerId(i) + ", " + event.getX(i) + ", " + event.getY(i));
 			}
-            // resize based on scale factor
-            mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_RESIZE_SHAPE, -1.0f, -1.0f, mScaleFactor);
 			// enable pinch-zoom if shape has focus
 			if (mSketchViewModel.getShapeListFocus() != SketchViewModel.NOFOCUS) {
+                Log.v(TAG, "onTouchEvent ACTION_TYPE_RESIZE_SHAPE with scale factor " + mScaleFactor);
+				// resize based on scale factor
+				mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_RESIZE_SHAPE, -1.0f, -1.0f, mScaleFactor);
 
 				switch(maskedAction) {
 				case MotionEvent.ACTION_DOWN:
@@ -494,6 +496,11 @@ public class SketchView extends View implements
         Log.d(TAG, "onDoubleTapEvent: ");
 //        Log.d(TAG, "onDoubleTapEvent: " + event.metricsToString());
 //		Toast.makeText(mParentActivity, "onDoubleTapEvent", Toast.LENGTH_SHORT).show();
+        // clear focus
+        mSketchViewModel.clearShapeListFocus();
+        Log.d(TAG, "onDoubleTapEvent: draw list focus " + mSketchViewModel.getShapeListFocus());
+        Toast.makeText(getContext(), "Double Tap: focus cleared.", Toast.LENGTH_SHORT).show();
+        mGestureDetected = true;
         return true;
     }
 

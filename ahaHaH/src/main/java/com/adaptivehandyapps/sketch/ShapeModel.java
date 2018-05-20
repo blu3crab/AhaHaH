@@ -584,13 +584,13 @@ public class ShapeModel {
 //        // if focus hold set
 //		if (mSketchViewModel.getFocusHold()) {
 			// set focus to new shape
-			mSketchViewModel.setShapeListFocus (mShapeList.size()-1);
+//			mSketchViewModel.setShapeListFocus (mShapeList.size()-1);
 //		}
 //		else {
 //			// clear focus
 //			mSketchViewModel.clearShapeListFocus();
 //        }
-		Log.v(TAG, "completeShape focus: " + mSketchViewModel.getShapeListFocus());
+//		Log.v(TAG, "completeShape focus: " + mSketchViewModel.getShapeListFocus());
 		
 //		if (mShapeType == ShapeType.LABEL) {
 //			// present label text entry dialog

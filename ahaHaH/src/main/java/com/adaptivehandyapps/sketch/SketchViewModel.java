@@ -514,8 +514,12 @@ public class SketchViewModel {
                 break;
             case ACTION_TYPE_COMPLETE_SHAPE:
                 if (mShapeModel.completeShape(touchX, touchY)) {
+                    // set focus to completed shape
+                    setShapeListFocus (getShapeList().size()-1);
                     int focusInx = getShapeListFocus();
                     ShapeObject focusShape = getShapeList().get(focusInx);
+                    Log.v(TAG, "actionViewTouch ACTION_TYPE_COMPLETE_SHAPE focus: " + focusShape.getName());
+
                     if (focusShape.getShapeType() == ShapeType.LABEL) {
                         // present label text entry dialog
                         enterLabelText(focusShape);
