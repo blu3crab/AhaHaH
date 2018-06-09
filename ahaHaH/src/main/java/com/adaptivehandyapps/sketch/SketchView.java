@@ -38,7 +38,7 @@ public class SketchView extends View implements
 	private float mCurrentRadius;
 	private float mTouchX = 0.0f;
 	private float mTouchY = 0.0f;
-	private Integer mMoveTally = 0;
+	private Integer mIgnoreMoveTally = 0;
 	// zoom
 	private float mScaleFactor = 1.0f;
 	private ScaleGestureDetector mScaleGestureDetector;
@@ -300,7 +300,7 @@ public class SketchView extends View implements
                 }
                 else {
                     mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_START_MOVE, mTouchX, mTouchY, mScaleFactor);
-                    mMoveTally = 0;
+                    mIgnoreMoveTally = 0;
                 }
 				return true;
 			case MotionEvent.ACTION_MOVE:
@@ -310,8 +310,8 @@ public class SketchView extends View implements
                 }
                 else {
                     // move - ignore initial to avoid unwanted move on single touch
-                    ++mMoveTally;
-                    if (mMoveTally > 2) {
+                    ++mIgnoreMoveTally;
+                    if (mIgnoreMoveTally > 2) {
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
                     }
                 }
@@ -322,10 +322,10 @@ public class SketchView extends View implements
                     mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_COMPLETE_SHAPE, mTouchX, mTouchY, mScaleFactor);
                 }
                 else {
-                    if (mMoveTally > 2) {
+                    if (mIgnoreMoveTally > 2) {
                         mSketchViewModel.actionViewTouch(SketchViewModel.ACTION_TYPE_REFINE_MOVE, mTouchX, mTouchY, mScaleFactor);
                     }
-                    mMoveTally = 0;
+                    mIgnoreMoveTally = 0;
                 }
 				// clear current touch X,Y
 				mTouchX = 0.0f;
@@ -454,6 +454,14 @@ public class SketchView extends View implements
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
         Log.d(TAG, "onSingleTapUp: ");
+//        // remove shape created by single tap
+//		int focus = mSketchViewModel.getShapeListFocus();
+//		if ( focus != SketchViewModel.NOFOCUS) {
+//			List<ShapeObject> shapeList = mSketchViewModel.getShapeList();
+//			mShapeObject = shapeList.get(focus);
+//			Log.d(TAG, "onSingleTapUp: erase focus " + mShapeObject.getName());
+//			mSketchViewModel.actionEraseSelection();
+//		}
 //        Log.d(TAG, "onSingleTapUp: " + event.metricsToString());
 //		Toast.makeText(mParentActivity, "onSingleTapUp", Toast.LENGTH_SHORT).show();
         return true;

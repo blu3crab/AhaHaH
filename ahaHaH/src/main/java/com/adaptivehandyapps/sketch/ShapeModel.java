@@ -59,7 +59,7 @@ public class ShapeModel {
 //	public static final float SCREEN_MAX_Y = 800.0f;  // samsung tablet display height
 
 	public static final float REFACTOR = 0.05f;
-	public static final float SIZE_TINY = 16.0f;
+	public static final float SIZE_TINY = 24.0f;
 	
 	private float mDX;
 	private float mDY;
@@ -572,10 +572,11 @@ public class ShapeModel {
 		Log.v(TAG, "completeShape name:" + mShapeObject.getName());
 		Log.v(TAG, "completeShape size X, Y " +
 				(mShapeObject.getBound().right - mShapeObject.getBound().left) + ", " +
-				(mShapeObject.getBound().bottom - mShapeObject.getBound().top));
+				(mShapeObject.getBound().bottom - mShapeObject.getBound().top) +
+				", reject tiny " + (mSketchViewModel.getSize()+SIZE_TINY));
 
-        if ((mShapeObject.getBound().right - mShapeObject.getBound().left) < SIZE_TINY &&
-            (mShapeObject.getBound().bottom - mShapeObject.getBound().top) < SIZE_TINY ) {
+        if ((mShapeObject.getBound().right - mShapeObject.getBound().left) <= (mSketchViewModel.getSize()+SIZE_TINY) &&
+            (mShapeObject.getBound().bottom - mShapeObject.getBound().top) <= (mSketchViewModel.getSize()+SIZE_TINY) ) {
             Log.v(TAG, "completeShape reject tiny shape...");
             clearShape(mShapeList.size()-1);
             return false;
