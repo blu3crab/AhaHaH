@@ -54,6 +54,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
 	private NavigationView mNavigationView;
 	private DrawerLayout mDrawerLayout;
 	private NavMenu mNavMenu;
+	private Boolean mNavDrawerPinned = false;
 
 	private SketchViewModel mSketchViewModel = null;	// sketch view model
     private Boolean mSketchViewModelSaved = false;      // model saved flag
@@ -95,12 +96,14 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
                 // drawer has settled in a completely open state & is interactive at this point...
                 Log.d(TAG, "onDrawerOpened...buildShapeList...");
                 mNavMenu.buildShapeList(mNavigationView, mSketchViewModel);
+                // TODO: show pin/unpin FAB, set pinned state
             }
 
             @Override
             public void onDrawerClosed(View drawerView) {
                 // drawer has settled in a completely closed state...
                 Log.d(TAG, "onDrawerClosed...");
+                // TODO: hide pin/unpin FAB, clear pinned state
             }
 
             @Override
@@ -215,6 +218,7 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
                 Log.e(TAG, "Ooops!  onNavigationItemSelected finds unknown menu item " + itemname);
             }
         }
+        // TODO: if unpinned state, close drawer
 		// close drawer
 		mDrawerLayout.closeDrawer(GravityCompat.START);
         mSketchView.invalidate();
@@ -280,6 +284,8 @@ public class SketchActivity extends Activity implements NavigationView.OnNavigat
     // getters/setters
     public void setContext(Context context) { mContext = context; }
     public Context getContext() { return mContext; }
+    public void setNavDrawerPinned(Boolean pinned) { mNavDrawerPinned = pinned; }
+    public Boolean getNavDrawerPinned() { return mNavDrawerPinned; }
     ///////////////////////////////////////////////////////////////////////////
     // save sketch model helpers
     private Boolean isSketchViewModelSaved() { return mSketchViewModelSaved; }
