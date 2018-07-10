@@ -47,11 +47,11 @@ public class AhaHahActivity extends Activity {
 	// activity request codes
 	private static final int ACTION_TAKE_PHOTO = 2;
 
-    ////////////////////////////////////////////////////////////////////////
-    // setters/getters
-    String mPhotoCapturePath;
-    public String getPhotoCapturePath() { return mPhotoCapturePath; }
-    public void setPhotoCapturePath(String photoCapturePath) { this.mPhotoCapturePath = photoCapturePath; }
+//    ////////////////////////////////////////////////////////////////////////
+//    // setters/getters
+//    String mPhotoCapturePath;
+//    public String getPhotoCapturePath() { return mPhotoCapturePath; }
+//    public void setPhotoCapturePath(String photoCapturePath) { this.mPhotoCapturePath = photoCapturePath; }
 
     //////////////// activity lifecycle methods ////////////////
 	@Override
