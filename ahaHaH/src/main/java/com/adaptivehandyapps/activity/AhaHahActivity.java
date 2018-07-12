@@ -36,22 +36,11 @@ import com.adaptivehandyapps.util.PrefsUtils;
 public class AhaHahActivity extends Activity {
 
 	private static final String TAG = "AhaHahActivity";
-//	// toast display metrics at startup
-//    private static final Boolean TOAST_DISPLAY_METRICS = true;
+	// toast display metrics at startup
+    private static final Boolean TOAST_DISPLAY_METRICS = false;
 
 	// permission request codes
 	public final static int PERMISSIONS_REQUEST = 125;
-
-    // capture photo path by launching camera activity for result
-    private static final Boolean CAPTURE_PHOTO_PATH = true;
-	// activity request codes
-	private static final int ACTION_TAKE_PHOTO = 2;
-
-//    ////////////////////////////////////////////////////////////////////////
-//    // setters/getters
-//    String mPhotoCapturePath;
-//    public String getPhotoCapturePath() { return mPhotoCapturePath; }
-//    public void setPhotoCapturePath(String photoCapturePath) { this.mPhotoCapturePath = photoCapturePath; }
 
     //////////////// activity lifecycle methods ////////////////
 	@Override
@@ -62,13 +51,14 @@ public class AhaHahActivity extends Activity {
 		if (requestForPermission(this)) {
 			Log.d(TAG, "onCreate permissions granted...");
 			init();
+			Log.d(TAG, "onCreate isAppInBackground " + AhaUtils.isAppInBackground() + "...");
 		}
 	}
 
 	private Boolean init() {
 //		// seed screen resolution
-//        String toastText = DisplayUtils.metricsToString(this);
-//        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+        String toastText = DisplayUtils.metricsToString(this);
+        if (TOAST_DISPLAY_METRICS) Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
         setContentView(R.layout.activity_ahahah);
 
@@ -82,7 +72,7 @@ public class AhaHahActivity extends Activity {
 			Log.d(TAG, SketchViewModel.prefsToString(this));
 		}
 
-//		// launch sketch activity
+//		// launch sketch activity - launched from "ready" button
 //        this.startSketchActivity(getCurrentFocus());
 
         return true;
@@ -198,92 +188,6 @@ public class AhaHahActivity extends Activity {
 		Log.v(TAG, "onDestroy");     	
     }
 
-//	///////////////////////////////////////////////////////////////////////////////
-//	// camera activity
-//	public void startCameraActivity (View view) {
-//		// create intent & start activity
-//		if (isIntentAvailable(this, MediaStore.ACTION_IMAGE_CAPTURE)) {
-//            // camera is available, launch camera intent
-//		    // NO GO! allow repeated photo snaps
-//            Log.v(TAG, "camera available...");
-//            if (!CAPTURE_PHOTO_PATH) {
-//                // no album targeted, launch vanilla camera intent
-//                Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                startActivity(intentTakePhoto);
-//            }
-//            else {
-//                // dispatch camera intent after specifying path for capture
-//                String photoCapturePath = dispatchTakePhotoIntent();
-//                setPhotoCapturePath(photoCapturePath);
-//            }
-//			Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
-//		} else {
-//			Log.v(TAG, "camera NOT available...");
-//			Toast.makeText(this, "camera NOT available...", Toast.LENGTH_SHORT).show();
-//		}
-//
-//		Toast.makeText(this, R.string.camera_hint, Toast.LENGTH_SHORT).show();
-//	}
-//
-//	// establish if camera intent is available
-//	public static boolean isIntentAvailable (Context context, String action) {
-//		final PackageManager packageManager = context.getPackageManager();
-//		final Intent intent = new Intent(action);
-//		List<ResolveInfo> list =
-//				packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-//		return list.size() > 0;
-//	}
-//
-//	private String dispatchTakePhotoIntent () {
-//		Intent intentTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//		try {
-//			// timestamp an image name & create the file
-//			String imageName = ImageAlbumStorage.timestampImageName();
-//			Log.v(TAG, "timestampImageName: "+ imageName);
-//			// create file in camera dir
-//			File photo = ImageAlbumStorage.createImageFile(null, imageName);
-//			if (photo == null) return PrefsUtils.DEFAULT_STRING_NADA;
-//			String currentPhotoPath = photo.getAbsolutePath();
-//			Log.v(TAG, "createImageFile: "+ currentPhotoPath);
-//			// put file handle in take photo intent extras
-//			Uri imageUri = FileProvider.getUriForFile(this,
-//					BuildConfig.APPLICATION_ID + ".provider", photo);
-//			intentTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-//
-//			// start camera for result of photo
-//			startActivityForResult(intentTakePhoto, ACTION_TAKE_PHOTO);
-//			return currentPhotoPath;
-//
-//		} catch (IOException e) {
-//			Log.e(TAG, e.getMessage());
-//            return PrefsUtils.DEFAULT_STRING_NADA;
-//		}
-//	}
-//	// take photo result - capture resulting image
-//	@Override
-//	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-//		Log.v(TAG, "onActivityResult: request code " + requestCode + ", result code " + resultCode);
-//		if (resultCode == RESULT_OK ) {
-//			if (requestCode == ACTION_TAKE_PHOTO) {
-//				// TODO: unless orientation fixed, photo orientation on return to parent activity incorrect in 3 of 4 orientation
-//				String path = getPhotoCapturePath();
-//				Log.v(TAG, "onActivityResult getPhotoCapturePath " + path);
-//			}
-//		} else {
-//			Log.e(TAG, "onActivityResult NOT OK! request code " + requestCode + ", result code " + resultCode);
-//		}
-//	}
-//	///////////////////////////////////////////////////////////////////////////////
-//	// gallery activity (view not select)
-//	public void startGalleryActivity (View view) {
-//		// create intent & start activity
-//		Intent intent = new Intent();
-//		intent.setAction(android.content.Intent.ACTION_VIEW);
-//		intent.setType("image/*");
-//		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//		startActivity(intent);
-//		Toast.makeText(this, "Viewing gallery - touch back when finished.", Toast.LENGTH_LONG).show();
-//	}
 	///////////////////////////////////////////////////////////////////////////////
 	// sketch activity
 	public void startSketchActivity (View view) {

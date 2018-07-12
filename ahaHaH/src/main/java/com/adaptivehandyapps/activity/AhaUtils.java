@@ -9,6 +9,7 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 public class AhaUtils {
     private static final String TAG = AhaUtils.class.getSimpleName();
 
+    // test if app is in background
     public static boolean isAppInBackground() {
         ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
         ActivityManager.getMyMemoryState(appProcessInfo);
